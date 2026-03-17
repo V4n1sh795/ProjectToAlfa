@@ -1,0 +1,75 @@
+path:
+    /team/:
+    methos:
+        POST:
+            request:
+                {
+                    team_name: "team_name",
+                    members: ["member1", "member2"],
+                    project: "project_name"
+                }
+            response:
+                {
+                    team_id: "team_id"
+                }
+path:
+    /team/{id}/new_member/
+    method: 
+        POST
+            requset:
+                {
+                    login: "member_login"
+                }
+            response:
+                {
+                    status: "OK"
+                }
+path:
+    /team/{id}/new_project/
+    method:
+        POST:
+            request:
+                {
+                    project_name: "Project name",
+                    controller: "controller"
+                }
+            response: 
+                {
+                    "status": "OK"
+                }
+path:
+    /team/{id}/new_task/
+    method:
+        PUSH:
+            request:
+                {
+                    task_name: "task_name",
+                    start_time: "time",
+                    deadline: "time",
+                    maker: "Name1",
+                    priority: "1/2/3/4/5"
+                }
+path:
+    /team/{id}/comments/
+        method:
+            PUSH:
+                request:
+                {
+                    sender_name: "Name Surname Second name",
+                    data: "plain text"
+                }
+                response:
+                {
+                    status: "ok"
+                }
+            GET:
+                response
+                {
+                    comments: [
+                        comment1 
+                        {
+                            sender_name: "Name",
+                            text: "plain_text"
+                        }
+                    ]
+                }

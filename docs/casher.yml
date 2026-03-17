@@ -1,0 +1,520 @@
+openapi: '3.0.3'
+info:
+  title: API Title
+  version: '1.0'
+servers:
+  - url: https://cahser/v1
+paths:
+  /isalive:
+    get:
+      responses:
+        '200':
+          description: OK
+  /team/{id}:
+    get:
+      summary: Get team details by ID
+      tags:
+        - Teams
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Team unique identifier
+          example: 42
+      
+      responses:
+        '200':
+          description: Successful response with team data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 42
+                  name:
+                    type: string
+                    example: "Backend Development"
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 101
+                        name:
+                          type: string
+                          example: "Ivan"
+                        role:
+                          type: string
+                          example: "developer"
+                        email:
+                          type: string
+                          format: email
+                          example: "ivan@example.com"
+                  projects:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 501
+                        name:
+                          type: string
+                          example: "API Redesign"
+                        status:
+                          type: string
+                          example: "active"
+                        deadline:
+                          type: string
+                          format: date
+                          example: "2026-12-31"
+                  tasks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1001
+                        title:
+                          type: string
+                          example: "Fix login bug"
+                        status:
+                          type: string
+                          example: "open"
+                        priority:
+                          type: string
+                          example: "high"
+                        assignee_id:
+                          type: integer
+                          nullable: true
+                          example: 101
+              example:
+                id: 42
+                name: "Backend Development"
+                members:
+                  - id: 101
+                    name: "Ivan"
+                    role: "developer"
+                    email: "ivan@example.com"
+                  - id: 102
+                    name: "Maria"
+                    role: "designer"
+                    email: "maria@example.com"
+                projects:
+                  - id: 501
+                    name: "API Redesign"
+                    status: "active"
+                    deadline: "2026-12-31"
+                tasks:
+                  - id: 1001
+                    title: "Fix login bug"
+                    status: "open"
+                    priority: "high"
+                    assignee_id: 101
+
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "not_found"
+                  message:
+                    type: string
+                    example: "Team with id 42 does not exist"
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "internal_error"
+                  message:
+                    type: string
+                    example: "Something went wrong"
+  /team/:
+    post:
+      summary: Create a new team
+      tags:
+        - Teams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - team_name
+                - members
+                - project
+              properties:
+                team_name:
+                  type: string
+                  description: Name of the team
+                  example: "Backend Developers"
+                members:
+                  type: array
+                  description: List of member logins
+                  items:
+                    type: string
+                  example: ["member1", "member2"]
+                project:
+                  type: string
+                  description: Project name assigned to the team
+                  example: "API Redesign"
+      responses:
+        '201':
+          description: Team created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team_id:
+                    type: integer
+                    description: Unique identifier of the created team
+                    example: 42
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "validation_error"
+                  message:
+                    type: string
+                    example: "team_name is required"
+
+  /team/{id}/new_member/:
+    post:
+      summary: Add a new member to the team
+      tags:
+        - Teams
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Team unique identifier
+          example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - login
+              properties:
+                login:
+                  type: string
+                  description: Login of the member to add
+                  example: "new_user_123"
+      responses:
+        '200':
+          description: Member added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "not_found"
+                  message:
+                    type: string
+                    example: "Team with id 42 does not exist"
+        '409':
+          description: Member already in team
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ERROR"
+                  message:
+                    type: string
+                    example: "Member already exists in this team"
+  /team/{id}/new_project/:
+    post:
+      summary: Add a new project to the team
+      tags:
+        - Projects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Team unique identifier
+          example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - project_name
+                - controller
+              properties:
+                project_name:
+                  type: string
+                  description: Name of the project
+                  example: "API Redesign"
+                controller:
+                  type: string
+                  description: Person responsible for the project
+                  example: "Ivan Petrov"
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  project_id:
+                    type: integer
+                    example: 501
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ERROR"
+                  message:
+                    type: string
+                    example: "project_name is required"
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ERROR"
+                  message:
+                    type: string
+                    example: "Team not found"
+
+  /team/{id}/new_task/:
+    post:
+      summary: Create a new task for the team
+      tags:
+        - Tasks
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Team unique identifier
+          example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task_name
+                - start_time
+                - deadline
+                - maker
+                - priority
+              properties:
+                task_name:
+                  type: string
+                  description: Name of the task
+                  example: "Fix login bug"
+                start_time:
+                  type: string
+                  format: date-time
+                  description: Task start time (ISO 8601)
+                  example: "2026-01-15T10:00:00Z"
+                deadline:
+                  type: string
+                  format: date-time
+                  description: Task deadline (ISO 8601)
+                  example: "2026-01-20T18:00:00Z"
+                maker:
+                  type: string
+                  description: Person assigned to the task
+                  example: "Name1"
+                priority:
+                  type: integer
+                  description: Priority level (1-5)
+                  minimum: 1
+                  maximum: 5
+                  example: 3
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  task_id:
+                    type: integer
+                    example: 1001
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ERROR"
+                  message:
+                    type: string
+                    example: "Invalid priority value"
+        '404':
+          description: Team not found
+
+  /team/{id}/comments/:
+    post:
+      summary: Add a comment to the team
+      tags:
+        - Comments
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Team unique identifier
+          example: 42
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sender_name
+                - data
+              properties:
+                sender_name:
+                  type: string
+                  description: Full name of the comment author
+                  example: "Ivan Petrov Sidorov"
+                data:
+                  type: string
+                  description: Comment text
+                  example: "Great progress on the project!"
+      responses:
+        '201':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  comment_id:
+                    type: integer
+                    example: 301
+        '400':
+          description: Invalid request data
+        '404':
+          description: Team not found
+
+    get:
+      summary: Get all comments for the team
+      tags:
+        - Comments
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Team unique identifier
+          example: 42
+      responses:
+        '200':
+          description: Comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 301
+                        sender_name:
+                          type: string
+                          example: "Ivan Petrov"
+                        text:
+                          type: string
+                          example: "Great progress on the project!"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2026-01-15T14:30:00Z"
+              example:
+                comments:
+                  - id: 301
+                    sender_name: "Ivan Petrov"
+                    text: "Great progress on the project!"
+                    created_at: "2026-01-15T14:30:00Z"
+                  - id: 302
+                    sender_name: "Maria Sidorova"
+                    text: "Thanks for the update!"
+                    created_at: "2026-01-15T15:00:00Z"
+        '404':
+          description: Team not found
