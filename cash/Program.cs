@@ -35,6 +35,22 @@ builder.Configuration
     .AddEnvironmentVariables()
     .AddCommandLine(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:8080",
+                "http://localhost:3000", 
+                "http://127.0.0.1:8080",
+                "http://127.0.0.1:3000",
+                "http://0.0.0.0:8080" // на всякий случай
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+            // .AllowCredentials(); // раскомментируйте, если нужны куки/авторизация
+    });
+});
 // 🔧 3. PostgreSQL
 var postgresConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -60,9 +76,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
 // === Создание приложения ===
 var app = builder.Build();
+app.UseCors("AllowReactApp");
 app.Urls.Add("http://0.0.0.0:8080");
-app.UseHttpsRedirection();
 
+
+// app.UseHttpsRedirection();
 // 🔧 Тестовые эндпоинты
 app.MapGet("/test/postgres", async (AppDbContext db, ILogger<Program> logger) =>
 {
