@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace cash.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260323192819_AdddayTable")]
+    partial class AdddayTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,17 +28,6 @@ namespace cash.Migrations
 
             modelBuilder.Entity("cash.Models.Meeting", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date");
@@ -46,30 +38,18 @@ namespace cash.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("status");
+                        .HasColumnType("text")
+                        .HasColumnName("Status");
 
-                    b.PrimitiveCollection<List<int>>("Tasks")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("tasks");
-
-                    b.Property<int>("TeamId")
+                    b.Property<int>("TeamIds")
                         .HasColumnType("integer")
-                        .HasColumnName("team_id");
+                        .HasColumnName("team_ids");
 
                     b.Property<TimeOnly>("Time")
                         .HasColumnType("time without time zone")
-                        .HasColumnName("time");
+                        .HasColumnName("Time");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
+                    b.HasKey("Date");
 
                     b.ToTable("Meeting");
                 });
@@ -97,17 +77,6 @@ namespace cash.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("team");
-                });
-
-            modelBuilder.Entity("cash.Models.Meeting", b =>
-                {
-                    b.HasOne("cash.Models.Team", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Team");
                 });
 #pragma warning restore 612, 618
         }

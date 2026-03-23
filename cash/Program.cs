@@ -17,6 +17,9 @@ using System.Data.Common;
 using System.Data;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
+using Custom;
+using System.Text.Json.Nodes;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 🔧 1. Логирование
@@ -69,12 +72,12 @@ app.UseCors(builder => builder.AllowAnyOrigin());
 app.Urls.Add("http://0.0.0.0:8080");
 
 
-// Применеие миграций
-await using (var scope = app.Services.CreateAsyncScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await context.Database.MigrateAsync();
-}
+// // Применеие миграций
+// await using (var scope = app.Services.CreateAsyncScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     await context.Database.MigrateAsync();
+// }
 
 
 // app.UseHttpsRedirection();
@@ -111,27 +114,24 @@ app.MapPost("/team", async (AppDbContext db, Team team) =>
     return Results.Created($"/team/{team.Id}", team);
 });
 
-
-// 🔧 Миграции при старте (опционально)
-// using (var scope = app.Services.CreateScope())
-// {
-//     var services = scope.ServiceProvider;
-//     var logger = services.GetRequiredService<ILogger<Program>>();
+app.MapGet("/day/{dateTime}", async (AppDbContext db, DateTime date) =>
+{
+    var meetings = await db.Meetings
+        .Where(m => m.Date.Date == date.Date) // Сравниваем только дату
+        .ToListAsync();
     
-//     try
-//     {
-//         var context = services.GetRequiredService<AppDbContext>();
-//         if (await context.Database.CanConnectAsync())
-//         {
-//             logger.LogInformation("Applying migrations...");
-//             await context.Database.MigrateAsync();
-//             logger.LogInformation("Migrations applied");
-//         }
-//     }
-//     catch (Exception ex)
-//     {
-//         logger.LogError(ex, "Migration error");
-//     }
-// }
+    return Results.Ok(meetings);
+});
+
+// app.MapPost("/meeting/", async (AppDbContext db, HttpContext httpContext) =>
+// {
+//     JSONParse json = new JSONParse(httpContext);
+//     Meeting meeting = new Meeting(
+//         json.data["date"],
+//         json.data["time"]
+//     );
+
+// });
+
 
 await app.RunAsync();

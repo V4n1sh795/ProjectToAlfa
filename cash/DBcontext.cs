@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     // public DbSet<User> Users { get; set; }
 
     public DbSet<Team> Teams { get; set; } = null!;
+    public DbSet<Meeting> Meetings { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
