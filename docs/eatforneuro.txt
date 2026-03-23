@@ -73,3 +73,5 @@ path:
                         }
                     ]
                 }
+path: 
+    /api/getday/{data}

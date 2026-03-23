@@ -59,95 +59,79 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(config);
 });
 
+
+
+
+
 // === Создание приложения ===
 var app = builder.Build();
 app.UseCors(builder => builder.AllowAnyOrigin());
 app.Urls.Add("http://0.0.0.0:8080");
 
 
+// Применеие миграций
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await context.Database.MigrateAsync();
+}
+
+
 // app.UseHttpsRedirection();
 // 🔧 Тестовые эндпоинты
-app.MapGet("/test/postgres", async (AppDbContext db, ILogger<Program> logger) =>
-{
-    try
-    {
-        var canConnect = await db.Database.CanConnectAsync();
-        logger.LogInformation("PostgreSQL: {Result}", canConnect ? "OK" : "FAILED");
-        return Results.Ok(new { status = canConnect ? "connected" : "failed", timestamp = DateTime.UtcNow });
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "PostgreSQL error");
-        return Results.Problem(
-            title: "Database Error",
-            detail: ex.Message,
-            statusCode: 503);
-            }
-});
 
-app.MapGet("/test/redis", async (IConnectionMultiplexer redis, ILogger<Program> logger) =>
-{
-    try
-    {
-        var db = redis.GetDatabase();
-        var key = $"test:{Guid.NewGuid()}";
-        await db.StringSetAsync(key, "OK", TimeSpan.FromMinutes(1));
-        var val = await db.StringGetAsync(key);
-        return Results.Ok(new { status = val == "OK" ? "connected" : "failed", timestamp = DateTime.UtcNow });
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Redis error");
-        return Results.Problem(
-            title: "Database Error",
-            detail: ex.Message,
-            statusCode: 503);
-            }
-});
 
 app.MapGet("/", () => Results.Ok(new 
 { 
     message = "API is running",
-    endpoints = new[] { "/health", "/test/postgres", "/test/redis", "/swagger" }
 }));
 app.MapGet("/get_team", async (AppDbContext db) =>
 {
-    // Создаём новую команду (Id установится автоматически при сохранении)
-    var team = new Team
-    {
-        Name = "first team",
-    };
-    
-    // Добавляем в контекст
-    await db.Teams.AddAsync(team);
-    await db.SaveChangesAsync();
-    
     // Получаем все команды из БД
     var allTeams = await db.Teams.ToListAsync();
     
     return Results.Ok(allTeams);
 });
+app.MapGet("/reallydeleteallteams", async (AppDbContext db) =>
+{
+    var allTeams = await db.Teams.ToListAsync();
+    
+    db.Teams.RemoveRange(allTeams);
+    
+    await db.SaveChangesAsync();
+    
+    return Results.Ok(new { message = $"Deleted {allTeams.Count} teams" });
+});
+
+app.MapPost("/team", async (AppDbContext db, Team team) =>
+{   
+    await db.Teams.AddAsync(team);
+    await db.SaveChangesAsync();
+    
+    return Results.Created($"/team/{team.Id}", team);
+});
+
 
 // 🔧 Миграции при старте (опционально)
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     var logger = services.GetRequiredService<ILogger<Program>>();
     
-    try
-    {
-        var context = services.GetRequiredService<AppDbContext>();
-        if (await context.Database.CanConnectAsync())
-        {
-            logger.LogInformation("Applying migrations...");
-            await context.Database.MigrateAsync();
-            logger.LogInformation("Migrations applied");
-        }
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Migration error");
-    }
-}
+//     try
+//     {
+//         var context = services.GetRequiredService<AppDbContext>();
+//         if (await context.Database.CanConnectAsync())
+//         {
+//             logger.LogInformation("Applying migrations...");
+//             await context.Database.MigrateAsync();
+//             logger.LogInformation("Migrations applied");
+//         }
+//     }
+//     catch (Exception ex)
+//     {
+//         logger.LogError(ex, "Migration error");
+//     }
+// }
 
 await app.RunAsync();
