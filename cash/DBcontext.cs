@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Meeting> Meetings { get; set; } = null!;
     public DbSet<Curator> Curators {get; set; } = null!;
     public DbSet<Project> Projects {get; set; } = null!;
+    public DbSet<Messages> Messages {get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

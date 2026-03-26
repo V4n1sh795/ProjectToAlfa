@@ -40,4 +40,5 @@ public record Project
     [Required]
     [Column("Semester")]
     public string Semester { get; init; } = string.Empty;
+
 }

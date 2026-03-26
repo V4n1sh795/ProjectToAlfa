@@ -226,7 +226,8 @@ app.MapPost("/auth/login", async (AppDbContext db, cash.InputModels.Auth auth) =
         {
             Messgae = "Login successful",
             token = encodedJwt,
-            cur = person
+            id = person.Id,
+            user_name = person.Name
         };
         
         return Results.Ok(response);
@@ -259,7 +260,7 @@ app.MapPost("/auth/register", async (AppDbContext db, cash.InputModels.Register 
         var data = new cash.Response.Response();
         data.Messgae = "Регистрация успешна";
         data.token = encodedJwt;
-        data.cur = c;
+        data.id = c.Id;
         return Results.Ok(data);
     }
     else
@@ -299,6 +300,22 @@ app.MapPost("/project", [Authorize] (AppDbContext db, cash.InputModels.Project p
 app.MapGet("/project", (AppDbContext db) =>
 {
     return db.Projects.ToListAsync();
+});
+
+app.MapPost("message/{chat_id:int}", [Authorize] async (AppDbContext db, int chat_id, Messages message) =>
+{
+    db.Messages.AddAsync(message);
+    db.SaveChangesAsync();
+    return Results.Ok("message_sended");
+});
+
+app.MapGet("message/{projectId:int}", [Authorize] async (AppDbContext db, int projectId) =>
+{
+    // Получаем все сообщения, ID которых есть в списке chatIds
+    var messages = await db.Messages
+        .Where(m => m.Chat_id == projectId) // или m.ChatId, зависит от вашей модели
+        .ToListAsync();
+    return messages;
 });
 
 await app.RunAsync();

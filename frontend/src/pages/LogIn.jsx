@@ -98,12 +98,12 @@ function LogIn({ setIsAuthenticated }) {
         // Отправка запроса на вход
         const response = await authAPI.login(formData.email, formData.password);
         
-        // console.log('Успешный вход:', response.data);
+        console.log('Успешный вход:', response.data);
         
         // Сохраняем токен
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
+        localStorage.setItem('id', response.data.id);
+        localStorage.setItem('user_name', response.data.user_name);
         // Обновляем состояние авторизации
         if (setIsAuthenticated) {
           setIsAuthenticated(true);

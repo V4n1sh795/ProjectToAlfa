@@ -10,6 +10,7 @@ namespace cash.Response
     {
         public string Messgae {get; set; }
         public string token {get; set; }
-        public Curator cur;
+        public int id {get; set; }
+        public string user_name {get; set; }
     }
 }
