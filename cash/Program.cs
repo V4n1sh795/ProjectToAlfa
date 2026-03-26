@@ -270,6 +270,35 @@ app.MapPost("/auth/register", async (AppDbContext db, cash.InputModels.Register 
 
 app.MapGet("/auth/verify", [Authorize] () => Results.Ok("Token is valid"));
 
-app.MapGet("/curators", async (AppDbContext db) => await db.Curators.ToListAsync());
+app.MapGet("/curators", async (AppDbContext db) =>
+{
+    var data = await db.Curators
+        .Where(c => c.Name != null && c.Name != "")
+        .Select(c => new { c.Id, c.Name })
+        .ToListAsync();
+    
+    return Results.Ok(data);
+});
+
+app.MapPost("/project", [Authorize] (AppDbContext db, cash.InputModels.Project p) =>
+{
+    Project project = new Project
+    {
+        CuratorIds = p.curators.Select(int.Parse).ToList(),
+        Name = p.name,
+        Description = p.description,
+        StartDate = p.startDate,
+        EndDate = p.endDate,
+        Semester = p.semester
+    };
+    db.Projects.AddAsync(project);
+    db.SaveChangesAsync();
+    return Results.Ok(project);
+});
+
+app.MapGet("/project", (AppDbContext db) =>
+{
+    return db.Projects.ToListAsync();
+});
 
 await app.RunAsync();

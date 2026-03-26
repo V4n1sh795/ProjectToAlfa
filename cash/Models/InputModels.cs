@@ -28,4 +28,14 @@ namespace cash.InputModels
         [Required]
         public string password {get; set; }
     }
+    class Project
+    {
+        public string name {get; set;}
+        public string description {get; set;}
+        public string endDate {get; set;}
+        public string startDate {get; set;}
+        public List<string> curators {get; set;}
+        public string semester {get; set;}
+        
+    }
 }

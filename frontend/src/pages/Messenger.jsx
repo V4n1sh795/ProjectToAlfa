@@ -1,16 +1,9 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { authAPI } from './js/LogIn';
-function Messenger()
-{
-    if (authAPI.verify)
-    {
-        return <h1>Страница пока в разработке</h1>;
-    }
-    else
-    {
-        redirect("/login")
-    }
-}
+import './css/Messenger.css'
+const Messenger = () => {
+  return <h1>MAX</h1>
+};
 
 export default Messenger;

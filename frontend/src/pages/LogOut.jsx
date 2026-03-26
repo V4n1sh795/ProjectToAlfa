@@ -3,15 +3,7 @@ import { useState, useEffect } from 'react';
 import { authAPI } from './js/LogIn';
 function LogOut()
 {
-    if (authAPI.verify)
-    {
-        return <button onClick={authAPI.logout}>Выйти</button>
-    }
-    else
-    {
-        redirect("/login")
-    }
-    
+    return <button onClick={authAPI.logout}>Выйти</button>
 }
 
 export default LogOut;
