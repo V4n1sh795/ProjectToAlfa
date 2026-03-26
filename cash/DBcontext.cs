@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Team> Teams { get; set; } = null!;
     public DbSet<Meeting> Meetings { get; set; } = null!;
+    public DbSet<Curator> Curators {get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

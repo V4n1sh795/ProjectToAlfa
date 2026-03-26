@@ -1,0 +1,400 @@
+openapi: 3.0.0
+info:
+  title: Authentication API
+  description: API для авторизации и регистрации пользователей
+  version: 1.0.0
+  contact:
+    name: Support Team
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development server
+  - url: https://api.example.com/api
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: Операции авторизации и регистрации
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT токен авторизации
+
+  schemas:
+    # Схемы для запросов
+    RegisterRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: "Иван Петров"
+          description: "Имя пользователя"
+        email:
+          type: string
+          format: email
+          example: "ivan@example.com"
+          description: "Email пользователя"
+        password:
+          type: string
+          minLength: 6
+          maxLength: 100
+          format: password
+          example: "password123"
+          description: "Пароль (минимум 6 символов)"
+      example:
+        name: "Иван Петров"
+        email: "ivan@example.com"
+        password: "securePass123"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "ivan@example.com"
+          description: "Email пользователя"
+        password:
+          type: string
+          format: password
+          example: "password123"
+          description: "Пароль"
+      example:
+        email: "ivan@example.com"
+        password: "securePass123"
+
+    # Схемы для ответов
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Вход выполнен успешно"
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          description: "JWT токен для авторизации"
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "60d21b4667d0d8992e610c85"
+          description: "ID пользователя"
+        name:
+          type: string
+          example: "Иван Петров"
+          description: "Имя пользователя"
+        email:
+          type: string
+          format: email
+          example: "ivan@example.com"
+          description: "Email пользователя"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T12:00:00Z"
+          description: "Дата регистрации"
+      example:
+        id: "60d21b4667d0d8992e610c85"
+        name: "Иван Петров"
+        email: "ivan@example.com"
+        createdAt: "2024-01-01T12:00:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Неверный email или пароль"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: "email"
+              message:
+                type: string
+                example: "Email обязателен"
+          description: "Детали ошибок валидации"
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Ошибка валидации"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: "email"
+              message:
+                type: string
+                example: "Введите корректный email"
+
+    VerifyResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Токен валиден"
+        user:
+          $ref: '#/components/schemas/User'
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Регистрация нового пользователя
+      description: Создает нового пользователя и возвращает токен доступа
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              valid:
+                summary: "Валидный запрос"
+                value:
+                  name: "Иван Петров"
+                  email: "ivan@example.com"
+                  password: "securePass123"
+              invalid:
+                summary: "Невалидный запрос"
+                value:
+                  name: "И"
+                  email: "invalid-email"
+                  password: "123"
+      responses:
+        '201':
+          description: "Успешная регистрация"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                message: "Регистрация успешна"
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                user:
+                  id: "60d21b4667d0d8992e610c85"
+                  name: "Иван Петров"
+                  email: "ivan@example.com"
+                  createdAt: "2024-01-01T12:00:00Z"
+        '400':
+          description: "Ошибка валидации или пользователь уже существует"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ErrorResponse'
+                  - $ref: '#/components/schemas/ValidationError'
+              examples:
+                userExists:
+                  summary: "Пользователь уже существует"
+                  value:
+                    message: "Пользователь с таким email уже существует"
+                validationError:
+                  summary: "Ошибка валидации"
+                  value:
+                    message: "Ошибка валидации"
+                    errors:
+                      - field: "email"
+                        message: "Введите корректный email"
+                      - field: "password"
+                        message: "Пароль должен содержать минимум 6 символов"
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Ошибка сервера"
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Вход в систему
+      description: Аутентифицирует пользователя и возвращает токен доступа
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              valid:
+                summary: "Валидный запрос"
+                value:
+                  email: "ivan@example.com"
+                  password: "securePass123"
+              invalid:
+                summary: "Невалидный запрос"
+                value:
+                  email: "wrong@example.com"
+                  password: "wrongpass"
+      responses:
+        '200':
+          description: "Успешный вход"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                message: "Вход выполнен успешно"
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                user:
+                  id: "60d21b4667d0d8992e610c85"
+                  name: "Иван Петров"
+                  email: "ivan@example.com"
+                  createdAt: "2024-01-01T12:00:00Z"
+        '401':
+          description: "Неверные учетные данные"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                wrongCredentials:
+                  summary: "Неверный email или пароль"
+                  value:
+                    message: "Неверный email или пароль"
+        '400':
+          description: "Ошибка валидации"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+              example:
+                message: "Ошибка валидации"
+                errors:
+                  - field: "email"
+                    message: "Email обязателен"
+                  - field: "password"
+                    message: "Пароль обязателен"
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Ошибка сервера"
+
+  /auth/verify:
+    get:
+      tags:
+        - Authentication
+      summary: Проверка токена
+      description: Проверяет валидность JWT токена
+      operationId: verifyToken
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: "Токен валиден"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyResponse'
+              example:
+                message: "Токен валиден"
+                user:
+                  id: "60d21b4667d0d8992e610c85"
+                  name: "Иван Петров"
+                  email: "ivan@example.com"
+                  createdAt: "2024-01-01T12:00:00Z"
+        '401':
+          description: "Токен отсутствует или недействителен"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noToken:
+                  summary: "Отсутствует токен"
+                  value:
+                    message: "Пожалуйста, авторизуйтесь"
+                invalidToken:
+                  summary: "Недействительный токен"
+                  value:
+                    message: "Недействительный токен"
+        '500':
+          description: "Внутренняя ошибка сервера"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Ошибка сервера"
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Выход из системы
+      description: Удаляет токен на клиентской стороне (сервер просто подтверждает успешный выход)
+      operationId: logout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: "Успешный выход"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Выход выполнен успешно"
+        '401':
+          description: "Токен отсутствует"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: "Пожалуйста, авторизуйтесь"
+
+# Дополнительная документация
+# security:
+#   - BearerAuth: []
+
+# tags:
+#   - name: Authentication
+#     description: "Операции для управления аутентификацией пользователей"
+#     externalDocs:
+#       description: "Подробнее о JWT"
+#       url: "https://jwt.io/"

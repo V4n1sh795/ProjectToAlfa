@@ -17,9 +17,16 @@ using System.Data.Common;
 using System.Data;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
-using Custom;
 using System.Text.Json.Nodes;
-
+using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 // 🔧 1. Логирование
@@ -30,6 +37,28 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Logging.SetMinimumLevel(LogLevel.Debug);
 }
+
+
+
+// JWT
+
+TokenValidationParameters tvp =  new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = AuthOptions.ISSUER,
+            ValidateAudience = true,
+            ValidAudience = AuthOptions.AUDIENCE,
+            ValidateLifetime = true,
+            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+            ValidateIssuerSigningKey = true
+         };
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = tvp;
+});
+
 
 // 🔧 2. Конфигурация
 builder.Configuration
@@ -69,6 +98,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 // === Создание приложения ===
 var app = builder.Build();
 app.UseCors(builder => builder.AllowAnyOrigin());
+app.UseAuthentication();
+app.UseAuthorization();
 app.Urls.Add("http://0.0.0.0:8080");
 
 
@@ -114,24 +145,131 @@ app.MapPost("/team", async (AppDbContext db, Team team) =>
     return Results.Created($"/team/{team.Id}", team);
 });
 
-app.MapGet("/day/{dateTime}", async (AppDbContext db, DateTime date) =>
+app.MapGet("/day/{date:datetime}", async (AppDbContext db, DateTime date) =>
 {
+    // 1. Приводим дату к началу дня в локальном времени
+    var startLocal = date.Date; // 2026-03-25 00:00:00
+    
+    // 2. Конвертируем в UTC (как хранится в БД)
+    var startUtc = DateTime.SpecifyKind(startLocal, DateTimeKind.Utc);
+    var endUtc = startUtc.AddDays(1); // 2026-03-26 00:00:00 UTC
+    
+    // 3. Запрос по диапазону (эффективно + использует индекс)
     var meetings = await db.Meetings
-        .Where(m => m.Date.Date == date.Date) // Сравниваем только дату
+        .Where(m => m.Date >= startUtc && m.Date < endUtc)
         .ToListAsync();
     
     return Results.Ok(meetings);
 });
+app.MapGet("/day/", async (AppDbContext db) =>
+{
+    var meetings = await db.Meetings.ToListAsync();
 
-// app.MapPost("/meeting/", async (AppDbContext db, HttpContext httpContext) =>
-// {
-//     JSONParse json = new JSONParse(httpContext);
-//     Meeting meeting = new Meeting(
-//         json.data["date"],
-//         json.data["time"]
-//     );
+    return Results.Ok(meetings);
+});
 
-// });
+app.MapPost("/meeting/", async (AppDbContext db, HttpContext httpContext) =>
+{
+    
+    using StreamReader reader = new StreamReader(httpContext.Request.Body);
+    string name = await reader.ReadToEndAsync();
 
+    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+    var data = JsonSerializer.Deserialize<cash.InputModels.Meeting>(name, options);
+    if(DateTime.TryParse(data.Date, out DateTime result) && TimeOnly.TryParse(data.Time, out TimeOnly result1))
+    {
+        DateTime date = result;
+        TimeOnly time = result1;
+
+        DateTime utcDate = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+
+        Meeting meet = new Meeting(utcDate, time, 152);
+        await db.Meetings.AddAsync(meet);
+        await db.SaveChangesAsync();
+        return "OK: Added to db";
+    }
+    else
+    {
+        return "ERROR: Not added to db";
+    }
+});
+
+app.MapPost("/auth/login", async (AppDbContext db, cash.InputModels.Auth auth) =>
+{
+    if (string.IsNullOrEmpty(auth.email) || string.IsNullOrEmpty(auth.password))
+    {
+        return Results.BadRequest(new { error = "Email and password are required" });
+    }
+    var person = await db.Curators
+        .FirstOrDefaultAsync(u => u.Email == auth.email);
+    
+    if (person == null)
+    {
+        return Results.BadRequest(new { error = "Invalid email or password" });
+    }
+    
+    var hasher = new PasswordHasher<Curator>();
+    var verificationResult = hasher.VerifyHashedPassword(null, person.Passwd, auth.password);
+    
+    if (verificationResult == PasswordVerificationResult.Success)
+    {
+        var claims = new List<Claim> {new Claim(ClaimTypes.Name, person.Name) };
+        var jwt = new JwtSecurityToken(
+            issuer: AuthOptions.ISSUER,
+            audience: AuthOptions.AUDIENCE,
+            claims: claims,
+            expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(60)),
+            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+        var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+        var response = new cash.Response.Response
+        {
+            Messgae = "Login successful",
+            token = encodedJwt,
+            cur = person
+        };
+        
+        return Results.Ok(response);
+    }
+    
+    // Неверный пароль
+    return Results.BadRequest(new { error = "Invalid email or password" });
+});
+
+app.MapPost("/auth/register", async (AppDbContext db, cash.InputModels.Register reg) =>
+{
+    var person = await db.Curators
+        .Where(u => u.Email == reg.email)
+        .FirstOrDefaultAsync();
+    if (person == null)
+    {
+        var hasher = new PasswordHasher<Curator>();
+        string hashedPassword = hasher.HashPassword(null, reg.password);
+        Curator c = new Curator(reg.name, reg.email, hashedPassword);
+        await db.Curators.AddAsync(c);
+        await db.SaveChangesAsync();
+        var claims = new List<Claim> {new Claim(ClaimTypes.Name, c.Name) };
+        var jwt = new JwtSecurityToken(
+            issuer: AuthOptions.ISSUER,
+            audience: AuthOptions.AUDIENCE,
+            claims: claims,
+            expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(60)),
+            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+        var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+        var data = new cash.Response.Response();
+        data.Messgae = "Регистрация успешна";
+        data.token = encodedJwt;
+        data.cur = c;
+        return Results.Ok(data);
+    }
+    else
+    {
+        return Results.BadRequest("Error");
+    }
+});
+
+app.MapGet("/auth/verify", [Authorize] () => Results.Ok("Token is valid"));
+
+app.MapGet("/curators", async (AppDbContext db) => await db.Curators.ToListAsync());
 
 await app.RunAsync();

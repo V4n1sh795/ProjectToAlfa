@@ -54,10 +54,11 @@ namespace cash.Models
         [Column("status")]
         [MaxLength(50)]
         public string Status { get; set; } = string.Empty;
-        public Meeting(DateTime Date, TimeOnly Time)
+        public Meeting(DateTime Date, TimeOnly Time, int TeamId)
         {
             this.Date = Date;
             this.Time = Time;
+            this.TeamId = TeamId;
         }
     }
 }
