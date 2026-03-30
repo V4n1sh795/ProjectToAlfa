@@ -11,14 +11,15 @@ public class Team
     [Required, MaxLength(200)]
     public string Name { get; set; } = string.Empty;
     
-    public List<string> Comments { get; set; } = new();
+    public List<string> Comments { get; set; } = new List<string>();
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
-    public Team() { }
-    public Team(string name)
-    {
-        Name = name;
-        CreatedAt = DateTime.UtcNow;
-    }
+
+    [Required]
+    public virtual Project Project {get; set;} = new Project();
+    [Required]
+    public List<Member> members = new List<Member>();
+    [Required]
+    public List<Curator> curators = new List<Curator>();
+
 }

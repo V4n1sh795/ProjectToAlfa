@@ -14,6 +14,8 @@ public class AppDbContext : DbContext
     public DbSet<Curator> Curators {get; set; } = null!;
     public DbSet<Project> Projects {get; set; } = null!;
     public DbSet<Messages> Messages {get; set; } = null!;
+    public DbSet<Member> Members {get; set; } = null!;
+    public DbSet<Profiles> Profiles {get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 /// </summary>
 namespace cash.Models;
 [Table("Project")]
-public record Project
+public class Project
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
