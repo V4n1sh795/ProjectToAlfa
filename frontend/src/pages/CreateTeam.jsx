@@ -20,6 +20,21 @@ function CreateTeam() {
     { name: "", group: "", role: "", stack: "" },
   ]);
   const [errors, setErrors] = useState({});
+  
+  // Новые состояния для дня недели и времени созвона
+  const [callDay, setCallDay] = useState("");
+  const [callTime, setCallTime] = useState("");
+
+  // Дни недели для выбора
+  const weekDays = [
+    "Понедельник",
+    "Вторник",
+    "Среда",
+    "Четверг",
+    "Пятница",
+    "Суббота",
+    "Воскресенье"
+  ];
 
   useEffect(() => {
     api
@@ -71,13 +86,9 @@ function CreateTeam() {
 
   const createTeam = async (teamData) => {
     try {
-      const response = await api.post("/team", teamData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await api.post("/team", teamData);
       console.log(response);
-      alert("Команда создаана. Проверь консоль для просмотра данных");
+      alert("Команда создана. Проверь консоль для просмотра данных");
       return true;
     } catch (error) {
       console.error("Error creating team: ", error);
@@ -92,7 +103,6 @@ function CreateTeam() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Можно добавить проверку на выбор одного и того же куратора
     const teamData = {
       name: teamName.trim(),
       projectId: projectId,
@@ -103,6 +113,8 @@ function CreateTeam() {
         stack: member.stack.trim(),
       })),
       curators: curatorIds.filter((curator) => curator !== ""),
+      callDay: callDay, // Добавляем день созвона
+      callTime: callTime, // Добавляем время созвона
     };
 
     const newErrors = {};
@@ -128,6 +140,12 @@ function CreateTeam() {
     if (members.length === 0 || hasEmptyMember) {
       newErrors.members = "Заполните все поля участников";
     }
+    if (!callDay) {
+      newErrors.callDay = "Выберите день недели для созвона";
+    }
+    if (!callTime) {
+      newErrors.callTime = "Выберите время созвона";
+    }
 
     setErrors(newErrors);
 
@@ -138,7 +156,6 @@ function CreateTeam() {
     console.log("Данные команды:", teamData);
 
     await createTeam(teamData);
-    // Можно добавить очистку формы
   };
 
   return (
@@ -155,8 +172,7 @@ function CreateTeam() {
             required
             placeholder="Введите название команды"
           />
-          {/* Стоит убирать ошибку после изменения */}
-          {errors.teamName && <p>{errors.teamName}</p>}
+          {errors.teamName && <p className="error">{errors.teamName}</p>}
         </div>
 
         <div>
@@ -174,15 +190,48 @@ function CreateTeam() {
               </option>
             ))}
           </select>
-          {/* Стоит убирать ошибку после изменения */}
-          {errors.project && <p>{errors.project}</p>}
+          {errors.project && <p className="error">{errors.project}</p>}
+        </div>
+
+        {/* Новый блок выбора дня недели и времени созвона */}
+        <div className="form-group call-schedule">
+          <label>Расписание созвонов</label>
+          <div className="call-schedule-container">
+            <div className="call-day-select">
+              <select
+                value={callDay}
+                onChange={(e) => setCallDay(e.target.value)}
+                required
+              >
+                <option value="">Выберите день недели</option>
+                {weekDays.map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
+              </select>
+              {errors.callDay && <p className="error">{errors.callDay}</p>}
+            </div>
+
+            <div className="call-time-select">
+              <input
+                type="time"
+                value={callTime}
+                onChange={(e) => setCallTime(e.target.value)}
+                required
+                step="300" // Шаг в 5 минут (300 секунд)
+              />
+              {errors.callTime && <p className="error">{errors.callTime}</p>}
+            </div>
+          </div>
+          <small>Выберите день недели и время для регулярных созвонов команды.</small>
         </div>
 
         <div>
           <label>Участники</label>
           <div>
             {members.map((member, index) => (
-              <div key={index}>
+              <div key={index} className="member-item">
                 <input
                   type="text"
                   value={member.name}
@@ -190,7 +239,7 @@ function CreateTeam() {
                     handleMemberChange(index, "name", e.target.value)
                   }
                   required
-                  placeholder="Имя"
+                  placeholder="ФИО"
                 />
                 <input
                   type="text"
@@ -227,8 +276,7 @@ function CreateTeam() {
                 )}
               </div>
             ))}
-            {/* Стоит убирать ошибку после изменения */}
-            {errors.members && <p>{errors.members}</p>}
+            {errors.members && <p className="error">{errors.members}</p>}
           </div>
           <button type="button" onClick={addMember}>
             + Добавить участника
@@ -240,7 +288,7 @@ function CreateTeam() {
           <label>Кураторы</label>
           <div>
             {curatorIds.map((curator, index) => (
-              <div key={index}>
+              <div key={index} className="curator-item">
                 <select
                   value={curator}
                   onChange={(e) => handleCuratorChange(index, e.target.value)}
@@ -264,8 +312,7 @@ function CreateTeam() {
                 )}
               </div>
             ))}
-            {/* Стоит убирать ошибку после изменения */}
-            {errors.curators && <p>{errors.curators}</p>}
+            {errors.curators && <p className="error">{errors.curators}</p>}
           </div>
           <button type="button" onClick={addCurator}>
             + Добавить куратора
