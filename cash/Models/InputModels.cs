@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using cash.Models;
 
 namespace cash.InputModels
 {
@@ -38,4 +39,20 @@ namespace cash.InputModels
         public string semester {get; set;}
         
     }
+    class Member
+    {
+        public string name {get; set; }= string.Empty; //FIO
+        public string group {get; set; } = string.Empty;
+        public string role {get; set; } = string.Empty;
+        public string stack {get; set; } = string.Empty;
+    }
+    class Team
+{
+    public string callDay { get; set; } = string.Empty;
+    public string callTime { get; set; } = string.Empty;
+    public List<int> curators { get; set; } = new List<int>();
+    public List<cash.InputModels.Member> members { get; set; } = new List<cash.InputModels.Member>();
+    public string name { get; set; } = string.Empty;
+    public int projectId { get; set; }
+}
 }

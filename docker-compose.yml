@@ -36,14 +36,12 @@ services:
       context: ./cash
       dockerfile: Dockerfile
     container_name: aspnet_container
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=postgres_containerv3;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - ConnectionStrings__Redis=postgres_containerv3:6379,password=${REDIS_PASSWORD},user=${REDIS_USER}
-      - Redis__Host=redis_container
-      - Redis__Password=${REDIS_PASSWORD}
-    # ports:
-    #   - "7000:8080"
     # depends_on:
     #   postgres:
     #     condition: service_healthy

@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http.HttpResults;
 var builder = WebApplication.CreateBuilder(args);
 
 // 🔧 1. Логирование
@@ -126,6 +127,17 @@ app.MapGet("/get_team", async (AppDbContext db) =>
     
     return Results.Ok(allTeams);
 });
+
+app.MapGet("/members", async (AppDbContext db) =>
+{
+    var members = await db.Members.ToArrayAsync();
+    return Results.Ok(members);
+});
+app.MapGet("/profiles", async (AppDbContext db) =>
+{
+    var profiles = await db.Profiles.ToArrayAsync();
+    return Results.Ok(profiles);
+});
 app.MapGet("/reallydeleteallteams", async (AppDbContext db) =>
 {
     var allTeams = await db.Teams.ToListAsync();
@@ -137,13 +149,69 @@ app.MapGet("/reallydeleteallteams", async (AppDbContext db) =>
     return Results.Ok(new { message = $"Deleted {allTeams.Count} teams" });
 });
 
-app.MapPost("/team", async (AppDbContext db, Team team) =>
-{   
-    await db.Teams.AddAsync(team);
+app.MapPost("/team", async (AppDbContext db, cash.InputModels.Team team) =>
+{
+    Dictionary<string, string> RuToEn = new()
+    {
+        { "Понедельник", "Monday" },
+        { "Вторник", "Tuesday" },
+        { "Среда", "Wednesday" },
+        { "Четверг", "Thursday" },
+        { "Пятница", "Friday" },
+        { "Суббота", "Saturday" },
+        { "Воскресенье", "Sunday" }
+    };
+    List<Member> members = new List<Member>();
+    foreach (var m in team.members)
+    {
+        string[] l = m.name.Split(" ");
+        var existingMember = await db.Members
+            .FirstOrDefaultAsync(m => m.Name == l[1] && 
+                                    m.Surname == l[0] && 
+                                    m.SecondName == l[2]);
+
+        if (existingMember != null)
+        {
+            existingMember.Profiles.Add(new Profile
+            {
+                Role = m.role,
+                Stack = m.stack,
+                GroupNumber = m.group
+            });
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            Profile profile = new Profile
+                {
+                    Role = m.role,
+                    Stack = m.stack,
+                    GroupNumber = m.group
+                };
+            Member member = new Member(l[1], l[0], l[2]);
+            member.Profiles.Add(profile);
+            members.Add(member);
+            await db.Members.AddAsync(member);
+            await db.SaveChangesAsync();
+        }
+    }
+
+    Team Team = new Team
+    {
+        Name = team.name,
+        ProjectId = team.projectId,
+        Members = members,
+        Curators = team.curators,
+        CallDay = RuToEn[team.callDay],
+        CallTime = team.callTime
+    };
+    await db.Teams.AddAsync(Team);
     await db.SaveChangesAsync();
-    
-    return Results.Created($"/team/{team.Id}", team);
+    var teams = db.Teams.ToListAsync();
+    return Results.Ok(teams);
 });
+
+
 
 app.MapGet("/day/{date:datetime}", async (AppDbContext db, DateTime date) =>
 {

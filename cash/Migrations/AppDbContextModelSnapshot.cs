@@ -23,6 +23,40 @@ namespace cash.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Profile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GroupNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("gruop_number");
+
+                    b.Property<int?>("MemberId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("role");
+
+                    b.Property<string>("Stack")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Stack");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("profile");
+                });
+
             modelBuilder.Entity("cash.Models.Curator", b =>
                 {
                     b.Property<int>("Id")
@@ -89,6 +123,41 @@ namespace cash.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Meeting");
+                });
+
+            modelBuilder.Entity("cash.Models.Member", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("SecondName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("second_name");
+
+                    b.Property<string>("Surname")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("surname");
+
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("integer")
+                        .HasColumnName("team_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("member");
                 });
 
             modelBuilder.Entity("cash.Models.Messages", b =>
@@ -179,25 +248,74 @@ namespace cash.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.PrimitiveCollection<List<string>>("Comments")
+                    b.Property<string>("CallDay")
                         .IsRequired()
-                        .HasColumnType("text[]");
+                        .HasColumnType("text")
+                        .HasColumnName("call_day");
+
+                    b.Property<string>("CallTime")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("call_time");
+
+                    b.PrimitiveCollection<string>("Comments")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("comments");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.PrimitiveCollection<List<int>>("Curators")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("curators");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer")
+                        .HasColumnName("project_id");
 
                     b.HasKey("Id");
 
                     b.ToTable("team");
+                });
+
+            modelBuilder.Entity("Profile", b =>
+                {
+                    b.HasOne("cash.Models.Member", null)
+                        .WithMany("Profiles")
+                        .HasForeignKey("MemberId");
+                });
+
+            modelBuilder.Entity("cash.Models.Member", b =>
+                {
+                    b.HasOne("cash.Models.Team", "Team")
+                        .WithMany("Members")
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("cash.Models.Member", b =>
+                {
+                    b.Navigation("Profiles");
+                });
+
+            modelBuilder.Entity("cash.Models.Team", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

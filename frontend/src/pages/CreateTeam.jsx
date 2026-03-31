@@ -13,7 +13,7 @@ const api = axios.create({
 function CreateTeam() {
   const [teamName, setTeamName] = useState("");
   const [availableProjects, setAvailableProjects] = useState([]);
-  const [projectId, setProjectId] = useState("");
+  const [projectId, setProjectId] = useState(null);
   const [availableCurators, setAvailableCurators] = useState([]);
   const [curatorIds, setCuratorIds] = useState([""]);
   const [members, setMembers] = useState([
@@ -79,10 +79,11 @@ function CreateTeam() {
   };
 
   const handleCuratorChange = (index, value) => {
-    const updatedCurators = [...curatorIds];
-    updatedCurators[index] = value;
-    setCuratorIds(updatedCurators);
-  };
+  const updatedCurators = [...curatorIds];
+  // Преобразуем строку в число, если value не пустая строка
+  updatedCurators[index] = value ? parseInt(value, 10) : "";
+  setCuratorIds(updatedCurators);
+};
 
   const createTeam = async (teamData) => {
     try {
@@ -180,7 +181,7 @@ function CreateTeam() {
           <select
             id="project"
             value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
+            onChange={(e) => setProjectId(e.target.value ? parseInt(e.target.value, 10) : "")}
             required
           >
             <option value="">Выберите проект</option>
