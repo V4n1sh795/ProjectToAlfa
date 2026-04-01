@@ -17,9 +17,9 @@ public class Messages
     public int sender_id {get; set; }
     [Column("sender_name")]
     [Required]
-    public string sender_name {get; set; }
+    public string sender_name {get; set; } = string.Empty;
     [Column("text")]
     [Required]
-    public string text {get; set; }
+    public string text {get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
