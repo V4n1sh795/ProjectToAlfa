@@ -59,6 +59,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.TokenValidationParameters = tvp;
 });
+// Класс фоновой службы
+
+
+// Регистрация в Program.cs
 
 
 // 🔧 2. Конфигурация
@@ -149,6 +153,38 @@ app.MapGet("/reallydeleteallteams", async (AppDbContext db) =>
     return Results.Ok(new { message = $"Deleted {allTeams.Count} teams" });
 });
 
+app.MapGet("member/{id:int}", async (AppDbContext db, int id) =>
+{
+    var member = await db.Members.FindAsync(id);
+    if (member is null)
+        return Results.NotFound($"Member with ID {id} not found");
+    
+    return Results.Ok(member);
+});
+app.MapGet("team/{id:int}", async (AppDbContext db, int id) =>
+{
+    var team = await db.Teams.FindAsync(id);
+    if (team is null)
+        return Results.NotFound($"Member with ID {id} not found");
+    
+    return Results.Ok(team);
+});
+app.MapGet("curator/{id:int}", async (AppDbContext db, int id) =>
+{
+    var curator = await db.Curators.FindAsync(id);
+    if (curator is null)
+        return Results.NotFound($"Member with ID {id} not found");
+    
+    return Results.Ok(curator);
+});
+app.MapGet("project/{id:int}", async (AppDbContext db, int id) =>
+{
+    var project = await db.Projects.FindAsync(id);
+    if (project is null)
+        return Results.NotFound($"Member with ID {id} not found");
+    
+    return Results.Ok(project);
+});
 app.MapPost("/team", async (AppDbContext db, cash.InputModels.Team team) =>
 {
     Dictionary<string, string> RuToEn = new()
@@ -208,7 +244,7 @@ app.MapPost("/team", async (AppDbContext db, cash.InputModels.Team team) =>
     await db.Teams.AddAsync(Team);
     await db.SaveChangesAsync();
     var teams = db.Teams.ToListAsync();
-    return Results.Ok(teams);
+    return Results.Ok();
 });
 
 
@@ -386,4 +422,8 @@ app.MapGet("message/{projectId:int}", [Authorize] async (AppDbContext db, int pr
     return messages;
 });
 
+
+
 await app.RunAsync();
+
+
