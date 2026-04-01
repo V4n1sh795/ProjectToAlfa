@@ -110,7 +110,13 @@ app.MapGet("/curators", Service.Curator.GCurators);
 
 app.MapPost("/project", Service.Project.Create).RequireAuthorization();
 
+app.MapGet("/day/{date:datetime}", Service.Meeting.Day);
+app.MapGet("/day/", async (AppDbContext db) =>
+{
+    var meetings = await db.Meetings.ToListAsync();
 
+    return Results.Ok(meetings);
+});
 
 // app.MapPost("message/{chat_id:int}", [Authorize] async (AppDbContext db, int chat_id, Messages message) =>
 // {

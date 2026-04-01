@@ -7,12 +7,12 @@ static class Project
 {
     public record IProject
     {
-        public string name {get; set;}
-        public string description {get; set;}
-        public string endDate {get; set;}
-        public string startDate {get; set;}
-        public List<string> curators {get; set;}
-        public string semester {get; set;}
+        public string name {get; set;} = string.Empty;
+        public string description {get; set;} = string.Empty;
+        public string endDate {get; set;} = string.Empty;
+        public string startDate {get; set;} = string.Empty;
+        public List<string> curators {get; set;} = new List<string>();
+        public string semester {get; set;} = string.Empty;
         
     }
     public static async Task<IResult> Create(AppDbContext db, IProject p)

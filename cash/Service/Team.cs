@@ -76,9 +76,65 @@ static class Team
             CallDay = RuToEn[team.callDay],
             CallTime = team.callTime
         };
+        var project = db.Projects.Find(team.projectId);
+
         await db.Teams.AddAsync(Team);
         await db.SaveChangesAsync();
+
+        await GenerateMeetings(RuToEn[team.callDay], team.callTime, Team.Id, project.StartDate, project.EndDate, db);
+
         return Results.Ok();
+    }
+    static async Task GenerateMeetings(
+                                string dayName, 
+                                string timeS, 
+                                int teamId, 
+                                string startDay, 
+                                string endDay,
+                                AppDbContext db
+                                    )
+    {
+        DateTime sDay = DateTime.Parse(startDay).ToUniversalTime();
+        DateTime eDay = DateTime.Parse(endDay).ToUniversalTime();
+        
+        if (!Enum.TryParse(dayName, true, out DayOfWeek day))
+            throw new ArgumentException($"Invalid day name: {dayName}");
+        
+        if (!TimeOnly.TryParse(timeS, out TimeOnly time))
+            throw new ArgumentException($"Invalid time format: {timeS}");
+        
+        // Находим первый нужный день
+        int daysUntilTarget = ((int)day - (int)sDay.DayOfWeek + 7) % 7;
+        DateTime current = sDay.AddDays(daysUntilTarget);
+        
+        // Создаем список дат
+        var dates = new List<DateTime>();
+        while (current <= eDay)
+        {
+            dates.Add(current);
+            current = current.AddDays(7);
+        }
+        
+        // Проверяем существующие встречи
+        var existingDates = await db.Meetings
+            .Where(m => m.TeamId == teamId && dates.Contains(m.Date))
+            .Select(m => m.Date)
+            .ToListAsync();
+        
+        // Фильтруем только новые даты
+        var newDates = dates.Except(existingDates).ToList();
+        
+        if (newDates.Any())
+        {
+            var meetings = newDates.Select(date => new cash.Models.Meeting(date, time, teamId));
+            await db.Meetings.AddRangeAsync(meetings);
+            await db.SaveChangesAsync();
+            Console.WriteLine($"Added {newDates.Count} meetings");
+        }
+        else
+        {
+            Console.WriteLine("No new meetings to add");
+        }
     }
     public static async Task<IResult> GTeam(AppDbContext db, int id)
     {
