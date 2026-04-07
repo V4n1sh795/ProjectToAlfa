@@ -40,4 +40,6 @@ public class Team
     [Required]
     [Column("call_time")]
     public string CallTime { get; set; } = string.Empty;
+
+    public List<int> Tasks {get; set; } = new List<int>();
 }

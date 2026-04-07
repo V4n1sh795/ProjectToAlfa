@@ -85,7 +85,7 @@ static class Team
 
         return Results.Ok();
     }
-    static async Task GenerateMeetings(
+    static async System.Threading.Tasks.Task GenerateMeetings(
                                 string dayName, 
                                 string timeS, 
                                 int teamId, 

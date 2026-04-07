@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Messages> Messages {get; set; } = null!;
     public DbSet<Member> Members {get; set; } = null!;
     public DbSet<Profile> Profiles {get; set; } = null!;
+    public DbSet<cash.Models.Task> Tasks {get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

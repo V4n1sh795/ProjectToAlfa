@@ -54,6 +54,9 @@ namespace cash.Models
         [Column("status")]
         [MaxLength(50)]
         public string Status { get; set; } = string.Empty;
+
+        [Column("Comment")]
+        public List<string> Comments { get; set; } = new List<string>();
         public Meeting(DateTime Date, TimeOnly Time, int TeamId)
         {
             this.Date = Date;

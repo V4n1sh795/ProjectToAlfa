@@ -26,9 +26,6 @@ public class Project
     [Column("Curator_ids")]
     public List<int> CuratorIds { get; init; } = new List<int>();
 
-    [Column("tasks_id")]
-    public List<int> TasksId { get; init; } = new List<int>();
-
     [Required]
     [Column("startDate")]
     public string StartDate { get; init; } = string.Empty;
