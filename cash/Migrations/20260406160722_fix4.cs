@@ -15,7 +15,7 @@ namespace cash.Migrations
                 name: "Comment",
                 table: "Meeting",
                 type: "text[]",
-                nullable: false,
+                nullable: true,
                 oldClrType: typeof(List<string>),
                 oldType: "text[]",
                 oldNullable: true);

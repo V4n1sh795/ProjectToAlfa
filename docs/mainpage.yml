@@ -1,0 +1,393 @@
+openapi: 3.0.1
+info:
+  title: Cash Meeting API
+  description: |
+    API для управления встречами и задачами команды.
+    Позволяет создавать встречи, добавлять задачи, закрывать их и оставлять комментарии.
+  version: v1
+  contact:
+    name: API Support
+    email: support@cash.local
+
+servers:
+  - url: https://localhost:5001
+    description: Development (HTTPS)
+  - url: http://localhost:5000
+    description: Development (HTTP)
+  - url: /
+    description: Current host
+
+tags:
+  - name: Meetings
+    description: Операции со встречами
+  - name: Tasks
+    description: Операции с задачами
+
+paths:
+  /day/{date}:
+    get:
+      tags:
+        - Meetings
+      summary: Получить встречи за указанную дату
+      description: Возвращает список всех встреч, запланированных на конкретную дату (в формате UTC).
+      operationId: GetMeetingsByDate
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2024-04-15"
+          description: Дата в формате YYYY-MM-DD (локальная дата, конвертируется в UTC)
+      responses:
+        '200':
+          description: Успешный возврат списка встреч
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meeting'
+        '400':
+          description: Некорректный формат даты
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /day:
+    get:
+      tags:
+        - Meetings
+      summary: Получить все встречи
+      description: Возвращает полный список всех встреч в системе.
+      operationId: GetAllMeetings
+      responses:
+        '200':
+          description: Успешный возврат списка всех встреч
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meeting'
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /task/{day}:
+    post:
+      tags:
+        - Tasks
+      summary: Создать новую задачу
+      description: |
+        Создаёт новую задачу и привязывает её ко всем будущим встречам указанной команды.
+        Задача автоматически добавляется в команды и встречи, дата которых позже даты создания.
+      operationId: CreateTask
+      parameters:
+        - name: day
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Справочная дата (используется для логики привязки, не влияет на дедлайн)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreateRequest'
+            examples:
+              default:
+                value:
+                  teamId: 1
+                  name: "Подготовить отчёт"
+                  deadline: "2024-04-20T00:00:00Z"
+      responses:
+        '200':
+          description: Задача успешно создана
+        '400':
+          description: Ошибка валидации входных данных
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /task/{taskId}:
+    post:
+      tags:
+        - Tasks
+      summary: Закрыть задачу
+      description: |
+        Меняет статус задачи на "закрыта" и удаляет её ID из списка задач всех связанных встреч.
+      operationId: CloseTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            example: 42
+          description: ID закрываемой задачи
+      responses:
+        '200':
+          description: Задача успешно закрыта
+        '404':
+          description: Задача с указанным ID не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Task with this id doesnt exist"
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /task/{id}:
+    get:
+      tags:
+        - Tasks
+      summary: Получить задачу по ID
+      description: Возвращает данные задачи по её уникальному идентификатору.
+      operationId: GetTaskById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            example: 42
+      responses:
+        '200':
+          description: Данные задачи
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+                description: Возвращается как массив (даже для одного элемента) из-за использования Where() в коде
+        '404':
+          description: Задача не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /meeting/comment/{meetingId}:
+    post:
+      tags:
+        - Meetings
+      summary: Добавить комментарий к встрече
+      description: Добавляет текстовый комментарий в список комментариев указанной встречи.
+      operationId: AddMeetingComment
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+            example: 15
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+            examples:
+              default:
+                value:
+                  text: "Обсудили бюджет, нужно уточнить детали"
+      responses:
+        '200':
+          description: Комментарий успешно добавлен
+        '404':
+          description: Встреча с указанным ID не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Meeting with this id doesnt exist"
+        '500':
+          description: Внутренняя ошибка сервера
+
+components:
+  schemas:
+    Meeting:
+      type: object
+      description: Модель встречи
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Уникальный идентификатор встречи (первичный ключ)
+          readOnly: true
+          example: 15
+        date:
+          type: string
+          format: date-time
+          description: Дата и время встречи в UTC
+          example: "2024-04-15T09:00:00Z"
+        time:
+          type: string
+          format: time
+          description: Время встречи в локальном формате (HH:mm:ss)
+          example: "14:30:00"
+        teamId:
+          type: integer
+          format: int32
+          description: ID команды, к которой относится встреча
+          example: 1
+        result:
+          type: integer
+          format: int32
+          description: Числовой результат встречи (0-100 или иная шкала)
+          example: 85
+          nullable: true
+        tasks:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: Список ID задач, привязанных к встрече
+          example: [10, 23, 45]
+        status:
+          type: string
+          maxLength: 50
+          description: Текстовый статус встречи (например, "planned", "completed")
+          example: "completed"
+        comments:
+          type: array
+          items:
+            type: string
+          description: Список комментариев к встрече
+          example: ["Начали вовремя", "Обсудили КПИ"]
+      required:
+        - date
+        - time
+        - teamId
+
+    Task:
+      type: object
+      description: Модель задачи
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Уникальный идентификатор задачи
+          readOnly: true
+          example: 42
+        status:
+          type: boolean
+          description: "Статус задачи: true = открыта, false = закрыта"
+          example: true
+        startline:
+          type: string
+          format: date
+          description: Дата создания/старта задачи (только дата, без времени)
+          example: "2024-04-10"
+        deadline:
+          type: string
+          format: date
+          description: Дедлайн задачи (только дата, без времени)
+          example: "2024-04-20"
+        name:
+          type: string
+          description: Название задачи
+          example: "Подготовить презентацию"
+      required:
+        - status
+        - startline
+        - deadline
+        - name
+
+    TaskCreateRequest:
+      type: object
+      description: Данные для создания новой задачи
+      properties:
+        teamId:
+          type: integer
+          format: int32
+          description: ID команды, для которой создаётся задача
+          example: 1
+        name:
+          type: string
+          description: Название задачи
+          example: "Согласовать ТЗ"
+        deadline:
+          type: string
+          format: date-time
+          description: Дедлайн задачи в формате ISO 8601 (конвертируется в UTC)
+          example: "2024-04-20T23:59:59Z"
+      required:
+        - teamId
+        - name
+        - deadline
+
+    CommentCreateRequest:
+      type: object
+      description: Данные для добавления комментария
+      properties:
+        text:
+          type: string
+          description: Текст комментария
+          example: "Клиент запросил доработки к пятнице"
+      required:
+        - text
+
+    Error:
+      type: object
+      description: Стандартный формат ошибок API
+      properties:
+        error:
+          type: string
+          description: Описание ошибки
+        details:
+          type: string
+          description: Дополнительные детали (опционально)
+      example:
+        error: "Meeting with this id doesnt exist"
+
+  parameters:
+    DatePath:
+      name: date
+      in: path
+      required: true
+      schema:
+        type: string
+        format: date
+      description: Дата в формате YYYY-MM-DD
+
+    IntId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+      description: Числовой идентификатор ресурса
+
+  responses:
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
