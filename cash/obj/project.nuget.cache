@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "fWo17AvGo9k=",
+  "dgSpecHash": "61idG6rj/KM=",
   "success": true,
   "projectFilePath": "/home/ivan/CODE/ProjectToAlfa/cash/cash.csproj",
   "expectedPackageFiles": [
@@ -37,10 +37,10 @@
     "/home/ivan/.nuget/packages/npgsql.entityframeworkcore.postgresql/10.0.1/npgsql.entityframeworkcore.postgresql.10.0.1.nupkg.sha512",
     "/home/ivan/.nuget/packages/pipelines.sockets.unofficial/2.2.8/pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "/home/ivan/.nuget/packages/stackexchange.redis/2.12.1/stackexchange.redis.2.12.1.nupkg.sha512",
-    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore/10.1.5/swashbuckle.aspnetcore.10.1.5.nupkg.sha512",
-    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore.swagger/10.1.5/swashbuckle.aspnetcore.swagger.10.1.5.nupkg.sha512",
-    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore.swaggergen/10.1.5/swashbuckle.aspnetcore.swaggergen.10.1.5.nupkg.sha512",
-    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore.swaggerui/10.1.5/swashbuckle.aspnetcore.swaggerui.10.1.5.nupkg.sha512",
+    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore/10.1.7/swashbuckle.aspnetcore.10.1.7.nupkg.sha512",
+    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore.swagger/10.1.7/swashbuckle.aspnetcore.swagger.10.1.7.nupkg.sha512",
+    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore.swaggergen/10.1.7/swashbuckle.aspnetcore.swaggergen.10.1.7.nupkg.sha512",
+    "/home/ivan/.nuget/packages/swashbuckle.aspnetcore.swaggerui/10.1.7/swashbuckle.aspnetcore.swaggerui.10.1.7.nupkg.sha512",
     "/home/ivan/.nuget/packages/system.codedom/6.0.0/system.codedom.6.0.0.nupkg.sha512",
     "/home/ivan/.nuget/packages/system.composition/9.0.0/system.composition.9.0.0.nupkg.sha512",
     "/home/ivan/.nuget/packages/system.composition.attributedmodel/9.0.0/system.composition.attributedmodel.9.0.0.nupkg.sha512",

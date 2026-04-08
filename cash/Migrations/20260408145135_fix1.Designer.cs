@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace cash.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260406115219_fix2")]
-    partial class fix2
+    [Migration("20260408145135_fix1")]
+    partial class fix1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,6 +95,11 @@ namespace cash.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.PrimitiveCollection<List<string>>("Comments")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("Comment");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone")

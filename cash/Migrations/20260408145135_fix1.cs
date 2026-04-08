@@ -39,7 +39,8 @@ namespace cash.Migrations
                     team_id = table.Column<int>(type: "integer", nullable: false),
                     result = table.Column<short>(type: "smallint", nullable: false),
                     tasks = table.Column<List<int>>(type: "integer[]", nullable: false),
-                    status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Comment = table.Column<List<string>>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -72,7 +73,6 @@ namespace cash.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     description = table.Column<string>(type: "text", nullable: false),
                     Curator_ids = table.Column<List<int>>(type: "integer[]", nullable: false),
-                    tasks_id = table.Column<List<int>>(type: "integer[]", nullable: false),
                     startDate = table.Column<string>(type: "text", nullable: false),
                     endDate = table.Column<string>(type: "text", nullable: false),
                     Semester = table.Column<string>(type: "text", nullable: false)
@@ -80,6 +80,22 @@ namespace cash.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Project", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "task",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Status = table.Column<bool>(type: "boolean", nullable: false),
+                    Startline = table.Column<DateTime>(type: "date", nullable: false),
+                    Deadline = table.Column<DateTime>(type: "date", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_task", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -94,7 +110,8 @@ namespace cash.Migrations
                     project_id = table.Column<int>(type: "integer", nullable: false),
                     curators = table.Column<List<int>>(type: "integer[]", nullable: false),
                     call_day = table.Column<string>(type: "text", nullable: false),
-                    call_time = table.Column<string>(type: "text", nullable: false)
+                    call_time = table.Column<string>(type: "text", nullable: false),
+                    Tasks = table.Column<List<int>>(type: "integer[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -171,6 +188,9 @@ namespace cash.Migrations
 
             migrationBuilder.DropTable(
                 name: "Project");
+
+            migrationBuilder.DropTable(
+                name: "task");
 
             migrationBuilder.DropTable(
                 name: "member");
