@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace cash.Models;
 [Table("Messages")]
-public class Messages
+public class Message
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
