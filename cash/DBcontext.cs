@@ -13,7 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Meeting> Meetings { get; set; } = null!;
     public DbSet<Curator> Curators {get; set; } = null!;
     public DbSet<Project> Projects {get; set; } = null!;
-    public DbSet<Messages> Messages {get; set; } = null!;
+    public DbSet<Message> Messages {get; set; } = null!;
     public DbSet<Member> Members {get; set; } = null!;
     public DbSet<Profile> Profiles {get; set; } = null!;
     public DbSet<cash.Models.Task> Tasks {get; set; } = null!;
