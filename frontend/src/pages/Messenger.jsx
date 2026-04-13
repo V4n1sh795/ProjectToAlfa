@@ -1,329 +1,254 @@
-// Эта залупа пока не работает потом допилю
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import axios from 'axios';
 import './css/Messenger.css';
 
 const Messenger = () => {
+  const [projects, setProjects] = useState([]);
+  const [currentChatId, setCurrentChatId] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [activeChat, setActiveChat] = useState(0);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [inputText, setInputText] = useState('');
+  
   const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
-  // Данные для чатов
-  const [chats, setChats] = useState([
-    {
-      id: 0,
-      name: 'Алексей Иванов',
-      avatar: 'https://via.placeholder.com/50/4CAF50/ffffff?text=АИ',
-      lastMessage: 'Привет! Как дела?',
-      time: '12:30',
-      online: true,
-      unread: 2,
-      messages: [
-        { id: 1, text: 'Привет! Как дела?', sender: 'other', time: '12:30', read: true },
-        { id: 2, text: 'Отлично! А у тебя?', sender: 'me', time: '12:31', read: true },
-        { id: 3, text: 'Тоже хорошо. Как проект?', sender: 'other', time: '12:32', read: false },
-      ]
+  // Создаем axios инстанс один раз
+  const api = useMemo(() => axios.create({
+    baseURL: '/api',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
     },
-    {
-      id: 1,
-      name: 'Мария Смирнова',
-      avatar: 'https://via.placeholder.com/50/FF9800/ffffff?text=МС',
-      lastMessage: 'Скинь фото, пожалуйста',
-      time: '10:15',
-      online: false,
-      unread: 0,
-      messages: [
-        { id: 1, text: 'Привет!', sender: 'me', time: '10:00', read: true },
-        { id: 2, text: 'Скинь фото, пожалуйста', sender: 'other', time: '10:15', read: true },
-      ]
-    },
-    {
-      id: 2,
-      name: 'Дмитрий Петров',
-      avatar: 'https://via.placeholder.com/50/2196F3/ffffff?text=ДП',
-      lastMessage: 'Встреча в 15:00',
-      time: '09:45',
-      online: true,
-      unread: 0,
-      messages: [
-        { id: 1, text: 'Доброе утро!', sender: 'other', time: '09:30', read: true },
-        { id: 2, text: 'Встреча в 15:00', sender: 'other', time: '09:45', read: true },
-      ]
-    }
-  ]);
+  }), []);
+
+  // Мемоизируем пользователя
+  const currentUser = useMemo(() => ({
+    id: parseInt(localStorage.getItem('user_id') || '0'),
+    name: localStorage.getItem('user_name') || 'User'
+  }), []);
+
+  // Скролл вниз
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Загрузка проектов
+  useEffect(() => {
+    fetchProjects();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const sendMessage = (e) => {
-    e.preventDefault();
-    if (inputMessage.trim() === '') return;
-
-    const newMessage = {
-      id: Date.now(),
-      text: inputMessage,
-      sender: 'me',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      read: false
-    };
-
-    const updatedChats = [...chats];
-    updatedChats[activeChat].messages.push(newMessage);
-    updatedChats[activeChat].lastMessage = inputMessage;
-    updatedChats[activeChat].time = newMessage.time;
-    
-    setChats(updatedChats);
-    setInputMessage('');
-
-    setTimeout(() => {
-      simulateReply(updatedChats[activeChat].name);
-    }, 1000);
-  };
-
-  const simulateReply = (chatName) => {
-    const replies = [
-      'Понял, спасибо!',
-      'Отлично!',
-      'Хорошо, договорились',
-      'Скоро отвечу',
-      '👍',
-      'Да, конечно'
-    ];
-    
-    const randomReply = replies[Math.floor(Math.random() * replies.length)];
-    
-    const replyMessage = {
-      id: Date.now(),
-      text: randomReply,
-      sender: 'other',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      read: false
-    };
-
-    const updatedChats = [...chats];
-    updatedChats[activeChat].messages.push(replyMessage);
-    updatedChats[activeChat].lastMessage = randomReply;
-    updatedChats[activeChat].time = replyMessage.time;
-    
-    setChats(updatedChats);
-  };
-
-  const sendFile = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const fileMessage = {
-        id: Date.now(),
-        text: `📎 Файл: ${file.name}`,
-        sender: 'me',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        read: false,
-        isFile: true
-      };
-
-      const updatedChats = [...chats];
-      updatedChats[activeChat].messages.push(fileMessage);
-      updatedChats[activeChat].lastMessage = `Файл: ${file.name}`;
-      updatedChats[activeChat].time = fileMessage.time;
-      
-      setChats(updatedChats);
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/project');
+      setProjects(response.data);
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Ошибка загрузки проектов');
+      console.error('Error fetching projects:', err);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [api]);
 
-  const addEmoji = (emoji) => {
-    setInputMessage(inputMessage + emoji);
-  };
-
-  const changeChat = (index) => {
-    setActiveChat(index);
-    
-    const updatedChats = [...chats];
-    updatedChats[index].unread = 0;
-    updatedChats[index].messages.forEach(msg => {
-      if (!msg.read && msg.sender === 'other') {
-        msg.read = true;
+  // Загрузка сообщений с проверкой на дубликаты
+  const fetchMessages = useCallback(async (chatId) => {
+    try {
+      const response = await api.get(`/message/${chatId}`);
+      const newData = response.data;
+      
+      setMessages(prev => {
+        // Не обновляем, если данные не изменились (предотвращает мигание)
+        if (prev.length === newData.length && 
+            prev.length > 0 && 
+            prev[prev.length - 1].id === newData[newData.length - 1].id) {
+          return prev;
+        }
+        return newData;
+      });
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      if (err.response?.status === 401) {
+        setError('Сессия истекла, пожалуйста, войдите заново');
       }
-    });
-    setChats(updatedChats);
-  };
+    }
+  }, [api]);
 
-  const toggleTheme = () => {
-    setIsDarkTheme(!isDarkTheme);
-  };
+  // Поллинг сообщений
+  useEffect(() => {
+    if (!currentChatId) return;
 
-  const currentChat = chats[activeChat];
-  const emojis = ['😀', '😂', '😍', '👍', '❤️', '🎉', '🔥', '😎', '🥳', '🤔'];
+    fetchMessages(currentChatId);
+    const intervalId = setInterval(() => fetchMessages(currentChatId), 3000);
+
+    return () => clearInterval(intervalId);
+  }, [currentChatId, fetchMessages]);
+
+  // Отправка сообщения
+  const sendMessage = useCallback(async () => {
+    if (!inputText.trim() || !currentChatId) return;
+
+    const messageData = {
+      user_id: currentUser.id,
+      user_name: currentUser.name,
+      user_text: inputText
+    };
+
+    try {
+      const response = await api.post(`/message/${currentChatId}`, messageData);
+      const newMessage = response.data;
+      
+      setMessages(prev => {
+        // Защита от дублей при быстром поллинге
+        if (prev.some(m => m.id === newMessage.id)) return prev;
+        return [...prev, newMessage];
+      });
+      
+      setInputText('');
+      setError(null);
+      
+      // Возвращаем фокус после рендера
+      setTimeout(() => textareaRef.current?.focus(), 0);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setError(err.response?.data?.message || err.message || 'Ошибка отправки сообщения');
+    }
+  }, [inputText, currentChatId, currentUser, api]);
+
+  const handleKeyPress = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }, [sendMessage]);
+
+  const handleTextChange = useCallback((e) => {
+    setInputText(e.target.value);
+  }, []);
 
   return (
-    <div className={`messenger-app ${isDarkTheme ? 'dark' : ''}`}>
-      <div className="messenger-container">
-        {/* Боковая панель */}
-        <div className="messenger-sidebar">
-          <div className="messenger-sidebar-header">
-            <div className="messenger-user-info">
-              <img 
-                src="https://via.placeholder.com/40/4CAF50/ffffff?text=ME" 
-                alt="User" 
-                className="messenger-user-avatar"
-              />
-              <div className="messenger-user-details">
-                <h3>Мой профиль</h3>
-                <span className="messenger-status online">Онлайн</span>
-              </div>
-            </div>
-            <div className="messenger-sidebar-actions">
-              <button className="messenger-icon-button" onClick={toggleTheme}>
-                {isDarkTheme ? '☀️' : '🌙'}
-              </button>
-              <button className="messenger-icon-button">⚙️</button>
-            </div>
+    <div className="messenger">
+      <div className="messenger-header">
+        <div className="logo">
+          <span className="logo-icon">💬</span>
+          <h1>Мессенджер</h1>
+        </div>
+        <div className="user-info">
+          <div className="user-avatar">
+            {currentUser.name.charAt(0).toUpperCase()}
           </div>
-          
-          <div className="messenger-search-bar">
-            <input 
-              type="text" 
-              placeholder="Поиск чатов..." 
-              className="messenger-search-input"
-            />
-            <span className="messenger-search-icon">🔍</span>
+          <div className="user-details">
+            <span className="user-name">{currentUser.name}</span>
+            <span className="user-id">ID: {currentUser.id}</span>
           </div>
-          
-          <div className="messenger-chats-list">
-            {chats.map((chat, index) => (
-              <div 
-                key={chat.id} 
-                className={`messenger-chat-item ${activeChat === index ? 'active' : ''}`}
-                onClick={() => changeChat(index)}
+        </div>
+      </div>
+      
+      {error && (
+        <div className="error-message">
+          <span>⚠️</span> {error}
+          <button onClick={() => setError(null)} className="error-close">×</button>
+        </div>
+      )}
+      
+      <div className="messenger-main">
+        {/* Список чатов */}
+        <div className="chat-list">
+          <div className="chat-list-header">
+            <h2>Проекты (Чаты)</h2>
+          </div>
+          <div className="chat-items">
+            {projects.map(project => (
+              <div
+                key={project.id}
+                className={`chat-item ${currentChatId === project.id ? 'active' : ''}`}
+                onClick={() => {
+                  setCurrentChatId(project.id);
+                  setInputText('');
+                }}
               >
-                <div className="messenger-chat-avatar">
-                  <img 
-                    src={chat.avatar} 
-                    alt={chat.name} 
-                    className="messenger-chat-avatar-img"
-                  />
-                  {chat.online && <div className="messenger-online-dot"></div>}
-                </div>
-                <div className="messenger-chat-info">
-                  <div className="messenger-chat-name">
-                    <h4>{chat.name}</h4>
-                    <span className="messenger-chat-time">{chat.time}</span>
-                  </div>
-                  <div className="messenger-chat-last-message">
-                    <p>{chat.lastMessage}</p>
-                    {chat.unread > 0 && <span className="messenger-unread-badge">{chat.unread}</span>}
-                  </div>
-                </div>
+                <div className="chat-name">{project.name}</div>
+                <div className="chat-id">ID: {project.id}</div>
               </div>
             ))}
+            {projects.length === 0 && !loading && (
+              <div className="no-chats">Нет доступных чатов</div>
+            )}
+            {loading && projects.length === 0 && (
+              <div className="loading-chats">Загрузка чатов...</div>
+            )}
           </div>
         </div>
 
-        {/* Область чата */}
-        <div className="messenger-chat-area">
-          <div className="messenger-chat-header">
-            <div className="messenger-chat-header-info">
-              <img 
-                src={currentChat.avatar} 
-                alt={currentChat.name} 
-                className="messenger-chat-header-avatar"
-              />
-              <div>
-                <h3>{currentChat.name}</h3>
-                <span className={`messenger-status ${currentChat.online ? 'online' : 'offline'}`}>
-                  {currentChat.online ? 'Онлайн' : 'Был(а) недавно'}
-                </span>
-              </div>
+        {/* Окно чата */}
+        <div className={`chat-window ${!currentChatId ? 'empty' : ''}`}>
+          {!currentChatId ? (
+            <div className="empty-chat">
+              <div className="empty-icon">💬</div>
+              <div className="empty-text">Выберите чат для начала общения</div>
             </div>
-            <div className="messenger-chat-header-actions">
-              <button className="messenger-icon-button">📞</button>
-              <button className="messenger-icon-button">📹</button>
-              <button className="messenger-icon-button">ℹ️</button>
-            </div>
-          </div>
-
-          <div className="messenger-messages-area">
-            {currentChat.messages.map((message) => (
-              <div 
-                key={message.id} 
-                className={`messenger-message ${message.sender === 'me' ? 'sent' : 'received'}`}
-              >
-                {message.sender === 'other' && (
-                  <img 
-                    src={currentChat.avatar} 
-                    alt="" 
-                    className="messenger-message-avatar"
-                  />
-                )}
-                <div className="messenger-message-content">
-                  <div className="messenger-message-text">
-                    {message.text}
-                    {message.isFile && <span className="messenger-file-icon">📎</span>}
-                  </div>
-                  <div className="messenger-message-info">
-                    <span className="messenger-message-time">{message.time}</span>
-                    {message.sender === 'me' && (
-                      <span className="messenger-message-status">
-                        {message.read ? '✓✓' : '✓'}
-                      </span>
-                    )}
+          ) : (
+            <>
+              <div className="chat-header">
+                <div className="chat-info">
+                  <h3>Чат проекта #{currentChatId}</h3>
+                  <div className="participants-count">
+                    {projects.find(p => p.id === currentChatId)?.name || 'Загрузка...'}
                   </div>
                 </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="messenger-input-area">
-            <div className="messenger-emoji-picker">
-              {emojis.map(emoji => (
+              
+              <div className="messages-container">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`message ${message.sender_id === currentUser.id ? 'own' : 'other'}`}
+                  >
+                    <div className="message-header">
+                      <span className="sender-name">{message.sender_name}</span>
+                      <span className="message-time">
+                        {message.createdAt ? new Date(message.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                      </span>
+                    </div>
+                    <div className="message-text">{message.text}</div>
+                  </div>
+                ))}
+                
+                {messages.length === 0 && (
+                  <div className="no-messages">
+                    <div className="no-messages-icon">📭</div>
+                    <div>Сообщений пока нет</div>
+                    <div className="no-messages-hint">Напишите первое сообщение!</div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+              
+              <div className="message-input-container">
+                <textarea
+                  ref={textareaRef}
+                  value={inputText}
+                  onChange={handleTextChange}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Введите сообщение... (Enter для отправки, Shift+Enter для новой строки)"
+                  rows={1}
+                />
                 <button 
-                  key={emoji} 
-                  onClick={() => addEmoji(emoji)} 
-                  className="messenger-emoji-btn"
+                  onClick={sendMessage} 
+                  className="send-button"
+                  disabled={!inputText.trim()}
                 >
-                  {emoji}
+                  <span>📤</span> Отправить
                 </button>
-              ))}
-            </div>
-            <form onSubmit={sendMessage} className="messenger-input-form">
-              <button 
-                type="button" 
-                className="messenger-attach-btn" 
-                onClick={() => fileInputRef.current.click()}
-              >
-                📎
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: 'none' }}
-                onChange={sendFile}
-              />
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Введите сообщение..."
-                className="messenger-message-input"
-              />
-              <button 
-                type="button" 
-                className="messenger-emoji-btn" 
-                onClick={() => addEmoji('😊')}
-              >
-                😊
-              </button>
-              <button type="submit" className="messenger-send-btn">
-                ➤
-              </button>
-            </form>
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -46,18 +46,18 @@ const Sidebar = ({ isAuthenticated, onLogout }) => {
   if (!isAuthenticated) return null;
   
   const menuItems = [
-    { path: "/calender", label: "Календарь", icon: "📅" },
-    { path: "/finder", label: "Поиск", icon: "🔍" },
-    { path: "/messenger", label: "Мессенджер", icon: "💬" },
-    { path: "/createcase", label: "Создание кейса", icon: "📝" },
-    { path: "/createteam", label: "Создание Команды", icon: "👥" }
+    { path: "/calender", label: "", icon: "📅" },
+    { path: "/finder", label: "", icon: "🔍" },
+    { path: "/messenger", label: "", icon: "💬" },
+    { path: "/createcase", label: "", icon: "📝" },
+    { path: "/createteam", label: "", icon: "👥" }
   ];
   
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
-        <h2>Case Manager</h2>
-        <p>Управление кейсами</p>
+        <h2>A</h2>
+        <p></p>
       </div>
       
       <nav className="sidebar-nav">
@@ -75,7 +75,7 @@ const Sidebar = ({ isAuthenticated, onLogout }) => {
       
       <button onClick={onLogout} className="logout-button">
         <span className="nav-icon">🚪</span>
-        <span>Выход</span>
+        <span></span>
       </button>
     </div>
   );

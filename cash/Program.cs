@@ -122,6 +122,9 @@ app.MapGet("task/{id:int}", Service.Meeting.GTask);
 
 app.MapPost("meeting/comment/{meetingId:int}", Service.Meeting.AddComment);
 
+app.MapPost("message/{chat_id:int}", Service.Messenger.SendMessage);
+
+app.MapGet("message/{chat_id:int}", Service.Messenger.GetMessages);
 // app.MapPost("message/{chat_id:int}", [Authorize] async (AppDbContext db, int chat_id, Messages message) =>
 // {
 //     db.Messages.AddAsync(message);
