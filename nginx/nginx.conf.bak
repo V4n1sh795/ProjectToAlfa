@@ -1,0 +1,20 @@
+server {
+    listen 80;
+    
+    # Статика
+    location / {
+        proxy_pass http://react:3000;
+    }
+    
+    # API прокси
+    location /api/ {
+        proxy_pass http://backend:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    # location /static/ {
+    #     alias /var/www/static/;
+    #     expires 30d;
+    #     add_header Cache-Control "public, immutable";
+    # }
+}

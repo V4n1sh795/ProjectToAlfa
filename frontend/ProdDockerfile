@@ -1,0 +1,17 @@
+# Этап 1: Сборка
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+# Если используете Vite, замените на: RUN npm run build
+RUN npm run build
+
+# Этап 2: Раздача через Nginx
+FROM nginx:alpine
+# Копируем собранные статические файлы
+# Для Create React App: /app/build
+# Для Vite: /app/dist
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
