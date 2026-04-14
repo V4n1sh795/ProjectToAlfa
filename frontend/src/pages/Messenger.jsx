@@ -24,7 +24,7 @@ const Messenger = () => {
 
   // Мемоизируем пользователя
   const currentUser = useMemo(() => ({
-    id: parseInt(localStorage.getItem('user_id') || '0'),
+    id: parseInt(localStorage.getItem('id') || '0'),
     name: localStorage.getItem('user_name') || 'User'
   }), []);
 
@@ -45,7 +45,7 @@ const Messenger = () => {
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get('/project');
+      const response = await api.get('/cproject/' + currentUser.id);
       setProjects(response.data);
       setError(null);
     } catch (err) {

@@ -38,4 +38,7 @@ public class Project
     [Column("Semester")]
     public string Semester { get; init; } = string.Empty;
 
+    // [Required]
+    // [Column("Status")]
+    // public bool Status { get; set; } = true;
 }
