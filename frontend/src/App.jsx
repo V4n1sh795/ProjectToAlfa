@@ -6,6 +6,7 @@ import Finder from './pages/Finder';
 import Messenger from './pages/Messenger';
 import CreateCase from './pages/CreateCase';
 import CreateTeam from './pages/CreateTeam';
+import AdminPanel from './pages/Admin';
 import LogOut from './pages/LogOut';
 import LogIn from './pages/LogIn';
 import { authAPI } from './pages/js/LogIn';
@@ -50,7 +51,8 @@ const Sidebar = ({ isAuthenticated, onLogout }) => {
     { path: "/finder", label: "", icon: "🔍" },
     { path: "/messenger", label: "", icon: "💬" },
     { path: "/createcase", label: "", icon: "📝" },
-    { path: "/createteam", label: "", icon: "👥" }
+    { path: "/createteam", label: "", icon: "👥" },
+    { path: "/admin", label: "", icon: "⚙️" }
   ];
   
   return (
@@ -169,6 +171,15 @@ function App() {
               element={
                 <ProtectedRoute isAuthenticated={isAuthenticated} loading={loading}>
                   <CreateTeam />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute isAuthenticated={isAuthenticated} loading={loading}>
+                  <AdminPanel />
                 </ProtectedRoute>
               } 
             />
