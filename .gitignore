@@ -1,1 +1,7 @@
-(empty)
+# .NET
+**/bin/
+**/obj/
+*.cache
+
+# PostgreSQL data
+datapostgre/
