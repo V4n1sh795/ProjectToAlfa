@@ -79,6 +79,11 @@ await using (var scope = app.Services.CreateAsyncScope())
 
 // app.UseHttpsRedirection();
 
+app.MapPost("/admin/fill-db", async () =>
+{
+    await cash.Scripts.FillerDB.Run();
+    return Results.Ok("Database filled successfully!");
+});
 
 app.MapGet("/", () => Results.Ok(new { message = "API is running" }));
 
