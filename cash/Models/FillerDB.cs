@@ -11,7 +11,7 @@ public static class FillerDB
 {
     private static readonly HttpClient _httpClient = new HttpClient();
     private static readonly Random _random = new Random();
-    private static string _baseUrl = "http://0.0.0.0:8080";
+    private static string _baseUrl = "http://backend:8080";
     private static string? _jwtToken;
     
     // БАЗЫ ДАННЫХ ДЛЯ РАНДОМИЗАЦИИ
@@ -74,8 +74,9 @@ public static class FillerDB
     // Дни недели
     private static readonly List<string> _daysOfWeek = new()
     {
-        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
+        "Понедельник", "Вторник", "Среда", "Четверг", "Пятница"
     };
+
     
     // Время встреч
     private static readonly List<string> _meetingTimes = new()
@@ -174,7 +175,7 @@ public static class FillerDB
     /// <summary>
     /// Главный метод запуска скрипта
     /// </summary>
-    public static async Task Run(string baseUrl = "http://0.0.0.0:8080")
+    public static async Task Run(string baseUrl = "http://backend:8080")
     {
         _baseUrl = baseUrl;
         _httpClient.BaseAddress = new Uri(_baseUrl);
@@ -340,7 +341,7 @@ public static class FillerDB
                 projectIds.Add(_random.Next(100, 999));
             }
             
-            await Task.Delay(500); // Небольшая задержка между запросами
+            await Task.Delay(5000); // Небольшая задержка между запросами
         }
         
         Console.WriteLine($"Создано проектов: {projectIds.Count}\n");
@@ -388,7 +389,7 @@ public static class FillerDB
                 Console.WriteLine($"Не удалось создать команду: {team.name}");
             }
             
-            await Task.Delay(300);
+            await Task.Delay(3000);
         }
         
         Console.WriteLine($"Итого команд для проекта {projectId}: {teamIds.Count}");

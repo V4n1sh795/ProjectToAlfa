@@ -79,7 +79,7 @@ await using (var scope = app.Services.CreateAsyncScope())
 
 // app.UseHttpsRedirection();
 
-app.MapPost("/admin/fill-db", async () =>
+app.MapGet("/admin/fill-db", async () =>
 {
     await cash.Scripts.FillerDB.Run();
     return Results.Ok("Database filled successfully!");
@@ -115,7 +115,7 @@ app.MapGet("/auth/verify", [Authorize] () => Results.Ok("Token is valid"));
 
 app.MapGet("/curators", Service.Curator.GCurators);
 
-app.MapPost("/project", Service.Project.Create).RequireAuthorization();
+app.MapPost("/project", Service.Project.Create);
 
 app.MapGet("/day/{date:datetime}", Service.Meeting.Day);
 
