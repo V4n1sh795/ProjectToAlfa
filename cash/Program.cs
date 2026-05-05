@@ -41,7 +41,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 
 // Регистрация в Program.cs
-
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // 🔧 2. Конфигурация
 builder.Configuration
@@ -132,6 +133,10 @@ app.MapPost("meeting/comment/{meetingId:int}", Service.Meeting.AddComment);
 app.MapPost("message/{chat_id:int}", Service.Messenger.SendMessage);
 
 app.MapGet("message/{chat_id:int}", Service.Messenger.GetMessages);
+
+app.MapGet("find/{entity}", Service.Find.FindEntity);
+
+app.MapGet("showinfo/{entity}/{id:int}", Service.Find.ShowInfo);
 // app.MapPost("message/{chat_id:int}", [Authorize] async (AppDbContext db, int chat_id, Messages message) =>
 // {
 //     db.Messages.AddAsync(message);

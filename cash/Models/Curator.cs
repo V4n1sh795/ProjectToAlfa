@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace cash.Models;
 
 [Table("Curators")]
-public class Curator
+public record Curator
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -21,7 +21,6 @@ public class Curator
     
     [Required]
     public string Passwd { get; set; } = string.Empty;
-
     public Curator(string name, string email, string passwd)
     {
         this.Name = name;

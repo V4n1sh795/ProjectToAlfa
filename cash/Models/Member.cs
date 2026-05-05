@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace cash.Models;
 
 [Table("member")]
-public class Member
+public record Member
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
