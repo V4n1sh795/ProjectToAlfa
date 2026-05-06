@@ -6,36 +6,7 @@ namespace Service;
 
 static class Find
 {
-    record OProject
-    {
-        string Name { get; set; } = string.Empty;
-        string Description { get; set; } = string.Empty;
-        List<string> CuratorsName { get; set; } = new List<string>();
-        public List<int> CuratorIds { get; init; } = new List<int>();
-        public string StartDate { get; init; } = string.Empty;
-        public string EndDate { get; init; } = string.Empty;
-        public string Semester { get; init; } = string.Empty;
-    }
-    record OTeam 
-    {
-        public string Name { get; set; } = string.Empty;
-        public List<string> Comments { get; set; } = new List<string>();
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public int ProjectId { get; set; }
-        public string ProjectName { get; set; } = string.Empty;
-        public List<string> Membres = 
-        List<KeyValuePair<int, string>> curators = new List<KeyValuePair<int, string>>();
-        public string CallDay { get; set; } = string.Empty;
-        public string CallTime { get; set; } = string.Empty;
-    }
-    record OMember 
-    {
-        
-    }
-    record OCurator
-    {
-        
-    }
+
     public static async Task<IResult> FindEntity(ILogger<Program> logger, AppDbContext db, string entity, string? query)
     {
         logger.LogDebug($"query is - {query}");
@@ -107,42 +78,5 @@ static class Find
 
         var results = await queryset.ToListAsync();
         return Results.Ok(results);
-    }
-
-    public static async Task<IResult> ShowInfo(AppDbContext db, string entity, int id)
-    {
-        switch (entity)
-        {
-            case "project":
-                return Results.Ok(SIProject(db, id));
-            
-            case "team":
-                return Results.Ok(SITeam(db, id));
-            
-            case "curator":
-                return Results.Ok(SIMember(db, id));
-            
-            case "member":
-                return Results.Ok(SICurator(db, id));
-            
-            default:
-                return Results.BadRequest($"Invalid entity type: {entity}");
-        }
-    }
-    private static async OProject SIProject(AppDbContext db, int id)
-    {
-        return 
-    }
-    private static async OTeam SITeam(AppDbContext db, int id)
-    {
-        return 
-    }
-    private static async OMember SIMember(AppDbContext db, int id)
-    {
-        return 
-    }
-    private static async OCurator SICurator(AppDbContext db, int id)
-    {
-        return 
     }
 }
