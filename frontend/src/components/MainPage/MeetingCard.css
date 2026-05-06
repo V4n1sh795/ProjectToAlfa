@@ -1,0 +1,114 @@
+.meeting-card {
+  display: flex;
+  align-items: stretch;
+
+  width: 100%;
+  min-height: 190px;
+  max-height: 224px;
+  padding: 28px 44px;
+
+  background: #f2f3f5;
+  border-radius: 14px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.18);
+
+  box-sizing: border-box;
+}
+
+.meeting-card__left {
+  flex: 0 0 640px;
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.meeting-card__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.meeting-card__time {
+  margin: 0 0 8px 0;
+  font-size: 36px;
+  line-height: 1.05;
+  font-weight: 600;
+}
+
+.meeting-card__title {
+  margin: 0 0 8px 0;
+  font-size: 40px;
+  line-height: 1.05;
+  font-weight: 700;
+}
+
+.meeting-card__case {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.meeting-card__meta {
+  flex: 0 0 150px;
+  padding-top: 4px;
+}
+
+.meeting-card__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.meeting-card__status--finished {
+  background: #bdeeba;
+  color: #1f3323;
+}
+
+.meeting-card__status--scheduled,
+.meeting-card__status--in_progress {
+  background: #ef3124;
+  color: white;
+}
+
+.meeting-card__date {
+  margin: 0;
+  text-align: center;
+
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 600;
+  color: #666;
+}
+
+.meeting-card__divider {
+  width: 8px;
+  margin: 0 48px 0 24px;
+  background: #e7e8eb;
+  border-radius: 8px;
+}
+
+.meeting-card__right {
+  flex: 1;
+  padding-top: 8px;
+}
+
+.meeting-card__right p:first-child {
+  margin: 0 0 12px 0;
+
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #20232a;
+}
+
+.meeting-card__right div {
+  line-height: 1.45;
+  color: #20232a;
+}

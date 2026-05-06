@@ -1,0 +1,21 @@
+.calendar-page {
+  display: flex;
+  min-height: calc(100vh - 60px);
+
+  color: #212124;
+}
+
+.calendar-page__sidebar {
+  width: 425px;
+  padding: 30px 52px;
+  display: flex;
+  justify-content: center;
+  background-color: #e7e8eb;
+}
+
+.calendar-page__content {
+  flex: 1;
+  padding-left: 70px;
+  padding-top: 60px;
+  padding-right: 140px;
+}

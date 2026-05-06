@@ -1,0 +1,7 @@
+.meetings-list {
+  width: 100%;
+  /* max-width: 1080px; */
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
