@@ -63,3 +63,107 @@
 .calendar-day--week {
   background: #ffcac7;
 }
+
+@media (min-width: 2100px) {
+  .mini-calendar {
+    width: 350px;
+  }
+
+  .calendar-header {
+    margin-bottom: 28px;
+  }
+
+  .calendar-header h2 {
+    font-size: 30px;
+  }
+
+  .calendar-header button {
+    font-size: 32px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 20px;
+  }
+
+  .calendar-grid {
+    row-gap: 20px;
+  }
+}
+
+@media (max-width: 1680px) and (min-width: 769px) {
+  .mini-calendar {
+    width: 292px;
+  }
+
+  .calendar-header {
+    margin-bottom: 22px;
+  }
+
+  .calendar-header h2 {
+    font-size: 24px;
+  }
+
+  .calendar-header button {
+    font-size: 26px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 17px;
+  }
+
+  .calendar-grid {
+    row-gap: 16px;
+  }
+}
+
+@media (max-width: 1536px) and (min-width: 769px) {
+  .mini-calendar {
+    width: 270px;
+  }
+
+  .calendar-header h2 {
+    font-size: 22px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 16px;
+  }
+
+  .calendar-grid {
+    row-gap: 14px;
+  }
+}
+
+@media (max-width: 1366px) and (min-width: 769px) {
+  .mini-calendar {
+    width: 244px;
+  }
+
+  .calendar-header {
+    margin-bottom: 18px;
+  }
+
+  .calendar-header h2 {
+    font-size: 20px;
+  }
+
+  .calendar-header button {
+    font-size: 24px;
+  }
+
+  .calendar-weekdays {
+    margin-bottom: 12px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 15px;
+  }
+
+  .calendar-grid {
+    row-gap: 12px;
+  }
+}

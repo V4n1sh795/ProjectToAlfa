@@ -147,7 +147,7 @@ function Calender() {
 
       <div className="calendar-page__content">
         {filteredMeetings.length === 0 ? (
-          <h1>На эту неделю встреч не запланировано</h1>
+          <h1>На эту неделю встречи не запланированы</h1>
         ) : (
           <MeetingsList meetings={filteredMeetings} />
         )}
