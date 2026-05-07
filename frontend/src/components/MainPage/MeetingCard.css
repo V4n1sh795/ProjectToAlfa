@@ -3,9 +3,9 @@
   align-items: stretch;
 
   width: 100%;
-  min-height: 190px;
-  max-height: 224px;
-  padding: 28px 44px;
+  height: 224px;
+
+  padding: 30px 44px 10px 50px;
 
   background: #f2f3f5;
   border-radius: 14px;
@@ -15,10 +15,21 @@
 }
 
 .meeting-card__left {
-  flex: 0 0 640px;
+  flex: 0 0 395px;
+
   display: flex;
-  justify-content: space-between;
-  gap: 32px;
+  flex-direction: column;
+
+  height: 100%;
+  min-width: 0;
+}
+
+.meeting-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+
+  width: 100%;
 }
 
 .meeting-card__main {
@@ -28,28 +39,48 @@
 
 .meeting-card__time {
   margin: 0 0 8px 0;
+
   font-size: 36px;
-  line-height: 1.05;
+  line-height: 1;
   font-weight: 600;
+
+  color: #212124;
+  white-space: nowrap;
 }
 
 .meeting-card__title {
-  margin: 0 0 8px 0;
+  margin: 0;
+
   font-size: 40px;
-  line-height: 1.05;
+  line-height: 0.9;
   font-weight: 700;
+
+  color: #212124;
 }
 
-.meeting-card__case {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.2;
+.meeting-card__title--medium {
+  font-size: 30px;
+  line-height: 0.9;
+}
+
+.meeting-card__title--small {
+  font-size: 26px;
+  line-height: 0.9;
+}
+
+.meeting-card__title--xs {
+  font-size: 22px;
+  line-height: 0.9;
 }
 
 .meeting-card__meta {
-  flex: 0 0 150px;
-  padding-top: 4px;
+  flex: 0 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding-top: 0;
 }
 
 .meeting-card__status {
@@ -59,56 +90,78 @@
 
   padding: 8px 14px;
   margin-bottom: 14px;
+
   border-radius: 12px;
 
   font-size: 16px;
+  line-height: 1;
   font-weight: 700;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .meeting-card__status--finished {
   background: #bdeeba;
-  color: #1f3323;
+  color: #212124;
 }
 
 .meeting-card__status--scheduled,
 .meeting-card__status--in_progress {
   background: #ef3124;
-  color: white;
+  color: #ffffff;
 }
 
 .meeting-card__date {
   margin: 0;
+
   text-align: center;
 
   font-size: 24px;
-  line-height: 1.15;
+  line-height: 1.1;
   font-weight: 600;
-  color: #666;
+
+  color: #626262;
+}
+
+.meeting-card__case {
+  width: 80%;
+  margin: 8px 0 0 0;
+
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 500;
+
+  color: #212124;
 }
 
 .meeting-card__divider {
   width: 8px;
-  margin: 0 48px 0 24px;
+
+  margin: 0 50px 0 30px;
+
   background: #e7e8eb;
   border-radius: 8px;
 }
 
 .meeting-card__right {
   flex: 1;
+
   padding-top: 8px;
+
+  min-width: 0;
 }
 
 .meeting-card__right p:first-child {
   margin: 0 0 12px 0;
 
   font-size: 24px;
-  line-height: 1.1;
+  line-height: 1;
   font-weight: 700;
-  color: #20232a;
+
+  color: #212124;
 }
 
 .meeting-card__right div {
-  line-height: 1.45;
-  color: #20232a;
+  line-height: 1.2;
+  color: #212124;
 }

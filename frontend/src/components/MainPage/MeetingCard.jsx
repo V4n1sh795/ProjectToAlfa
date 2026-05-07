@@ -49,32 +49,57 @@ const getStatusLabel = (status) => {
   return statusLabels[status] || status;
 };
 
+const getTitleSizeClass = (title) => {
+  if (title.length > 22) {
+    return "meeting-card__title--xs";
+  }
+
+  if (title.length > 16) {
+    return "meeting-card__title--small";
+  }
+
+  if (title.length > 10) {
+    return "meeting-card__title--medium";
+  }
+
+  return "";
+};
+
 function MeetingCard({ meeting }) {
   return (
     <div className="meeting-card">
       <div className="meeting-card__left">
-        <div className="meeting-card__main">
-          <p className="meeting-card__time">
-            {formatTime(meeting.startAt)} -{" "}
-            {formatTime(getEndTime(meeting.startAt))}
-          </p>
+        <div className="meeting-card__top">
+          <div className="meeting-card__main">
+            <p className="meeting-card__time">
+              {formatTime(meeting.startAt)} -{" "}
+              {formatTime(getEndTime(meeting.startAt))}
+            </p>
 
-          <h3 className="meeting-card__title">{meeting.teamName}</h3>
+            <h3
+              className={`meeting-card__title ${getTitleSizeClass(meeting.teamName)}`}
+            >
+              {meeting.teamName}
+            </h3>
+          </div>
 
-          <p className="meeting-card__case">{meeting.caseName}</p>
+          <div className="meeting-card__meta">
+            <a
+              href="#"
+              className={`meeting-card__status meeting-card__status--${meeting.status}`}
+            >
+              {getStatusLabel(meeting.status)}
+            </a>
+
+            <p className="meeting-card__date">
+              {formatDate(meeting.date)}
+              <br />
+              {formatWeekDay(meeting.date)}
+            </p>
+          </div>
         </div>
 
-        <div className="meeting-card__meta">
-          <span
-            className={`meeting-card__status meeting-card__status--${meeting.status}`}
-          >
-            {getStatusLabel(meeting.status)}
-          </span>
-
-          <p className="meeting-card__date">
-            {formatDate(meeting.date)} {formatWeekDay(meeting.date)}
-          </p>
-        </div>
+        <p className="meeting-card__case">{meeting.caseName}</p>
       </div>
 
       <div className="meeting-card__divider" />

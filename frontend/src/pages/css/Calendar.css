@@ -1,12 +1,17 @@
 .calendar-page {
   display: flex;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 70px);
 
   color: #212124;
 }
 
 .calendar-page__sidebar {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+
   width: 425px;
+  min-height: calc(100vh - 70px);
   padding: 30px 52px;
   display: flex;
   justify-content: center;
@@ -15,7 +20,8 @@
 
 .calendar-page__content {
   flex: 1;
+  min-width: 0;
   padding-left: 70px;
+  padding-right: 70px;
   padding-top: 60px;
-  padding-right: 140px;
 }

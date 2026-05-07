@@ -1,6 +1,38 @@
 .app-container {
-  min-height: 100vh;
+  position: relative;
+  height: 100vh;
   background: #fafafa;
+}
+
+.app-container::before {
+  content: "";
+
+  position: fixed;
+  top: 70px;
+  right: 0;
+  bottom: 0;
+  left: 64px;
+
+  pointer-events: none;
+  z-index: 0;
+
+  background-color: #fafafa;
+  background-image:
+    url("./assets/background/Rectangle_1.png"),
+    url("./assets/background/Rectangle_2.png"),
+    url("./assets/background/Rectangle_3.png"),
+    url("./assets/background/Rectangle_4.png");
+  background-repeat: no-repeat;
+  background-position:
+    right 0px bottom 0px,
+    right 50px bottom 0px,
+    right 300px bottom 0px,
+    right 600px bottom 0px;
+  background-size:
+    724px 574px,
+    807px 535px,
+    632px 421px,
+    403px 229px;
 }
 
 /* Верхняя шапка */
@@ -10,8 +42,8 @@
   left: 0;
   right: 0;
 
-  height: 60px;
-  background: #f53028;
+  height: 70px;
+  background: #ef3124;
 
   display: flex;
   align-items: center;
@@ -34,11 +66,11 @@
 /* Боковое меню */
 .sidebar {
   position: fixed;
-  top: 60px;
+  top: 70px;
   left: 0;
   bottom: 0;
 
-  width: 64px;
+  width: 75px;
   background: #f4f5f7;
   border-right: 1px solid #e1e2e5;
 
@@ -63,8 +95,8 @@
 .nav-item {
   position: relative;
 
-  width: 52px;
-  height: 42px;
+  width: 49px;
+  height: 49px;
 
   display: flex;
   align-items: center;
@@ -83,27 +115,24 @@
 }
 
 .nav-item.active {
-  background: #ffc9c6;
+  background: #ffcac7;
 }
 
 .nav-item.active::before {
   content: "";
 
   position: absolute;
-  left: -6px;
-  top: 0;
+  left: -13px;
+  top: -5;
 
-  width: 5px;
-  height: 100%;
+  width: 6px;
+  height: calc(100% + 10px);
 
-  background: #f53028;
+  background: #ef3124;
   border-radius: 0 4px 4px 0;
 }
 
 .nav-icon {
-  width: 28px;
-  height: 28px;
-
   object-fit: contain;
 }
 
@@ -118,8 +147,8 @@
   margin-top: auto;
   margin-bottom: 36px;
 
-  width: 52px;
-  height: 42px;
+  width: 49px;
+  height: 49px;
 
   border: none;
   background: transparent;
@@ -142,13 +171,19 @@
 
 /* Основной контент */
 .main-content {
-  margin-left: 64px;
-  padding-top: 60px;
+  position: fixed;
+  top: 70px;
+  right: 10px;
+  bottom: 0;
+  left: 64px;
 
-  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+
   box-sizing: border-box;
+  z-index: 1;
 
-  background: #fafafa;
+  background-color: transparent;
 }
 
 /* Мобильная кнопка пока скрыта */
@@ -170,20 +205,24 @@
 
 /* Скроллбар */
 .main-content::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .main-content::-webkit-scrollbar-track {
-  background: #f5f5f5;
+  margin: 10px 0;
+  background: #e7e8eb;
+  border-radius: 3px;
 }
 
 .main-content::-webkit-scrollbar-thumb {
-  background: #f53028;
-  border-radius: 4px;
+  height: 60px;
+  min-height: 60px;
+  background: #ef3124;
+  border-radius: 3px;
 }
 
 .main-content::-webkit-scrollbar-thumb:hover {
-  background: #d92720;
+  background: #ef3124;
 }
 
 /* Адаптивность */
@@ -208,8 +247,19 @@
   }
 
   .main-content {
-    margin-left: 0;
-    padding-top: 56px;
+    top: 56px;
+    left: 0;
+  }
+
+  .app-container::before {
+    top: 56px;
+    left: 0;
+
+    background-position:
+      right -260px bottom -60px,
+      right -120px bottom -160px,
+      right 120px bottom -70px,
+      right 300px bottom -20px;
   }
 
   .menu-toggle {
