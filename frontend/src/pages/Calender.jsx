@@ -33,6 +33,15 @@ const getWeekEnd = (weekStart) => {
   return d.toISOString().slice(0, 10);
 };
 
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 function Calender() {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +67,7 @@ function Calender() {
     loadMeetings();
   }, []);
 
-  const [selectedDate, setSelectedDate] = useState("2026-04-22");
+  const [selectedDate, setSelectedDate] = useState(getTodayDate);
 
   const weekStart = getWeekStart(selectedDate);
   const weekEnd = getWeekEnd(weekStart);
