@@ -447,7 +447,7 @@ const Finder = () => {
         </svg>
         <input
           type="text"
-          placeholder="Поиск"
+          placeholder=""
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"

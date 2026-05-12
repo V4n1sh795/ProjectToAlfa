@@ -4,6 +4,15 @@ using DBContext;
 namespace Service;
 static class Team
 {
+    record OTeam
+    {
+        public string Name { get; set; } = string.Empty;
+        public KeyValuePair<int, string> Project = new KeyValuePair<int, string>();
+        public List<KeyValuePair<int, string>> Members { get; set; } = new List<KeyValuePair<int, string>>();
+        public List<KeyValuePair<int, string>> Curators { get; set; } = new List<KeyValuePair<int, string>>();
+        public string CallDay { get; set; } = string.Empty;
+        public string CallTime { get; set; } = string.Empty;
+    }
     public record IMember
     {
         public string name {get; set; }= string.Empty; //FIO
@@ -138,10 +147,32 @@ static class Team
     }
     public static async Task<IResult> GTeam(AppDbContext db, int id)
     {
-        var team = await db.Teams.FindAsync(id);
+        var team = db.Teams
+            .Include(t => t.Members)
+            .FirstOrDefault(m => m.Id == id);
         if (team is null)
             return Results.NotFound($"Member with ID {id} not found");
-        
-        return Results.Ok(team);
+        List<KeyValuePair<int, string>> pepes = new List<KeyValuePair<int, string>>(); // 🐸
+        List<KeyValuePair<int, string>> big_pepes = new List<KeyValuePair<int, string>>();
+        foreach (var member in team.Members)
+        {
+            KeyValuePair<int, string> toadd = new KeyValuePair<int, string>(member.Id, $"{member.Surname} {member.Name} {member.SecondName}");
+            pepes.Add(toadd);
+        }
+        foreach (var curator in team.Curators)
+        {
+            KeyValuePair<int, string> toadd = new KeyValuePair<int, string>(curator, db.Curators.Find(curator).Name);
+            big_pepes.Add(toadd);
+        }
+        var response = new OTeam
+        {
+            Name = team.Name,
+            Project = new KeyValuePair<int, string>(team.ProjectId, db.Projects.Find(team.ProjectId).Name),
+            Members = pepes,
+            Curators = big_pepes,
+            CallDay = team.CallDay,
+            CallTime = team.CallTime
+        };
+        return Results.Ok(response);
     }
 }
