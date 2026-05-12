@@ -50,7 +50,7 @@ function Calender() {
   useEffect(() => {
     async function loadMeetings() {
       try {
-        const data = await getMeetings();
+        const data = await getMeetings(weekStart);
         console.log(data);
 
         const preparedMeetings = data.map(mapMeetingFromApi);
@@ -65,7 +65,7 @@ function Calender() {
     }
 
     loadMeetings();
-  }, []);
+  }, [weekStart]);
 
   const [selectedDate, setSelectedDate] = useState(getTodayDate);
 
