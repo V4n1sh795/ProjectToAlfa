@@ -23,10 +23,12 @@ const statusLabels = {
 };
 
 const formatTime = (time) => {
+  if (!time) return "--:--";
   return time.slice(0, 5);
 };
 
 const getEndTime = (startAt) => {
+  if (!startAt) return "--:--";
   const d = new Date(`2000-01-01T${startAt}`);
   d.setMinutes(d.getMinutes() + 30);
   return d.toTimeString().slice(0, 8);

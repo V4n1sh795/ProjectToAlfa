@@ -9,12 +9,12 @@ import "./css/Calendar.css";
 function mapMeetingFromApi(meeting) {
   return {
     id: meeting.id,
-    teamName: `Команда ${meeting.teamId}`,
-    caseName: "Кейс не указан",
+    teamName: meeting.teamName || `Команда ${meeting.teamId || "неизвестно"}`,
+    caseName: meeting.caseName || "Кейс не указан",
     date: meeting.date?.slice(0, 10),
-    startAt: meeting.time,
+    startAt: meeting.startAt,
     status: meeting.status || "scheduled",
-    participants: [],
+    participants: meeting.participants,
   };
 }
 
@@ -46,14 +46,18 @@ function Calender() {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(getTodayDate);
+  const weekStart = getWeekStart(selectedDate);
+  const weekEnd = getWeekEnd(weekStart);
 
   useEffect(() => {
     async function loadMeetings() {
       try {
-        const data = await getMeetings();
+        const data = await getMeetings(weekStart);
         console.log(data);
 
         const preparedMeetings = data.map(mapMeetingFromApi);
+        console.log("What frontend see -- preparedMeetings")
         console.log(preparedMeetings);
 
         setMeetings(preparedMeetings);
@@ -65,24 +69,23 @@ function Calender() {
     }
 
     loadMeetings();
-  }, []);
+  }, [weekStart]);
 
-  const [selectedDate, setSelectedDate] = useState(getTodayDate);
 
-  const weekStart = getWeekStart(selectedDate);
-  const weekEnd = getWeekEnd(weekStart);
+  
 
   const filteredMeetings = meetings
-    .filter((meeting) => meeting.date >= weekStart && meeting.date <= weekEnd)
-    .sort((m1, m2) =>
-      m1.date !== m2.date
-        ? m1.date.localeCompare(m2.date)
-        : m1.startAt.localeCompare(m2.startAt),
-    );
+	    .filter((meeting) => meeting.date >= weekStart && meeting.date <= weekEnd)
+	    .sort((m1, m2) =>
+	      m1.date !== m2.date
+	        ? m1.date.localeCompare(m2.date)
+	        : (m1.startAt || "").localeCompare(m2.startAt || ""),
+	    );
+	
+	  if (loading) {
+	    return <div>Загрузка встреч...</div>;
+	  }
 
-  if (loading) {
-    return <div>Загрузка встреч...</div>;
-  }
 
   if (error) {
     return <div>Ошибка загрузки встреч: {error}</div>;

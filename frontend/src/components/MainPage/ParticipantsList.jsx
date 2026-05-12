@@ -5,9 +5,9 @@ function ParticipantsList({ participants }) {
     <div>
       <p className="participants-title">Участники</p>
       {hasParticipants ? (
-        participants.map((p) => (
-          <div key={p.id} className="participants-list">
-            {p.fullName}
+        participants.map((name, index) => (
+          <div key={index} className="participants-list">
+            {name}
           </div>
         ))
       ) : (
