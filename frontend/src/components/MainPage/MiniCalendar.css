@@ -1,0 +1,169 @@
+.mini-calendar {
+  width: 319px;
+  margin: 0;
+  color: #212124;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.calendar-header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.calendar-header button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 18px;
+  text-align: center;
+}
+
+.calendar-day {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 500;
+  color: #212124;
+  padding: 0;
+  width: 28px;
+  height: 24px;
+  justify-self: center;
+  border-radius: 4px;
+}
+
+.calendar-day--muted {
+  color: #626262;
+  opacity: 0.7;
+}
+
+.calendar-day--week {
+  background: #ffcac7;
+}
+
+@media (min-width: 2100px) {
+  .mini-calendar {
+    width: 350px;
+  }
+
+  .calendar-header {
+    margin-bottom: 28px;
+  }
+
+  .calendar-header h2 {
+    font-size: 30px;
+  }
+
+  .calendar-header button {
+    font-size: 32px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 20px;
+  }
+
+  .calendar-grid {
+    row-gap: 20px;
+  }
+}
+
+@media (max-width: 1680px) and (min-width: 769px) {
+  .mini-calendar {
+    width: 292px;
+  }
+
+  .calendar-header {
+    margin-bottom: 22px;
+  }
+
+  .calendar-header h2 {
+    font-size: 24px;
+  }
+
+  .calendar-header button {
+    font-size: 26px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 17px;
+  }
+
+  .calendar-grid {
+    row-gap: 16px;
+  }
+}
+
+@media (max-width: 1536px) and (min-width: 769px) {
+  .mini-calendar {
+    width: 270px;
+  }
+
+  .calendar-header h2 {
+    font-size: 22px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 16px;
+  }
+
+  .calendar-grid {
+    row-gap: 14px;
+  }
+}
+
+@media (max-width: 1366px) and (min-width: 769px) {
+  .mini-calendar {
+    width: 244px;
+  }
+
+  .calendar-header {
+    margin-bottom: 18px;
+  }
+
+  .calendar-header h2 {
+    font-size: 20px;
+  }
+
+  .calendar-header button {
+    font-size: 24px;
+  }
+
+  .calendar-weekdays {
+    margin-bottom: 12px;
+  }
+
+  .calendar-weekdays,
+  .calendar-day {
+    font-size: 15px;
+  }
+
+  .calendar-grid {
+    row-gap: 12px;
+  }
+}

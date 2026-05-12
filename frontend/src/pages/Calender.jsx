@@ -1,12 +1,113 @@
-import axios from 'axios';
-import { useState, useEffect } from 'react';
-import { authAPI } from './js/LogIn';
-import { redirect } from 'react-router-dom';
-function Calender()
-{
+import { getMeetings } from "../api/meetingsApi";
+import { useState, useEffect } from "react";
+// import { authAPI } from "./js/LogIn";
+// import { redirect } from "react-router-dom";
+import MeetingsList from "../components/MainPage/MeetingsList";
+import MiniCalendar from "../components/MainPage/MiniCalendar";
+import "./css/Calendar.css";
 
-    return <h1>Страница пока в разработке</h1>;
-    
+function mapMeetingFromApi(meeting) {
+  return {
+    id: meeting.id,
+    teamName: `Команда ${meeting.teamId}`,
+    caseName: "Кейс не указан",
+    date: meeting.date?.slice(0, 10),
+    startAt: meeting.time,
+    status: meeting.status || "scheduled",
+    participants: [],
+  };
+}
+
+// В getWeekStart и getWeekEnd могут быть косяки с датой из-за toISOString
+const getWeekStart = (date) => {
+  const d = new Date(date);
+  const dayOfWeek = d.getDay();
+  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  d.setDate(d.getDate() - diff);
+  return d.toISOString().slice(0, 10);
+};
+
+const getWeekEnd = (weekStart) => {
+  const d = new Date(weekStart);
+  d.setDate(d.getDate() + 6);
+  return d.toISOString().slice(0, 10);
+};
+
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+function Calender() {
+  const [meetings, setMeetings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function loadMeetings() {
+      try {
+        const data = await getMeetings();
+        console.log(data);
+
+        const preparedMeetings = data.map(mapMeetingFromApi);
+        console.log(preparedMeetings);
+
+        setMeetings(preparedMeetings);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadMeetings();
+  }, []);
+
+  const [selectedDate, setSelectedDate] = useState(getTodayDate);
+
+  const weekStart = getWeekStart(selectedDate);
+  const weekEnd = getWeekEnd(weekStart);
+
+  const filteredMeetings = meetings
+    .filter((meeting) => meeting.date >= weekStart && meeting.date <= weekEnd)
+    .sort((m1, m2) =>
+      m1.date !== m2.date
+        ? m1.date.localeCompare(m2.date)
+        : m1.startAt.localeCompare(m2.startAt),
+    );
+
+  if (loading) {
+    return <div>Загрузка встреч...</div>;
+  }
+
+  if (error) {
+    return <div>Ошибка загрузки встреч: {error}</div>;
+  }
+
+  return (
+    <div className="calendar-page">
+      <div className="calendar-page__sidebar">
+        <MiniCalendar
+          selectedDate={selectedDate}
+          selectedWeekStart={weekStart}
+          selectedWeekEnd={weekEnd}
+          onSelectDate={setSelectedDate}
+        />
+      </div>
+
+      <div className="calendar-page__content">
+        {filteredMeetings.length === 0 ? (
+          <h1>На эту неделю встречи не запланированы</h1>
+        ) : (
+          <MeetingsList meetings={filteredMeetings} />
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default Calender;
