@@ -6,6 +6,13 @@ namespace Service;
 
 class Meeting
 {
+    public record OMeet
+    {
+        public string TeamName {get; set; }= string.Empty;
+        public string CaseName {get; set; }= string.Empty;
+        DateTime date {get; set; }
+        
+    }
     public record ITask
     {
         public int teamId {get; set; }
@@ -113,5 +120,26 @@ class Meeting
         {
             return Results.NotFound("Meeting with this id doesnt exist");
         };
+    }
+    public static List<DateTime> GetWeekDaysFromMonday(DateTime monday)
+    {
+        var weekDays = new List<DateTime>();
+        
+        for (int i = 0; i < 7; i++)
+        {
+            weekDays.Add(monday.AddDays(i));
+        }
+        
+        return weekDays;
+    }
+    public static async Task<IResult> GetWeek(AppDbContext db, DateTime date)
+    {   
+        List<cash.Models.Meeting> 
+        for (int i = 0; i < 7; i++)
+        {
+            weekDays.Add(date.AddDays(i));
+        }
+        
+        return Results.Ok();
     }
 }
