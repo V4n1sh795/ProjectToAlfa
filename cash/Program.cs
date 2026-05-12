@@ -137,23 +137,7 @@ app.MapGet("message/{chat_id:int}", Service.Messenger.GetMessages);
 
 app.MapGet("find/{entity}", Service.Find.FindEntity);
 
-app.MapGet("/week/{date:datetime}", Service.Meeting.GetWeek);
-
-// app.MapPost("message/{chat_id:int}", [Authorize] async (AppDbContext db, int chat_id, Messages message) =>
-// {
-//     db.Messages.AddAsync(message);
-//     db.SaveChangesAsync();
-//     return Results.Ok("message_sended");
-// });
-
-// app.MapGet("message/{projectId:int}", [Authorize] async (AppDbContext db, int projectId) =>
-// {
-//     // Получаем все сообщения, ID которых есть в списке chatIds
-//     var messages = await db.Messages
-//         .Where(m => m.Chat_id == projectId) // или m.ChatId, зависит от вашей модели
-//         .ToListAsync();
-//     return messages;
-// });
+app.MapGet("/week/{monday_date:datetime}", Service.Meeting.GetWeek);
 
 
 

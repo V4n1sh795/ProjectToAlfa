@@ -10,8 +10,10 @@ class Meeting
     {
         public string TeamName {get; set; }= string.Empty;
         public string CaseName {get; set; }= string.Empty;
-        DateTime date {get; set; }
-        
+        public DateTime date {get; set; }
+        public TimeOnly startAt {get; set; }
+        public string status {get; set; }= string.Empty;
+        public List<string> participants {get; set; } = new List<string>();
     }
     public record ITask
     {
@@ -121,25 +123,37 @@ class Meeting
             return Results.NotFound("Meeting with this id doesnt exist");
         };
     }
-    public static List<DateTime> GetWeekDaysFromMonday(DateTime monday)
-    {
-        var weekDays = new List<DateTime>();
-        
-        for (int i = 0; i < 7; i++)
-        {
-            weekDays.Add(monday.AddDays(i));
-        }
-        
-        return weekDays;
-    }
-    public static async Task<IResult> GetWeek(AppDbContext db, DateTime date)
+    public static async Task<IResult> GetWeek(AppDbContext db, DateTime monday_date)
     {   
-        List<cash.Models.Meeting> 
+        DateTime startLocal = monday_date.Date;
+        
+        var date = DateTime.SpecifyKind(startLocal, DateTimeKind.Utc);
+
+        List<OMeet> response = new List<OMeet>();
         for (int i = 0; i < 7; i++)
         {
-            weekDays.Add(date.AddDays(i));
+            List<cash.Models.Meeting> day_meets = await db.Meetings.Where(m => m.Date.Date == date.AddDays(i)).ToListAsync();
+            foreach (var meet in day_meets)
+            {
+                List<string> pepes = new List<string>();
+                cash.Models.Team? team = db.Teams.Include(t => t.Members).FirstOrDefault(t => t.Id == meet.TeamId);
+                cash.Models.Project? proj = await db.Projects.FindAsync(team.ProjectId);
+                foreach (var pepe in team.Members)
+                {
+                    pepes.Add($"{pepe.Surname} {pepe.Name} {pepe.SecondName}");
+                }
+                OMeet omeet = new OMeet
+                {
+                    TeamName = team.Name,
+                    CaseName = proj.Name,
+                    date = meet.Date,
+                    startAt = meet.Time,
+                    status = meet.Status,
+                    participants = pepes
+                };
+                response.Add(omeet);
+            }
         }
-        
-        return Results.Ok();
+        return Results.Ok(response);
     }
 }
