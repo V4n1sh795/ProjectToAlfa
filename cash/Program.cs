@@ -131,6 +131,8 @@ app.MapGet("task/{id:int}", Service.Meeting.GTask);
 
 app.MapPost("meeting/comment/{meetingId:int}", Service.Meeting.AddComment);
 
+app.MapPost("meeting/status/{id:int}", Service.Meeting.SetStatus);
+
 app.MapPost("message/{chat_id:int}", Service.Messenger.SendMessage);
 
 app.MapGet("message/{chat_id:int}", Service.Messenger.GetMessages);

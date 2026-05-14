@@ -6,6 +6,10 @@ namespace Service;
 
 class Meeting
 {
+    public record Status
+    {
+        public string status {get; set; } = string.Empty;
+    }
     public record OMeet
     {
         public string TeamName {get; set; }= string.Empty;
@@ -155,5 +159,12 @@ class Meeting
             }
         }
         return Results.Ok(response);
+    }
+    public static async Task<IResult> SetStatus(AppDbContext db, string id, Status status)
+    {
+        cash.Models.Meeting? meeting = await db.Meetings.FindAsync(id);
+        meeting.Status = status.status;
+        await db.SaveChangesAsync();
+        return Results.Ok(meeting);
     }
 }
