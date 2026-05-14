@@ -87,7 +87,7 @@ function MeetingCard({ meeting }) {
 
           <div className="meeting-card__meta">
             <a
-              href="#"
+              href="https://alfabank.ktalk.ru/projectpractice"
               className={`meeting-card__status meeting-card__status--${meeting.status}`}
             >
               {getStatusLabel(meeting.status)}
