@@ -97,7 +97,7 @@ app.MapGet("/profiles", async (AppDbContext db) => Results.Ok(await db.Profiles.
 app.MapGet("/project", async (AppDbContext db) => Results.Ok( await db.Projects.ToListAsync()));
 
 app.MapGet("/cproject/{cur_id:int}", async (AppDbContext db, int cur_id) 
-=> Results.Ok( await db.Projects.Where(p => p.CuratorIds.Contains(cur_id)).ToListAsync()));
+=> Results.Ok( await db.Projects.ToListAsync()));
 
 app.MapGet("member/{id:int}", Service.GetUnits.Member);
 
@@ -105,7 +105,7 @@ app.MapGet("team/{id:int}", Service.Team.GTeam);
 
 app.MapGet("curator/{id:int}", Service.Curator.GCurator);
 
-// app.MapGet("project/{id:int}", Service.Project.GProject);
+app.MapGet("project/{id:int}", Service.Project.GProject);
 
 app.MapPost("/team", Service.Team.CreateTeam);
 
