@@ -21,6 +21,18 @@ public record Project
     [Required]
     [Column("description")]
     public string Description { get; init; } = string.Empty;
+    [Required]
+    [Column("goal")]
+    public string Main_Goal { get; init; } = string.Empty;
+    [Required]
+    [Column("result")]
+    public string Results { get; init; } = string.Empty;
+    [Required]
+    [Column("roles")]
+    public string Roles { get; init; } = string.Empty;
+    [Required]
+    [Column("technology")]
+    public string Technology { get; init; } = string.Empty;
 
     [Required]
     [Column("Curator_ids")]

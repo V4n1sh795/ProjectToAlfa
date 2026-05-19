@@ -64,11 +64,11 @@ public static class FillerDB
     // Проекты
     private static readonly List<ProjectData> _projects = new()
     {
-        new ProjectData { Name = "Платформа для онлайн-обучения", Description = "Система для проведения вебинаров и курсов", Semester = "Осень 2024" },
-        new ProjectData { Name = "Мобильное приложение доставки", Description = "Приложение для заказа еды с картой и трекингом", Semester = "Осень 2024" },
-        new ProjectData { Name = "Аналитическая платформа", Description = "Система сбора и визуализации данных", Semester = "Весна 2025" },
-        new ProjectData { Name = "Чат-бот для поддержки клиентов", Description = "AI бот с интеграцией в Telegram", Semester = "Осень 2024" },
-        new ProjectData { Name = "CRM система для малого бизнеса", Description = "Управление клиентами и заказами", Semester = "Весна 2025" }
+        new ProjectData { Name = "Платформа для онлайн-обучения", Description = "Система для проведения вебинаров и курсов", Main_Goal = "goal", Results = "res", Roles = "roles", Technology = "tech" , Semester = "Осень 2024" },
+        new ProjectData { Name = "Мобильное приложение доставки", Description = "Приложение для заказа еды с картой и трекингом",  Main_Goal = "goal", Results = "res", Roles = "roles", Technology = "tech" ,Semester = "Осень 2024" },
+        new ProjectData { Name = "Аналитическая платформа", Description = "Система сбора и визуализации данных", Main_Goal = "goal", Results = "res", Roles = "roles", Technology = "tech" , Semester = "Весна 2025" },
+        new ProjectData { Name = "Чат-бот для поддержки клиентов", Description = "AI бот с интеграцией в Telegram", Main_Goal = "goal", Results = "res", Roles = "roles", Technology = "tech" , Semester = "Осень 2024" },
+        new ProjectData { Name = "CRM система для малого бизнеса", Description = "Управление клиентами и заказами",  Main_Goal = "goal", Results = "res", Roles = "roles", Technology = "tech" ,Semester = "Весна 2025" }
     };
     
     // Дни недели
@@ -119,6 +119,10 @@ public static class FillerDB
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Main_Goal { get; init; } = string.Empty;
+        public string Results { get; init; } = string.Empty;
+        public string Roles { get; init; } = string.Empty;
+        public string Technology { get; init; } = string.Empty;
         public string Semester { get; set; } = string.Empty;
     }
     
@@ -145,6 +149,10 @@ public static class FillerDB
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Main_Goal { get; init; } = string.Empty;
+        public string Results { get; init; } = string.Empty;
+        public string Roles { get; init; } = string.Empty;
+        public string Technology { get; init; } = string.Empty;
         public List<int> CuratorIds { get; set; } = new List<int>();
         public string StartDate { get; set; } = string.Empty;
         public string EndDate { get; set; } = string.Empty;
@@ -300,6 +308,10 @@ public static class FillerDB
             {
                 Name = project.Name,
                 Description = project.Description,
+                Main_Goal = "goal",
+                Results = "results",
+                Roles = "Role",
+                Technology = "Tchnology",
                 CuratorIds = new List<int> { 1, 2 }, // ID кураторов (предполагаем, что они есть)
                 StartDate = startDate.ToString("yyyy-MM-dd"),
                 EndDate = endDate.ToString("yyyy-MM-dd"),

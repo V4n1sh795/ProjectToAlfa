@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace cash.Migrations
 {
     /// <inheritdoc />
-    public partial class fix1 : Migration
+    public partial class fix : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -72,6 +72,10 @@ namespace cash.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     description = table.Column<string>(type: "text", nullable: false),
+                    goal = table.Column<string>(type: "text", nullable: false),
+                    result = table.Column<string>(type: "text", nullable: false),
+                    roles = table.Column<string>(type: "text", nullable: false),
+                    technology = table.Column<string>(type: "text", nullable: false),
                     Curator_ids = table.Column<List<int>>(type: "integer[]", nullable: false),
                     startDate = table.Column<string>(type: "text", nullable: false),
                     endDate = table.Column<string>(type: "text", nullable: false),

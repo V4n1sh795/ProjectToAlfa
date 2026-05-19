@@ -105,7 +105,7 @@ app.MapGet("team/{id:int}", Service.Team.GTeam);
 
 app.MapGet("curator/{id:int}", Service.Curator.GCurator);
 
-app.MapGet("project/{id:int}", Service.Project.GProject);
+// app.MapGet("project/{id:int}", Service.Project.GProject);
 
 app.MapPost("/team", Service.Team.CreateTeam);
 

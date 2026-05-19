@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace cash.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260413204329_fix2")]
-    partial class fix2
+    [Migration("20260519163534_fix")]
+    partial class fix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,40 +25,6 @@ namespace cash.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Profile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("GroupNumber")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("gruop_number");
-
-                    b.Property<int?>("MemberId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("role");
-
-                    b.Property<string>("Stack")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Stack");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("profile");
-                });
 
             modelBuilder.Entity("cash.Models.Curator", b =>
                 {
@@ -203,6 +169,40 @@ namespace cash.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("cash.Models.Profile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GroupNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("gruop_number");
+
+                    b.Property<int?>("MemberId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("role");
+
+                    b.Property<string>("Stack")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Stack");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("profile");
+                });
+
             modelBuilder.Entity("cash.Models.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -227,10 +227,25 @@ namespace cash.Migrations
                         .HasColumnType("text")
                         .HasColumnName("endDate");
 
+                    b.Property<string>("Main_Goal")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("goal");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("Name");
+
+                    b.Property<string>("Results")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("result");
+
+                    b.Property<string>("Roles")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("roles");
 
                     b.Property<string>("Semester")
                         .IsRequired()
@@ -241,6 +256,11 @@ namespace cash.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("startDate");
+
+                    b.Property<string>("Technology")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("technology");
 
                     b.HasKey("Id");
 
@@ -330,13 +350,6 @@ namespace cash.Migrations
                     b.ToTable("team");
                 });
 
-            modelBuilder.Entity("Profile", b =>
-                {
-                    b.HasOne("cash.Models.Member", null)
-                        .WithMany("Profiles")
-                        .HasForeignKey("MemberId");
-                });
-
             modelBuilder.Entity("cash.Models.Member", b =>
                 {
                     b.HasOne("cash.Models.Team", "Team")
@@ -344,6 +357,13 @@ namespace cash.Migrations
                         .HasForeignKey("TeamId");
 
                     b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("cash.Models.Profile", b =>
+                {
+                    b.HasOne("cash.Models.Member", null)
+                        .WithMany("Profiles")
+                        .HasForeignKey("MemberId");
                 });
 
             modelBuilder.Entity("cash.Models.Member", b =>
