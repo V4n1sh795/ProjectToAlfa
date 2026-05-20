@@ -461,6 +461,7 @@ function MeetingCard({ meeting }) {
 
     try {
       const requests = [];
+      const taskIdsToClose = [];
 
       const normalizedCommentText = commentText.trim();
       const normalizedInitialCommentText = initialCommentText.trim();
@@ -498,11 +499,16 @@ function MeetingCard({ meeting }) {
         const taskId = getTaskId(task);
 
         if (taskId && checkedTasks.includes(getTaskKey(task))) {
-          requests.push(closeTask(taskId));
+          taskIdsToClose.push(taskId);
         }
       });
 
       await Promise.all(requests);
+
+      for (const taskId of taskIdsToClose) {
+        await closeTask(taskId);
+      }
+
       setSaveStatus("saved");
       setInitialCommentText(normalizedCommentText);
       setInitialNextTaskText(normalizedNextTaskText);

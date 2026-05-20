@@ -7,7 +7,8 @@ import MiniCalendar from "../components/MainPage/MiniCalendar";
 import "./css/Calendar.css";
 
 function mapMeetingFromApi(meeting) {
-  const teamName = meeting.teamName || `Команда ${meeting.teamId || "неизвестно"}`;
+  const teamName =
+    meeting.teamName || `Команда ${meeting.teamId || "неизвестно"}`;
   const caseName = meeting.caseName || "Кейс не указан";
   const date = meeting.date?.slice(0, 10);
   const startAt = meeting.startAt || meeting.time;
@@ -84,9 +85,9 @@ function Calender() {
         : (m1.startAt || "").localeCompare(m2.startAt || ""),
     );
 
-  if (loading) {
-    return <div>Загрузка встреч...</div>;
-  }
+  // if (loading) {
+  //   return <div>Загрузка встреч...</div>;
+  // }
 
   if (error) {
     return <div>Ошибка загрузки встреч: {error}</div>;
