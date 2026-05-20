@@ -3,10 +3,14 @@ import {
   addMeetingComment,
   closeTask,
   createTaskForTeam,
+  getMeetingCurators,
+  getMeetingMembers,
   getMeetingsByDate,
   getMember,
   getTask,
   getTeam,
+  saveMeetingCurators,
+  saveMeetingMembers,
 } from "../../api/meetingsApi";
 import closeAlertIcon from "../../assets/icons/close_alert.svg";
 import showMoreIcon from "../../assets/icons/show_more.svg";
@@ -33,11 +37,7 @@ const statusLabels = {
   in_progress: "Идёт встреча",
 };
 
-const fallbackRoles = ["Тим-лид", "Дизайнер", "Аналитик", "Бэкенд"];
-const fallbackMentors = [
-  { id: "static-mentor-1", name: "Макаров Артем Васильевич" },
-  { id: "static-mentor-2", name: "Кузвесова Ирина Викторовна" },
-];
+const missingRoleLabel = "Роль не указана";
 
 const readField = (source, ...names) => {
   if (!source) return undefined;
@@ -169,7 +169,7 @@ const getParticipantFallbacks = (participants = []) => {
   return participants.map((name, index) => ({
     id: `fallback-participant-${index}`,
     name,
-    role: fallbackRoles[index % fallbackRoles.length],
+    role: missingRoleLabel,
   }));
 };
 
@@ -179,7 +179,9 @@ const createFallbackDetails = (meeting) => ({
   nextMeetingId: null,
   teamId: meeting.teamId,
   participants: getParticipantFallbacks(meeting.participants),
-  mentors: fallbackMentors,
+  mentors: [],
+  previousParticipants: [],
+  previousMentors: [],
   tasks: [],
   comments: [],
 });
@@ -209,12 +211,12 @@ const getMemberRole = (memberDetails, index) => {
   const firstProfile = String(profiles[0] || "").trim();
 
   if (!firstProfile) {
-    return fallbackRoles[index % fallbackRoles.length];
+    return missingRoleLabel;
   }
 
   const shortRole = firstProfile.split(/\s+/).slice(0, 2).join(" ");
 
-  return shortRole || fallbackRoles[index % fallbackRoles.length];
+  return shortRole || missingRoleLabel;
 };
 
 const getTeamPairs = (team, fieldName) => {
@@ -235,6 +237,18 @@ const getTeamPairs = (team, fieldName) => {
 
 const getRawMeetingTime = (meeting) =>
   formatTime(readField(meeting, "time", "Time", "startAt", "StartAt"));
+
+const getMeetingId = (meeting) => readField(meeting, "id", "Id");
+
+const findTeamMeeting = (meetings, teamId, startAt) =>
+  meetings.find(
+    (dayMeeting) =>
+      readField(dayMeeting, "teamId", "TeamId") === teamId &&
+      getRawMeetingTime(dayMeeting) === formatTime(startAt),
+  ) ||
+  meetings.find(
+    (dayMeeting) => readField(dayMeeting, "teamId", "TeamId") === teamId,
+  );
 
 const loadTasksByIds = async (taskIds = []) => {
   const loadedTasks = await Promise.all(
@@ -259,31 +273,152 @@ const loadNextMeetingDetails = async ({ currentDate, startAt, teamId }) => {
     if (!nextDate) continue;
 
     const nextDayMeetings = await getMeetingsByDate(nextDate).catch(() => []);
-    const nextMeeting =
-      nextDayMeetings.find(
-        (dayMeeting) =>
-          readField(dayMeeting, "teamId", "TeamId") === teamId &&
-          getRawMeetingTime(dayMeeting) === formatTime(startAt),
-      ) ||
-      nextDayMeetings.find(
-        (dayMeeting) => readField(dayMeeting, "teamId", "TeamId") === teamId,
-      );
+    const nextMeeting = findTeamMeeting(nextDayMeetings, teamId, startAt);
 
     if (nextMeeting) {
       const taskIds = readField(nextMeeting, "tasks", "Tasks") || [];
       const tasks = await loadTasksByIds(taskIds);
 
       return {
-        meetingId: readField(nextMeeting, "id", "Id"),
+        meetingId: getMeetingId(nextMeeting),
         tasks: filterTasksForMeetingDate(tasks, nextDate),
         comments:
-          readField(nextMeeting, "comments", "Comments", "comment", "Comment") ||
-          [],
+          readField(
+            nextMeeting,
+            "comments",
+            "Comments",
+            "comment",
+            "Comment",
+          ) || [],
       };
     }
   }
 
   return emptyDetails;
+};
+
+const getArrayPayload = (data, fieldNames = []) => {
+  if (Array.isArray(data)) return data;
+
+  for (const fieldName of fieldNames) {
+    const pascalFieldName = `${fieldName[0].toUpperCase()}${fieldName.slice(1)}`;
+    const value = readField(data, fieldName, pascalFieldName);
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+  }
+
+  return [];
+};
+
+const normalizeAttendanceItems = (items, knownItems = []) =>
+  items
+    .map((item, index) => {
+      if (typeof item === "number" || typeof item === "string") {
+        const knownItem = knownItems.find(
+          (known) => String(known.id) === String(item),
+        );
+
+        return knownItem || { id: item, name: String(item) };
+      }
+
+      const id = getPairKey(item, `attendance-${index}`);
+      const knownItem = knownItems.find(
+        (known) => String(known.id) === String(id),
+      );
+      const name =
+        getPairValue(item) ||
+        readField(item, "fullName", "FullName", "fio", "Fio") ||
+        knownItem?.name ||
+        "";
+
+      return { ...(knownItem || {}), id, name };
+    })
+    .filter((item) => item.name);
+
+const loadMeetingAttendance = async (meetingId, participants, mentors) => {
+  if (!meetingId) {
+    return { participants: [], mentors: [] };
+  }
+
+  const [membersData, curatorsData] = await Promise.all([
+    getMeetingMembers(meetingId).catch(() => []),
+    getMeetingCurators(meetingId).catch(() => []),
+  ]);
+
+  const memberItems = getArrayPayload(membersData, [
+    "members",
+    "memberIds",
+    "ids",
+  ]);
+  const curatorItems = getArrayPayload(curatorsData, [
+    "curators",
+    "curatorIds",
+    "ids",
+  ]);
+
+  return {
+    participants: normalizeAttendanceItems(memberItems, participants),
+    mentors: normalizeAttendanceItems(curatorItems, mentors),
+  };
+};
+
+const loadPreviousMeetingAttendance = async ({
+  currentDate,
+  startAt,
+  teamId,
+  participants,
+  mentors,
+}) => {
+  if (!teamId) {
+    return { participants: [], mentors: [] };
+  }
+
+  for (const daysBefore of [7, 14, 21, 28]) {
+    const previousDate = getDateAfterDays(currentDate, -daysBefore);
+
+    if (!previousDate) continue;
+
+    const previousDayMeetings = await getMeetingsByDate(previousDate).catch(
+      () => [],
+    );
+    const previousMeeting = findTeamMeeting(
+      previousDayMeetings,
+      teamId,
+      startAt,
+    );
+
+    if (previousMeeting) {
+      return loadMeetingAttendance(
+        getMeetingId(previousMeeting),
+        participants,
+        mentors,
+      );
+    }
+  }
+
+  return { participants: [], mentors: [] };
+};
+
+const getCheckedIds = (items, checkedValues) =>
+  items
+    .filter((item) => checkedValues.includes(String(item.id ?? item.name)))
+    .map((item) => Number(item.id))
+    .filter(Number.isFinite);
+
+const ignoreMissingEndpointError = async (request) => {
+  try {
+    return await request;
+  } catch (error) {
+    const status = error?.response?.status;
+
+    if (status === 404 || status === 405) {
+      return null;
+    }
+
+    throw error;
+  }
 };
 
 function MeetingCard({ meeting }) {
@@ -380,11 +515,22 @@ function MeetingCard({ meeting }) {
           readField(rawMeeting, "comments", "Comments", "comment", "Comment") ||
           [];
         const currentMeetingTeamId = readField(rawMeeting, "teamId", "TeamId");
+        const currentMeetingId = getMeetingId(rawMeeting);
         const nextMeetingDetails = await loadNextMeetingDetails({
           currentDate: meeting.date,
           startAt: meeting.startAt,
           teamId: currentMeetingTeamId,
         });
+        const [currentAttendance, previousAttendance] = await Promise.all([
+          loadMeetingAttendance(currentMeetingId, participants, mentors),
+          loadPreviousMeetingAttendance({
+            currentDate: meeting.date,
+            startAt: meeting.startAt,
+            teamId: currentMeetingTeamId,
+            participants,
+            mentors,
+          }),
+        ]);
         const nextMeetingTasksText = nextMeetingDetails.tasks
           .map(getTaskName)
           .join("\n");
@@ -396,14 +542,30 @@ function MeetingCard({ meeting }) {
 
         setDetails({
           loaded: true,
-          meetingId: readField(rawMeeting, "id", "Id"),
+          meetingId: currentMeetingId,
           nextMeetingId: nextMeetingDetails.meetingId,
-          teamId: readField(rawMeeting, "teamId", "TeamId"),
+          teamId: currentMeetingTeamId,
           participants,
-          mentors: mentors.length > 0 ? mentors : fallbackMentors,
+          mentors,
+          previousParticipants: previousAttendance.participants,
+          previousMentors: previousAttendance.mentors,
           tasks,
           comments,
         });
+        setPresentParticipants((currentValues) =>
+          currentValues.length > 0
+            ? currentValues
+            : currentAttendance.participants.map((participant) =>
+                String(participant.id ?? participant.name),
+              ),
+        );
+        setPresentMentors((currentValues) =>
+          currentValues.length > 0
+            ? currentValues
+            : currentAttendance.mentors.map((mentor) =>
+                String(mentor.id ?? mentor.name),
+              ),
+        );
         setInitialNextTaskText(nextMeetingTasksText);
         setInitialCommentText(nextMeetingCommentsText);
         setNextTaskText((currentText) =>
@@ -492,6 +654,23 @@ function MeetingCard({ meeting }) {
             name: normalizedNextTaskText,
             deadline: getNextWeekDeadline(meeting.date),
           }),
+        );
+      }
+
+      if (details.meetingId) {
+        const memberIds = getCheckedIds(
+          details.participants,
+          presentParticipants,
+        );
+        const curatorIds = getCheckedIds(details.mentors, presentMentors);
+
+        requests.push(
+          ignoreMissingEndpointError(
+            saveMeetingMembers(details.meetingId, memberIds),
+          ),
+          ignoreMissingEndpointError(
+            saveMeetingCurators(details.meetingId, curatorIds),
+          ),
         );
       }
 
@@ -695,20 +874,24 @@ function MeetingCard({ meeting }) {
             <section className="meeting-card__panel">
               <h4>Участники команды</h4>
               <div className="meeting-card__past-list">
-                {details.participants.map((participant) => (
-                  <span key={participant.id || participant.name}>
-                    {participant.name}
-                  </span>
-                ))}
+                {details.previousParticipants.length > 0
+                  ? details.previousParticipants.map((participant) => (
+                      <span key={participant.id || participant.name}>
+                        {participant.name}
+                      </span>
+                    ))
+                  : "Участники не были отмечены"}
               </div>
             </section>
 
             <section className="meeting-card__panel">
               <h4>Менторы</h4>
               <div className="meeting-card__past-list">
-                {details.mentors.map((mentor) => (
-                  <span key={mentor.id || mentor.name}>{mentor.name}</span>
-                ))}
+                {details.previousMentors.length > 0
+                  ? details.previousMentors.map((mentor) => (
+                      <span key={mentor.id || mentor.name}>{mentor.name}</span>
+                    ))
+                  : "Менторы не были отмечены"}
               </div>
             </section>
 
@@ -763,11 +946,15 @@ function MeetingCard({ meeting }) {
         <section className="meeting-card__panel meeting-card__panel--after">
           <h4>Менторы</h4>
           <p>Отметьте присутствующих</p>
-          {renderAttendanceList(
-            details.mentors,
-            presentMentors,
-            setPresentMentors,
-            "mentor",
+          {details.mentors.length > 0 ? (
+            renderAttendanceList(
+              details.mentors,
+              presentMentors,
+              setPresentMentors,
+              "mentor",
+            )
+          ) : (
+            <p className="meeting-card__empty-mentors">Менторы не добавлены</p>
           )}
         </section>
 

@@ -36,6 +36,26 @@ export async function addMeetingComment(meetingId, text) {
   return response.data;
 }
 
+export async function getMeetingMembers(meetingId) {
+  const response = await api.get(`/meeting/members/${meetingId}`);
+  return response.data;
+}
+
+export async function getMeetingCurators(meetingId) {
+  const response = await api.get(`/meeting/curators/${meetingId}`);
+  return response.data;
+}
+
+export async function saveMeetingMembers(meetingId, memberIds) {
+  const response = await api.post(`/meeting/members/${meetingId}`, memberIds);
+  return response.data;
+}
+
+export async function saveMeetingCurators(meetingId, curatorIds) {
+  const response = await api.post(`/meeting/curators/${meetingId}`, curatorIds);
+  return response.data;
+}
+
 export async function createTaskForTeam(day, task) {
   const response = await api.post(`/task/${day}`, task);
   return response.data;

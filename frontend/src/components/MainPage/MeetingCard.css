@@ -305,7 +305,8 @@
   line-height: 1;
 }
 
-.meeting-card__empty-tasks {
+.meeting-card__empty-tasks,
+.meeting-card__empty-mentors {
   margin: 0;
   color: #626262;
   font-size: 16px;
