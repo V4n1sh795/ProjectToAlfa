@@ -61,7 +61,7 @@ coverage.xml
 .Trashes
 ehthumbs.db
 Thumbs.db
-Icon?
+# Icon?
 
 # PostgreSQL data
 datapostgre/
