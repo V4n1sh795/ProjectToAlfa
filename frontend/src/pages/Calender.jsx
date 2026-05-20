@@ -7,14 +7,20 @@ import MiniCalendar from "../components/MainPage/MiniCalendar";
 import "./css/Calendar.css";
 
 function mapMeetingFromApi(meeting) {
+  const teamName = meeting.teamName || `Команда ${meeting.teamId || "неизвестно"}`;
+  const caseName = meeting.caseName || "Кейс не указан";
+  const date = meeting.date?.slice(0, 10);
+  const startAt = meeting.startAt || meeting.time;
+
   return {
     id: meeting.id,
-    teamName: meeting.teamName || `Команда ${meeting.teamId || "неизвестно"}`,
-    caseName: meeting.caseName || "Кейс не указан",
-    date: meeting.date?.slice(0, 10),
-    startAt: meeting.startAt,
+    meetingKey: meeting.id || `${date}-${startAt}-${teamName}`,
+    teamName,
+    caseName,
+    date,
+    startAt,
     status: meeting.status || "scheduled",
-    participants: meeting.participants,
+    participants: meeting.participants || [],
   };
 }
 
@@ -52,13 +58,12 @@ function Calender() {
 
   useEffect(() => {
     async function loadMeetings() {
+      setLoading(true);
+      setError(null);
+
       try {
         const data = await getMeetings(weekStart);
-        console.log(data);
-
         const preparedMeetings = data.map(mapMeetingFromApi);
-        console.log("What frontend see -- preparedMeetings")
-        console.log(preparedMeetings);
 
         setMeetings(preparedMeetings);
       } catch (err) {
@@ -71,21 +76,17 @@ function Calender() {
     loadMeetings();
   }, [weekStart]);
 
-
-  
-
   const filteredMeetings = meetings
-	    .filter((meeting) => meeting.date >= weekStart && meeting.date <= weekEnd)
-	    .sort((m1, m2) =>
-	      m1.date !== m2.date
-	        ? m1.date.localeCompare(m2.date)
-	        : (m1.startAt || "").localeCompare(m2.startAt || ""),
-	    );
-	
-	  if (loading) {
-	    return <div>Загрузка встреч...</div>;
-	  }
+    .filter((meeting) => meeting.date >= weekStart && meeting.date <= weekEnd)
+    .sort((m1, m2) =>
+      m1.date !== m2.date
+        ? m1.date.localeCompare(m2.date)
+        : (m1.startAt || "").localeCompare(m2.startAt || ""),
+    );
 
+  if (loading) {
+    return <div>Загрузка встреч...</div>;
+  }
 
   if (error) {
     return <div>Ошибка загрузки встреч: {error}</div>;
