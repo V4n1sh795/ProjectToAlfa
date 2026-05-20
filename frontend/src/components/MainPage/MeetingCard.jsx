@@ -343,9 +343,10 @@ const loadMeetingAttendance = async (meetingId, participants, mentors) => {
   }
 
   const [membersData, curatorsData] = await Promise.all([
-    getMeetingMembers(meetingId).catch(() => []),
-    getMeetingCurators(meetingId).catch(() => []),
+    getMeetingMembers(meetingId),
+    getMeetingCurators(meetingId),
   ]);
+
 
   const memberItems = getArrayPayload(membersData, [
     "members",

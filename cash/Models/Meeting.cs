@@ -57,6 +57,11 @@ namespace cash.Models
 
         [Column("Comment")]
         public List<string> Comments { get; set; } = new List<string>();
+
+        [Column("WasCurators")]
+        public List<int> WasCurators {get; set; } = new List<int>();
+        [Column("WasMembers")]
+        public List<int> WasMembers {get; set; } = new List<int>();
         public Meeting(DateTime Date, TimeOnly Time, int TeamId)
         {
             this.Date = Date;

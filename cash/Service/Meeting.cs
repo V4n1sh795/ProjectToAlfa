@@ -160,6 +160,32 @@ class Meeting
         }
         return Results.Ok(response);
     }
+    public static async Task<IResult> WhoWasCurators(AppDbContext db, int id)
+    {
+        cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
+        List<string> curators = await db.Curators.Where(c => meet.WasCurators.Contains(c.Id))
+                                                    .Select(c => c.Name)
+                                                    .ToListAsync();
+        return Results.Ok(curators);
+    }
+    public static async Task<IResult> WhoWasMembers(AppDbContext db, int id)
+    {
+        cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
+        List<string> members = await db.Members.Where(m => meet.WasMembers.Contains(m.Id))
+                                                .Select(m => $"{m.Surname} {m.Name} {m.SecondName}")
+                                                .ToListAsync();
+        return Results.Ok(members);
+    }
+    // public static async Task<IResult> SetWhoWasCurators(AppDbContext db, int id)
+    // {
+    //     cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
+
+    // }
+    // public static async Task<IResult> SetWhoWasMembers(AppDbContext db, int id)
+    // {
+    //     cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
+
+    // }
     public static async Task<IResult> SetStatus(AppDbContext db, string id, Status status)
     {
         cash.Models.Meeting? meeting = await db.Meetings.FindAsync(id);

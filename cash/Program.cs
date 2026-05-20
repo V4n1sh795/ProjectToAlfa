@@ -133,6 +133,10 @@ app.MapPost("meeting/comment/{meetingId:int}", Service.Meeting.AddComment);
 
 app.MapPost("meeting/status/{id:int}", Service.Meeting.SetStatus);
 
+app.MapGet("meeting/curators/{id:int}", Service.Meeting.WhoWasCurators);
+
+app.MapGet("meeting/members/{id:int}", Service.Meeting.WhoWasMembers);
+
 app.MapPost("message/{chat_id:int}", Service.Messenger.SendMessage);
 
 app.MapGet("message/{chat_id:int}", Service.Messenger.GetMessages);

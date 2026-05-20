@@ -38,11 +38,13 @@ export async function addMeetingComment(meetingId, text) {
 
 export async function getMeetingMembers(meetingId) {
   const response = await api.get(`/meeting/members/${meetingId}`);
+  console.log(response.data);
   return response.data;
 }
 
 export async function getMeetingCurators(meetingId) {
   const response = await api.get(`/meeting/curators/${meetingId}`);
+  console.log(response.data);
   return response.data;
 }
 
