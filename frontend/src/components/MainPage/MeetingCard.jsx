@@ -312,21 +312,38 @@ const getArrayPayload = (data, fieldNames = []) => {
   return [];
 };
 
+const findKnownAttendanceItem = (item, knownItems = []) => {
+  const itemId = typeof item === "object" && item !== null
+    ? getPairKey(item)
+    : item;
+  const itemName = typeof item === "object" && item !== null
+    ? getPairValue(item) ||
+      readField(item, "fullName", "FullName", "fio", "Fio")
+    : String(item || "");
+  const normalizedItemName = normalizeText(itemName);
+
+  return knownItems.find((known) => {
+    const knownId = known.id === undefined ? "" : String(known.id);
+    const knownName = normalizeText(known.name);
+
+    return (
+      (itemId !== undefined && knownId === String(itemId)) ||
+      (normalizedItemName && knownName === normalizedItemName)
+    );
+  });
+};
+
 const normalizeAttendanceItems = (items, knownItems = []) =>
   items
     .map((item, index) => {
       if (typeof item === "number" || typeof item === "string") {
-        const knownItem = knownItems.find(
-          (known) => String(known.id) === String(item),
-        );
+        const knownItem = findKnownAttendanceItem(item, knownItems);
 
         return knownItem || { id: item, name: String(item) };
       }
 
       const id = getPairKey(item, `attendance-${index}`);
-      const knownItem = knownItems.find(
-        (known) => String(known.id) === String(id),
-      );
+      const knownItem = findKnownAttendanceItem(item, knownItems);
       const name =
         getPairValue(item) ||
         readField(item, "fullName", "FullName", "fio", "Fio") ||
