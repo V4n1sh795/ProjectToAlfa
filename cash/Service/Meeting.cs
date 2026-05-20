@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using cash.Models;
 using DBContext;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 namespace Service;
 
 class Meeting
@@ -164,17 +165,31 @@ class Meeting
     {
         cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
         List<string> curators = await db.Curators.Where(c => meet.WasCurators.Contains(c.Id))
-                                                    .Select(c => c.Name)
-                                                    .ToListAsync();
+                                                 .Select(c => c.Name)
+                                                 .ToListAsync();
         return Results.Ok(curators);
     }
     public static async Task<IResult> WhoWasMembers(AppDbContext db, int id)
     {
         cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
         List<string> members = await db.Members.Where(m => meet.WasMembers.Contains(m.Id))
-                                                .Select(m => $"{m.Surname} {m.Name} {m.SecondName}")
-                                                .ToListAsync();
+                                               .Select(m => $"{m.Surname} {m.Name} {m.SecondName}")
+                                               .ToListAsync();
         return Results.Ok(members);
+    }
+    public static async Task<IResult> SetWhoWasCurators(AppDbContext db, int id, [FromBody] List<int> CuratorsList)
+    {
+        cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
+        meet.WasCurators.AddRange(CuratorsList);
+        await db.SaveChangesAsync();
+        return Results.Ok(meet.WasCurators);
+    }
+    public static async Task<IResult> SetWhoWasMembers(AppDbContext db, int id, [FromBody] List<int> MembersList)
+    {
+        cash.Models.Meeting meet = await db.Meetings.FindAsync(id);
+        meet.WasMembers.AddRange(MembersList);
+        await db.SaveChangesAsync();
+        return Results.Ok(meet.WasMembers);
     }
     // public static async Task<IResult> SetWhoWasCurators(AppDbContext db, int id)
     // {

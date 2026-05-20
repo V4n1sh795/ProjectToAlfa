@@ -137,6 +137,10 @@ app.MapGet("meeting/curators/{id:int}", Service.Meeting.WhoWasCurators);
 
 app.MapGet("meeting/members/{id:int}", Service.Meeting.WhoWasMembers);
 
+app.MapPost("meeting/curators/{id:int}", Service.Meeting.SetWhoWasCurators);
+
+app.MapPost("meeting/members/{id:int}", Service.Meeting.SetWhoWasMembers);
+
 app.MapPost("message/{chat_id:int}", Service.Messenger.SendMessage);
 
 app.MapGet("message/{chat_id:int}", Service.Messenger.GetMessages);
