@@ -385,7 +385,8 @@
   line-height: 1;
 }
 
-.meeting-card .meeting-card__more-button[type="button"] {
+.meeting-card .meeting-card__more-button[type="button"],
+.meeting-card .meeting-card__collapse-button[type="button"] {
   appearance: none;
   display: flex;
   align-items: center;
@@ -415,7 +416,11 @@
 .meeting-card .meeting-card__more-button[type="button"]:hover,
 .meeting-card .meeting-card__more-button[type="button"]:focus,
 .meeting-card .meeting-card__more-button[type="button"]:focus-visible,
-.meeting-card .meeting-card__more-button[type="button"]:active {
+.meeting-card .meeting-card__more-button[type="button"]:active,
+.meeting-card .meeting-card__collapse-button[type="button"]:hover,
+.meeting-card .meeting-card__collapse-button[type="button"]:focus,
+.meeting-card .meeting-card__collapse-button[type="button"]:focus-visible,
+.meeting-card .meeting-card__collapse-button[type="button"]:active {
   border: none !important;
   outline: none !important;
   background: transparent !important;
@@ -429,6 +434,13 @@
   height: 10px;
   flex: 0 0 10px;
   transition: transform 0.2s ease;
+}
+
+.meeting-card__collapse-icon {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  transform: rotate(180deg);
 }
 
 .meeting-card--full .meeting-card__more-icon {
@@ -522,9 +534,14 @@
 
 .meeting-card__actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 30px;
   margin-bottom: 0;
+}
+
+.meeting-card .meeting-card__collapse-button[type="button"] {
+  margin: 0;
 }
 
 .meeting-card .meeting-card__save-button[type="button"] {
@@ -877,7 +894,8 @@
     font-size: 21px;
   }
 
-  .meeting-card .meeting-card__more-button[type="button"] {
+  .meeting-card .meeting-card__more-button[type="button"],
+  .meeting-card .meeting-card__collapse-button[type="button"] {
     font-size: 21px;
   }
 
@@ -1005,7 +1023,8 @@
     font-size: 18px;
   }
 
-  .meeting-card .meeting-card__more-button[type="button"] {
+  .meeting-card .meeting-card__more-button[type="button"],
+  .meeting-card .meeting-card__collapse-button[type="button"] {
     font-size: 18px;
   }
 

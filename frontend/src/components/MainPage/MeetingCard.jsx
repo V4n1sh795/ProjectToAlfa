@@ -635,6 +635,12 @@ function MeetingCard({ meeting }) {
     }
   };
 
+  const handleCollapseCard = () => {
+    setIsFullOpen(false);
+    setIsOpen(false);
+    setSaveStatus("idle");
+  };
+
   const handleSave = async (event) => {
     event.stopPropagation();
     setSaveStatus("saving");
@@ -987,6 +993,20 @@ function MeetingCard({ meeting }) {
       </div>
 
       <div className="meeting-card__actions">
+        <button
+          className="meeting-card__collapse-button"
+          type="button"
+          onClick={handleCollapseCard}
+        >
+          Свернуть карточку
+          <img
+            className="meeting-card__collapse-icon"
+            src={showMoreIcon}
+            alt=""
+            aria-hidden="true"
+          />
+        </button>
+
         <button
           className="meeting-card__save-button"
           type="button"
