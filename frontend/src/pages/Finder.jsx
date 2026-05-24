@@ -1,6 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./css/Search.css";
+
+import curatorIcon from "../assets/icons/curator.svg";
+import projectIcon from "../assets/icons/project.svg";
+import searchIcon from "../assets/icons/search.svg";
+import showLessFiltersIcon from "../assets/icons/show_less_filters.svg";
+import studentIcon from "../assets/icons/student.svg";
+import teamIcon from "../assets/icons/team.svg";
 
 const entityMap = {
   student: "member",
@@ -8,9 +15,14 @@ const entityMap = {
   team: "team",
   project: "project",
   "project-idea": "project",
-  "project-pending": "project",
   "project-active": "project",
   "project-archive": "project",
+};
+
+const projectStatusByFilter = {
+  "project-idea": "idea",
+  "project-active": "active",
+  "project-archive": "archive",
 };
 
 const periods = [
@@ -25,45 +37,45 @@ const entities = [
   { id: "curator", label: "Куратор" },
   { id: "team", label: "Команда" },
   { id: "project-idea", label: "Идея проекта" },
-  { id: "project-pending", label: "Проект на согласовании" },
   { id: "project-active", label: "Проект в работе" },
   { id: "project-archive", label: "Проект в архиве" },
 ];
 
-const labels = {
+const entityLabels = {
   project: "Проект",
   team: "Команда",
   member: "Студент",
   curator: "Куратор",
 };
 
-const icons = {
-  project: "📁",
-  team: "👥",
-  member: "👤",
-  curator: "👨‍🏫",
+const entityIcons = {
+  project: projectIcon,
+  team: teamIcon,
+  member: studentIcon,
+  curator: curatorIcon,
 };
 
-const getStatusColor = (status) => {
-  const colors = {
-    idea: { bg: "#e3f2fd", text: "#1976d2" },
-    pending: { bg: "#fff3e0", text: "#f57c00" },
-    active: { bg: "#d4edda", text: "#155724" },
-    archive: { bg: "#f5f5f5", text: "#666" },
-  };
-
-  return colors[status] || colors.active;
+const projectStatuses = {
+  idea: {
+    label: "Идея",
+    className: "finder-status--idea",
+  },
+  active: {
+    label: "В работе",
+    className: "finder-status--active",
+  },
+  archive: {
+    label: "В архиве",
+    className: "finder-status--archive",
+  },
 };
 
-const getStatusLabel = (status) => {
-  const statusLabels = {
-    active: "В работе",
-    pending: "На согласовании",
-    idea: "Идея",
-    archive: "В архиве",
-  };
+const getEntityTitle = (entity) => {
+  if (entity.entityType === "member") {
+    return [entity.surname, entity.name, entity.secondName].filter(Boolean).join(" ") || "Без имени";
+  }
 
-  return statusLabels[status] || status;
+  return entity.name || entity.title || entity.surname || "Без названия";
 };
 
 const Finder = () => {
@@ -74,6 +86,16 @@ const Finder = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [isPeriodFilterOpen, setIsPeriodFilterOpen] = useState(true);
+  const [isEntityFilterOpen, setIsEntityFilterOpen] = useState(true);
+
+  const selectedProjectStatuses = useMemo(
+    () =>
+      selectedEntities
+        .map((entity) => projectStatusByFilter[entity])
+        .filter(Boolean),
+    [selectedEntities],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
@@ -81,6 +103,8 @@ const Finder = () => {
   }, [searchQuery]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchData = async () => {
       setLoading(true);
 
@@ -90,40 +114,50 @@ const Finder = () => {
         ].filter(Boolean);
 
         if (uniqueEntities.length === 0) {
-          uniqueEntities.push("project", "team", "member", "curator");
+          uniqueEntities.push("member", "curator", "team", "project");
         }
 
         const allResults = await Promise.all(
           uniqueEntities.map((entity) => {
-            const url = `api/find/${entity}?query=${encodeURIComponent(debouncedQuery)}`;
+            const url = `/api/find/${entity}?query=${encodeURIComponent(debouncedQuery)}`;
             return fetch(url)
               .then((res) => res.json())
               .then((data) => ({ entity, data }));
           }),
         );
 
+        if (cancelled) return;
+
         setResults(
           allResults.flatMap(({ entity, data }) =>
-            data.map((item) => ({
-              ...item,
-              entityType: entity,
-              period: selectedPeriods[0] || "current",
-            })),
+            data.map((item) => {
+              const explicitStatus =
+                entity === "project" && selectedProjectStatuses.length > 0
+                  ? selectedProjectStatuses[0]
+                  : null;
+
+              return {
+                ...item,
+                entityType: entity,
+                status: explicitStatus || item.status || (entity === "project" ? "active" : null),
+                period: selectedPeriods[0] || "current",
+              };
+            }),
           ),
         );
       } catch (error) {
         console.error("Search error:", error);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    if (debouncedQuery || selectedEntities.length > 0) {
-      fetchData();
-    } else {
-      setResults([]);
-    }
-  }, [debouncedQuery, selectedEntities, selectedPeriods]);
+    fetchData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery, selectedEntities, selectedPeriods, selectedProjectStatuses]);
 
   const handlePeriodChange = (period) => {
     setSelectedPeriods((prev) =>
@@ -141,13 +175,6 @@ const Finder = () => {
     );
   };
 
-  const resetFilters = () => {
-    setSelectedPeriods([]);
-    setSelectedEntities([]);
-    setSearchQuery("");
-    setResults([]);
-  };
-
   const openEntityCard = (result) => {
     if (result.entityType === "member") {
       navigate(`/finder/student/${result.id}`, { state: { student: result } });
@@ -155,147 +182,129 @@ const Finder = () => {
   };
 
   return (
-    <div className="search-container">
-      <div className="search-input-wrapper">
-        <svg
-          className="search-icon"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.35-4.35" />
-        </svg>
-        <input
-          type="text"
-          placeholder=""
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          className="search-input"
-        />
-      </div>
-
-      <div className="filters-wrapper">
-        <div className="filter-section">
-          <div className="filter-header">
+    <div className="finder-page">
+      <aside className="finder-filter-sidebar">
+        <section className="finder-filter-section">
+          <div className="finder-filter-heading">
             <span>Период</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </div>
-          <div className="filter-options">
-            {periods.map((period) => (
-              <label key={period} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={selectedPeriods.includes(period)}
-                  onChange={() => handlePeriodChange(period)}
-                />
-                <span className="checkmark" />
-                {period}
-              </label>
-            ))}
-            <label className="checkbox-label">
-              <input type="checkbox" />
-              <span className="checkmark" />
-              ......
-            </label>
-          </div>
-        </div>
-
-        <div className="filter-section">
-          <div className="filter-header">
-            <span>Сущность</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </div>
-          <div className="filter-options">
-            {entities.map((entity) => (
-              <label key={entity.id} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={selectedEntities.includes(entity.id)}
-                  onChange={() => handleEntityChange(entity.id)}
-                />
-                <span className="checkmark" />
-                {entity.label}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <button className="reset-filters-btn" onClick={resetFilters}>
-          Сбросить фильтры
-        </button>
-      </div>
-
-      {loading && <div className="loading">Загрузка...</div>}
-
-      <div className="results-container">
-        {results.map((result, index) => {
-          const status = result.status || (result.entityType === "project" ? "active" : null);
-          const statusStyle = status ? getStatusColor(status) : null;
-          const clickable = result.entityType === "member";
-
-          return (
-            <div
-              key={`${result.entityType}-${result.id}-${index}`}
-              className={`result-card ${clickable ? "clickable" : ""}`}
-              onClick={() => clickable && openEntityCard(result)}
-              role={clickable ? "button" : undefined}
-              tabIndex={clickable ? 0 : undefined}
-              onKeyDown={(event) => {
-                if (clickable && event.key === "Enter") openEntityCard(result);
-              }}
+            <button
+              className="finder-filter-toggle"
+              type="button"
+              onClick={() => setIsPeriodFilterOpen((value) => !value)}
+              aria-expanded={isPeriodFilterOpen}
+              aria-label={isPeriodFilterOpen ? "Скрыть фильтр периода" : "Показать фильтр периода"}
             >
-              {status && (
-                <div className="result-status">
-                  <span
-                    className="status-badge"
-                    style={{ background: statusStyle.bg, color: statusStyle.text }}
-                  >
-                    {getStatusLabel(status)}
+              <img
+                src={showLessFiltersIcon}
+                alt=""
+                className={`finder-filter-toggle__icon ${isPeriodFilterOpen ? "is-open" : ""}`}
+              />
+            </button>
+          </div>
+          {isPeriodFilterOpen && (
+            <div className="finder-filter-options">
+              {periods.map((period) => (
+                <label key={period} className="finder-filter-option">
+                  <input
+                    type="checkbox"
+                    checked={selectedPeriods.includes(period)}
+                    onChange={() => handlePeriodChange(period)}
+                  />
+                  <span className="finder-checkbox" />
+                  <span>{period}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="finder-filter-section finder-filter-section--entities">
+          <div className="finder-filter-heading">
+            <span>Сущность</span>
+            <button
+              className="finder-filter-toggle"
+              type="button"
+              onClick={() => setIsEntityFilterOpen((value) => !value)}
+              aria-expanded={isEntityFilterOpen}
+              aria-label={isEntityFilterOpen ? "Скрыть фильтр сущности" : "Показать фильтр сущности"}
+            >
+              <img
+                src={showLessFiltersIcon}
+                alt=""
+                className={`finder-filter-toggle__icon ${isEntityFilterOpen ? "is-open" : ""}`}
+              />
+            </button>
+          </div>
+          {isEntityFilterOpen && (
+            <div className="finder-filter-options">
+              {entities.map((entity) => (
+                <label key={entity.id} className="finder-filter-option">
+                  <input
+                    type="checkbox"
+                    checked={selectedEntities.includes(entity.id)}
+                    onChange={() => handleEntityChange(entity.id)}
+                  />
+                  <span className="finder-checkbox" />
+                  <span>{entity.label}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </section>
+      </aside>
+
+      <section className="finder-content">
+        <label className="finder-search">
+          <img src={searchIcon} alt="" className="finder-search__icon" />
+          <input
+            type="text"
+            placeholder="Поиск"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+        </label>
+
+        {loading && <div className="finder-loading">Загрузка...</div>}
+
+        <div className="finder-results">
+          {results.map((result, index) => {
+            const status = result.entityType === "project" ? projectStatuses[result.status] : null;
+            const clickable = result.entityType === "member";
+
+            return (
+              <article
+                key={`${result.entityType}-${result.id}-${index}`}
+                className={`finder-card ${clickable ? "finder-card--clickable" : ""}`}
+                onClick={() => clickable && openEntityCard(result)}
+                role={clickable ? "button" : undefined}
+                tabIndex={clickable ? 0 : undefined}
+                onKeyDown={(event) => {
+                  if (clickable && event.key === "Enter") openEntityCard(result);
+                }}
+              >
+                <div className="finder-card__media">
+                  {status && (
+                    <span className={`finder-status ${status.className}`}>
+                      <span className="finder-status__dot" />
+                      <span>{status.label}</span>
+                    </span>
+                  )}
+                  <img
+                    src={entityIcons[result.entityType]}
+                    alt=""
+                    className="finder-card__icon"
+                  />
+                  <span className="finder-card__type">
+                    {entityLabels[result.entityType] || result.entityType}
                   </span>
                 </div>
-              )}
-              <div className="result-icon">
-                {icons[result.entityType] || "📄"}
-              </div>
-              <div className="result-content">
-                <h3>
-                  {result.name || result.surname || result.title || "Без названия"}
-                  {result.entityType === "member" && result.secondName && (
-                    <span className="name-secondary"> {result.secondName}</span>
-                  )}
-                </h3>
-                {result.description && (
-                  <p className="result-description">{result.description}</p>
-                )}
-                {result.email && <p className="result-meta">Email: {result.email}</p>}
-                {result.group && <p className="result-meta">Группа: {result.group}</p>}
-                <span className="result-type">{labels[result.entityType] || result.entityType}</span>
-              </div>
-              {clickable && (
-                <svg
-                  className="chevron-icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              )}
-            </div>
-          );
-        })}
-      </div>
+
+                <h3 className="finder-card__title">{getEntityTitle(result)}</h3>
+              </article>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 };
