@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using cash.Models;
 using DBContext;
+using Microsoft.VisualBasic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Service;
 
@@ -78,5 +80,38 @@ static class Find
 
         var results = await queryset.ToListAsync();
         return Results.Ok(results);
+ 
+    }
+    public static async Task<IResult> PatchEntity(ILogger<Program> logger, AppDbContext db, string entity, int id, List<(string param, string new_value)> values)
+    {
+        return entity.ToLower() switch
+            {
+                "project" or "projects" => await PatchProject(db, id, values),
+                "team" or "teamss" => await PatchTeam(db, id, values),
+                "member" or "members" => await PatchMember(db, id, values),
+                "curator" or "curators" => await PatchCurator(db, id, values)
+            };
+    }
+    private static async Task<IResult> PatchProject(AppDbContext db, int id, List<(string param, string new_value)> values)
+    {
+        return Results.NotFound("endpoint not ready");
+    }
+    private static async Task<IResult> PatchTeam(AppDbContext db, int id, List<(string param, string new_value)> values)
+    {
+        return Results.NotFound("endpoint not ready");
+    }
+    private static async Task<IResult> PatchMember(AppDbContext db, int id, List<(string param, string new_value)> values)
+    {
+        cash.Models.Member? member = await db.Members.FindAsync(id);
+        if (member == null)
+            return Results.NotFound("endpoint not ready");
+        else
+        {
+            return Results.NotFound("endpoint not ready");
+        }
+    }
+    private static async Task<IResult> PatchCurator(AppDbContext db, int id, List<(string param, string new_value)> values)
+    {
+        return Results.NotFound("endpoint not ready");
     }
 }
