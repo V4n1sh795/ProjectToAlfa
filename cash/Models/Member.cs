@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using System.ComponentModel;
 namespace cash.Models;
 
 [Table("member")]
@@ -31,7 +31,14 @@ public record Member
 
     [ForeignKey(nameof(TeamId))]
     public virtual Team? Team { get; set; }
-    
+
+    [Column("contacts")]
+    [DefaultValue("+79000000000")]
+    public string conntacts {get; set; } = string.Empty;
+
+    [Column("comments")]
+    [DefaultValue("")]
+    public string comments {get; set; } = string.Empty;
     public Member() { }
     
     public Member(string name, string surname, string secondname)

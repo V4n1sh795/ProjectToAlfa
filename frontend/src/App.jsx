@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 import Calender from "./pages/Calender";
 import Finder from "./pages/Finder";
+import StudentPage from "./pages/StudentPage";
 import Messenger from "./pages/Messenger";
 import CreateCase from "./pages/CreateCase";
 import CreateTeam from "./pages/CreateTeam";
@@ -19,7 +20,7 @@ import { authAPI } from "./pages/js/LogIn";
 import "./App.css";
 
 import calendarIcon from "./assets/icons/calendar.svg";
-import searchIcon from "./assets/icons/search.svg";
+import searchIcon from "./assets/icons/finder.svg";
 import chatsIcon from "./assets/icons/chats.svg";
 import createCaseIcon from "./assets/icons/create_case.svg";
 import createTeamIcon from "./assets/icons/create_team.svg";
@@ -74,7 +75,7 @@ const Sidebar = ({ isAuthenticated, onLogout }) => {
           <Link
             key={item.path}
             to={item.path}
-            className={`nav-item ${location.pathname === item.path ? "active" : ""}`}
+            className={`nav-item ${location.pathname.startsWith(item.path) ? "active" : ""}`}
           >
             <img src={item.icon} alt="" className="nav-icon" />
           </Link>
@@ -154,6 +155,18 @@ function App() {
                   loading={loading}
                 >
                   <Finder />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/finder/student/:id"
+              element={
+                <ProtectedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                >
+                  <StudentPage />
                 </ProtectedRoute>
               }
             />
