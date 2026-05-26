@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using cash.Models;
 using DBContext;
+using System.Globalization;
 namespace Service;
 static class Team
 {
@@ -103,9 +104,9 @@ static class Team
                                 AppDbContext db
                                     )
     {
-        DateTime sDay = DateTime.Parse(startDay).ToUniversalTime();
-        DateTime eDay = DateTime.Parse(endDay).ToUniversalTime();
-        
+        string[] formats = { "dd.MM.yyyy", "yyyy-MM-dd" };
+        DateTime sDay = DateTime.ParseExact(startDay, formats, CultureInfo.InvariantCulture, DateTimeStyles.None).ToUniversalTime();
+        DateTime eDay = DateTime.ParseExact(endDay, formats, CultureInfo.InvariantCulture, DateTimeStyles.None).ToUniversalTime();
         if (!Enum.TryParse(dayName, true, out DayOfWeek day))
             throw new ArgumentException($"Invalid day name: {dayName}");
         
