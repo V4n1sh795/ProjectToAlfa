@@ -1225,6 +1225,379 @@
   font-size: 18px;
 }
 
+.team-page {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 70px);
+  padding: 70px 24px 35px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.team-card {
+  width: min(858px, 100%);
+  margin: 0;
+  padding: 45px 22px 22px;
+  background: #f2f3f5;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-family: "Alexandria", sans-serif;
+  color: #212124;
+}
+
+.team-card-editing {
+  padding: 45px 42px 22px;
+}
+
+.team-card h1 {
+  margin: 0 0 45px;
+  color: #212124;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 700;
+  text-align: center;
+}
+
+.team-info-block {
+  min-height: 93px;
+  margin: 0 0 21px;
+  padding: 24px 22px;
+  background: #e7e8eb;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 13px;
+}
+
+.team-info-block--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+}
+
+.team-info-block--split div {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.team-info-block span,
+.team-info-block strong,
+.team-info-block a {
+  color: #212124;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.team-info-block span {
+  font-weight: 500;
+}
+
+.team-info-block strong,
+.team-info-block a {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.team-info-block a {
+  font-weight: 700;
+}
+
+.team-info-block strong:empty::before,
+.team-info-block a:empty::before {
+  content: "\00a0";
+}
+
+.team-summary-grid {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  gap: 21px;
+  margin-bottom: 35px;
+}
+
+.team-summary-grid .team-info-block {
+  min-height: 157px;
+  margin-bottom: 0;
+}
+
+.team-info-block--grades {
+  gap: 12px;
+}
+
+.team-info-block--comment {
+  justify-content: flex-start;
+}
+
+.team-card .team-edit-button[type="button"] {
+  appearance: none;
+  width: 139px;
+  height: 28px;
+  margin: 8px 13px 0 auto;
+  padding: 5px 10px;
+  border: 2px solid #ef3124;
+  border-radius: 15px;
+  background: #fff;
+  color: #212124;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.team-card .team-edit-button[type="button"]:hover,
+.team-card .team-edit-button[type="button"]:focus,
+.team-card .team-edit-button[type="button"]:focus-visible,
+.team-card .team-edit-button[type="button"]:active {
+  background: #fff3f2;
+  border-color: #ef3124;
+  color: #212124;
+  outline: none;
+  box-shadow: none;
+}
+
+.team-edit-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.team-edit-form {
+  display: flex;
+  flex-direction: column;
+  background: #f2f3f5;
+}
+
+.team-edit-field {
+  margin: 0 0 21px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #212124;
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.team-edit-field::after,
+.team-grade-editor label::after {
+  content: none;
+}
+
+.team-edit-field span,
+.team-edit-list h2,
+.team-grade-editor span {
+  margin: 0;
+  color: #212124;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.team-edit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 68px;
+}
+
+.team-edit-grid--members,
+.team-edit-grid--bottom {
+  align-items: start;
+}
+
+.team-edit-list {
+  margin: 0 0 21px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-edit-list h2 {
+  margin-bottom: 22px;
+}
+
+.team-card .team-edit-form input[type="text"] {
+  appearance: none;
+  width: 100%;
+  height: 41px;
+  padding: 10px 10px;
+  border: 2px solid #e7e8eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #212124;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 500;
+  outline: none;
+  transition: none;
+}
+
+.team-card .team-edit-form input[type="text"]:focus,
+.team-card .team-edit-form input[type="text"]:focus-visible {
+  border-color: #ef3124;
+  box-shadow: 0 0 0 2px rgba(239, 49, 36, 0.12);
+  outline: none;
+}
+
+.team-edit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 35px;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-card .team-remove-button[type="button"] {
+  appearance: none;
+  width: 35px;
+  height: 35px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #ef3124;
+  font-family: inherit;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  transition: none;
+}
+
+.team-card .team-remove-button[type="button"]:hover,
+.team-card .team-remove-button[type="button"]:focus,
+.team-card .team-remove-button[type="button"]:focus-visible,
+.team-card .team-remove-button[type="button"]:active {
+  background: transparent;
+  color: #ef3124;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.team-card .team-add-button[type="button"] {
+  appearance: none;
+  width: 295px;
+  height: 41px;
+  margin: 22px 0 0;
+  padding: 8px 14px;
+  border: 1px dashed #ef3124;
+  border-radius: 8px;
+  background: transparent;
+  color: #ef3124;
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: none;
+  transition: background 0.2s ease;
+}
+
+.team-card .team-add-button[type="button"]:hover,
+.team-card .team-add-button[type="button"]:focus,
+.team-card .team-add-button[type="button"]:focus-visible,
+.team-card .team-add-button[type="button"]:active {
+  background: #fff3f2;
+  color: #ef3124;
+  border-color: #ef3124;
+  outline: none;
+  box-shadow: none;
+}
+
+.team-grade-editor {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-grade-editor label {
+  display: grid;
+  grid-template-columns: 188px 128px;
+  align-items: center;
+  gap: 8px;
+  color: #212124;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.team-card .team-grade-editor input[type="text"] {
+  height: 41px;
+}
+
+.team-card .team-save-button[type="submit"] {
+  appearance: none;
+  align-self: flex-end;
+  width: 97px;
+  height: 27px;
+  margin: 20px 13px 0 0;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 15px;
+  background: #bdeeba;
+  color: #212124;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: none;
+  transition: background 0.2s ease;
+}
+
+.team-card .team-save-button[type="submit"]:hover,
+.team-card .team-save-button[type="submit"]:focus,
+.team-card .team-save-button[type="submit"]:focus-visible,
+.team-card .team-save-button[type="submit"]:active {
+  background: #9ee79e;
+  color: #20232a;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.team-page-state {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2a2c31;
+  font-size: 18px;
+}
+
 @media (min-width: 1200px) and (max-width: 1439px) {
   .student-card {
     width: min(900px, 100%);

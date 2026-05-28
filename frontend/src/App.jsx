@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import Calender from "./pages/Calender";
 import Finder from "./pages/Finder";
 import StudentPage from "./pages/StudentPage";
+import TeamPage from "./pages/TeamPage";
 import Messenger from "./pages/Messenger";
 import CreateCase from "./pages/CreateCase";
 import CreateTeam from "./pages/CreateTeam";
@@ -167,6 +168,18 @@ function App() {
                   loading={loading}
                 >
                   <StudentPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/finder/team/:id"
+              element={
+                <ProtectedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                >
+                  <TeamPage />
                 </ProtectedRoute>
               }
             />
