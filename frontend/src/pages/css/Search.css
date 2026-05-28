@@ -545,18 +545,6 @@
   margin: 0;
 }
 
-.finder-filter-section--entities {
-  margin-top: 30px;
-}
-
-.finder-filter-section:first-child .finder-filter-heading {
-  margin-bottom: 13px;
-}
-
-.finder-filter-section:first-child .finder-filter-options {
-  margin-bottom: 30px;
-}
-
 .finder-filter-heading {
   margin: 0 0 13px;
   padding: 0;
@@ -617,6 +605,7 @@
 }
 
 .finder-filter-options {
+  margin-left: 15px;
   display: flex;
   flex-direction: column;
   gap: 10px;
