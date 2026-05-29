@@ -14,31 +14,38 @@
   margin: 0;
   padding: 45px 22px 22px;
   background: #f2f3f5;
-  border-radius: 8px;
+  border-radius: 15px;
   box-sizing: border-box;
   font-family: "Alexandria", sans-serif;
   color: #212124;
 }
 
 .team-card-editing {
-  padding: 45px 42px 22px;
+  padding: 60px 60px 30px;
 }
 
 .team-card h1 {
-  margin: 0 0 45px;
+  margin: 0 0 60px;
   color: #212124;
-  font-size: 30px;
+  font-size: 40px;
   line-height: 1;
   font-weight: 700;
   text-align: center;
 }
 
+.team-card-editing h1 {
+  margin-bottom: 90px;
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+}
+
 .team-info-block {
   min-height: 93px;
-  margin: 0 0 21px;
-  padding: 24px 22px;
+  margin: 0 0 30px;
+  padding: 30px;
   background: #e7e8eb;
-  border-radius: 8px;
+  border-radius: 15px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -58,12 +65,21 @@
   gap: 13px;
 }
 
+.team-info-block--members div {
+  gap: 15px;
+}
+
+.team-info-block--members span {
+  margin-bottom: 15px;
+}
+
 .team-info-block span,
 .team-info-block strong,
 .team-info-block a {
   color: #212124;
-  font-size: 18px;
-  line-height: 1.25;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .team-info-block span {
@@ -87,7 +103,7 @@
 
 .team-summary-grid {
   display: grid;
-  grid-template-columns: 268px minmax(0, 1fr);
+  grid-template-columns: 360px minmax(0, 1fr);
   gap: 21px;
   margin-bottom: 35px;
 }
@@ -101,14 +117,18 @@
   gap: 12px;
 }
 
+.team-info-block--grades strong {
+  white-space: nowrap;
+}
+
 .team-info-block--comment {
   justify-content: flex-start;
 }
 
 .team-card .team-edit-button[type="button"] {
   appearance: none;
-  width: 139px;
-  height: 28px;
+  width: 191px;
+  height: 38px;
   margin: 8px 13px 0 auto;
   padding: 5px 10px;
   border: 2px solid #ef3124;
@@ -116,7 +136,7 @@
   background: #fff;
   color: #212124;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1;
   font-weight: 700;
   display: flex;
@@ -143,8 +163,8 @@
 }
 
 .team-edit-icon {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   flex: 0 0 auto;
   object-fit: contain;
 }
@@ -152,17 +172,29 @@
 .team-edit-form {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
   background: #f2f3f5;
+  border-radius: 0;
+  box-shadow: none;
+  box-sizing: border-box;
+  color: #212124;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 500;
 }
 
 .team-edit-field {
-  margin: 0 0 21px;
+  margin: 0 0 30px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 30px;
   color: #212124;
   font-family: inherit;
-  font-size: 18px;
+  font-size: 24px;
   line-height: 1;
   font-weight: 500;
 }
@@ -177,7 +209,7 @@
 .team-grade-editor span {
   margin: 0;
   color: #212124;
-  font-size: 18px;
+  font-size: 24px;
   line-height: 1;
   font-weight: 500;
 }
@@ -194,28 +226,28 @@
 }
 
 .team-edit-list {
-  margin: 0 0 21px;
+  margin: 0 0 30px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .team-edit-list h2 {
-  margin-bottom: 22px;
+  margin-bottom: 30px;
 }
 
 .team-card .team-edit-form input[type="text"] {
   appearance: none;
   width: 100%;
-  height: 41px;
-  padding: 10px 10px;
+  height: 60px;
+  padding: 15px;
   border: 2px solid #e7e8eb;
-  border-radius: 8px;
+  border-radius: 15px;
   background: #fff;
   color: #212124;
   box-sizing: border-box;
   font: inherit;
-  font-size: 18px;
+  font-size: 24px;
   line-height: 1;
   font-weight: 500;
   outline: none;
@@ -231,23 +263,23 @@
 
 .team-edit-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 35px;
+  grid-template-columns: minmax(0, 1fr) 43px;
   align-items: center;
-  gap: 10px;
+  gap: 0;
 }
 
 .team-card .team-remove-button[type="button"] {
   appearance: none;
-  width: 35px;
-  height: 35px;
-  margin: 0;
+  width: 43px;
+  height: 43px;
+  margin: 0 0 0 -4px;
   padding: 0;
   border: none;
   border-radius: 0;
   background: transparent;
   color: #ef3124;
   font-family: inherit;
-  font-size: 36px;
+  font-size: 0;
   line-height: 1;
   font-weight: 400;
   display: flex;
@@ -256,6 +288,16 @@
   cursor: pointer;
   box-shadow: none;
   transition: none;
+}
+
+.team-card .team-remove-button[type="button"]::before {
+  content: "";
+  width: 43px;
+  height: 43px;
+  background: #ef3124;
+  mask: url("../../assets/icons/close_alert.svg") center / contain no-repeat;
+  -webkit-mask: url("../../assets/icons/close_alert.svg") center / contain
+    no-repeat;
 }
 
 .team-card .team-remove-button[type="button"]:hover,
@@ -271,16 +313,16 @@
 
 .team-card .team-add-button[type="button"] {
   appearance: none;
-  width: 295px;
-  height: 41px;
+  width: min(432px, 100%);
+  height: 60px;
   margin: 22px 0 0;
-  padding: 8px 14px;
-  border: 1px dashed #ef3124;
-  border-radius: 8px;
-  background: transparent;
+  padding: 15px;
+  border: 2px dashed #ef3124;
+  border-radius: 15px;
+  background: #fff;
   color: #ef3124;
   font-family: inherit;
-  font-size: 18px;
+  font-size: 24px;
   line-height: 1;
   font-weight: 500;
   display: flex;
@@ -307,36 +349,42 @@
   margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .team-grade-editor label {
   display: grid;
-  grid-template-columns: 188px 128px;
+  grid-template-columns: 240px 195px;
   align-items: center;
-  gap: 8px;
+  gap: 30px;
   color: #212124;
   font-family: inherit;
+  font-size: 24px;
   font-weight: 500;
 }
 
+.team-grade-editor span {
+  white-space: nowrap;
+}
+
 .team-card .team-grade-editor input[type="text"] {
-  height: 41px;
+  width: 195px;
+  height: 60px;
 }
 
 .team-card .team-save-button[type="submit"] {
   appearance: none;
   align-self: flex-end;
-  width: 97px;
-  height: 27px;
-  margin: 20px 13px 0 0;
-  padding: 5px 12px;
+  width: 138px;
+  height: 38px;
+  margin: 20px 0 0 auto;
+  padding: 7px 15px;
   border: none;
   border-radius: 15px;
   background: #bdeeba;
   color: #212124;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1;
   font-weight: 700;
   display: flex;
@@ -346,6 +394,19 @@
   box-sizing: border-box;
   box-shadow: none;
   transition: background 0.2s ease;
+}
+
+.team-save-error {
+  margin: 0 0 12px;
+  color: #ef3124;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.team-card .team-save-button[type="submit"]:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
 .team-card .team-save-button[type="submit"]:hover,
@@ -371,3 +432,389 @@
   font-size: 18px;
 }
 
+@media (min-width: 1920px) {
+  .team-card {
+    width: 1212px;
+  }
+
+  .team-summary-grid {
+    grid-template-columns: 372px minmax(0, 1fr);
+    gap: 30px;
+  }
+}
+
+@media (max-width: 1919px) and (min-width: 1680px) {
+  .team-page {
+    padding: 62px 24px 32px;
+  }
+
+  .team-card {
+    width: 1120px;
+    padding: 42px 22px 22px;
+  }
+
+  .team-card-editing {
+    padding: 54px 54px 27px;
+  }
+
+  .team-card h1 {
+    margin-bottom: 54px;
+    font-size: 36px;
+  }
+
+  .team-card-editing h1 {
+    margin-bottom: 81px;
+    font-size: 36px;
+  }
+
+  .team-info-block {
+    margin-bottom: 27px;
+    padding: 27px;
+    min-height: 84px;
+    gap: 12px;
+  }
+
+  .team-info-block--split {
+    gap: 36px;
+  }
+
+  .team-info-block--split div {
+    gap: 12px;
+  }
+
+  .team-info-block--members div {
+    gap: 14px;
+  }
+
+  .team-info-block--members span {
+    margin-bottom: 14px;
+  }
+
+  .team-info-block span,
+  .team-info-block strong,
+  .team-info-block a,
+  .team-edit-form,
+  .team-edit-field,
+  .team-edit-field span,
+  .team-edit-list h2,
+  .team-grade-editor span,
+  .team-grade-editor label,
+  .team-card .team-edit-form input[type="text"],
+  .team-card .team-add-button[type="button"] {
+    font-size: 22px;
+  }
+
+  .team-summary-grid {
+    grid-template-columns: 342px minmax(0, 1fr);
+    gap: 27px;
+    margin-bottom: 32px;
+  }
+
+  .team-edit-field {
+    margin-bottom: 27px;
+    gap: 27px;
+  }
+
+  .team-edit-grid {
+    gap: 60px;
+  }
+
+  .team-edit-list {
+    margin-bottom: 27px;
+  }
+
+  .team-edit-list h2 {
+    margin-bottom: 27px;
+  }
+
+  .team-card .team-edit-form input[type="text"] {
+    height: 54px;
+    padding: 13px;
+  }
+
+  .team-edit-row {
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
+  .team-card .team-remove-button[type="button"],
+  .team-card .team-remove-button[type="button"]::before {
+    width: 40px;
+    height: 40px;
+  }
+
+  .team-card .team-add-button[type="button"] {
+    width: min(392px, 100%);
+    height: 54px;
+    padding: 13px;
+  }
+
+  .team-grade-editor label {
+    grid-template-columns: 222px 178px;
+    gap: 27px;
+  }
+
+  .team-card .team-grade-editor input[type="text"] {
+    width: 178px;
+    height: 54px;
+  }
+}
+
+@media (max-width: 1679px) and (min-width: 1440px) {
+  .team-page {
+    padding: 54px 24px 30px;
+  }
+
+  .team-card {
+    width: 980px;
+    padding: 38px 20px 20px;
+  }
+
+  .team-card-editing {
+    padding: 48px 48px 24px;
+  }
+
+  .team-card h1 {
+    margin-bottom: 48px;
+    font-size: 32px;
+  }
+
+  .team-card-editing h1 {
+    margin-bottom: 72px;
+    font-size: 32px;
+  }
+
+  .team-info-block {
+    margin-bottom: 24px;
+    padding: 24px;
+    min-height: 76px;
+    gap: 11px;
+  }
+
+  .team-info-block--split {
+    gap: 32px;
+  }
+
+  .team-info-block--split div {
+    gap: 11px;
+  }
+
+  .team-info-block--members div {
+    gap: 12px;
+  }
+
+  .team-info-block--members span {
+    margin-bottom: 12px;
+  }
+
+  .team-info-block span,
+  .team-info-block strong,
+  .team-info-block a,
+  .team-edit-form,
+  .team-edit-field,
+  .team-edit-field span,
+  .team-edit-list h2,
+  .team-grade-editor span,
+  .team-grade-editor label,
+  .team-card .team-edit-form input[type="text"],
+  .team-card .team-add-button[type="button"] {
+    font-size: 20px;
+  }
+
+  .team-summary-grid {
+    grid-template-columns: 312px minmax(0, 1fr);
+    gap: 24px;
+    margin-bottom: 30px;
+  }
+
+  .team-summary-grid .team-info-block {
+    min-height: 140px;
+  }
+
+  .team-edit-field {
+    margin-bottom: 24px;
+    gap: 24px;
+  }
+
+  .team-edit-grid {
+    gap: 52px;
+  }
+
+  .team-edit-list {
+    margin-bottom: 24px;
+  }
+
+  .team-edit-list h2 {
+    margin-bottom: 24px;
+  }
+
+  .team-card .team-edit-form input[type="text"] {
+    height: 50px;
+    padding: 12px;
+  }
+
+  .team-edit-row {
+    grid-template-columns: minmax(0, 1fr) 36px;
+  }
+
+  .team-card .team-remove-button[type="button"] {
+    margin-left: -3px;
+  }
+
+  .team-card .team-remove-button[type="button"],
+  .team-card .team-remove-button[type="button"]::before {
+    width: 36px;
+    height: 36px;
+  }
+
+  .team-card .team-add-button[type="button"] {
+    width: min(352px, 100%);
+    height: 50px;
+    padding: 12px;
+  }
+
+  .team-grade-editor label {
+    grid-template-columns: 202px 158px;
+    gap: 24px;
+  }
+
+  .team-card .team-grade-editor input[type="text"] {
+    width: 158px;
+    height: 50px;
+  }
+
+  .team-card .team-save-button[type="submit"] {
+    width: 126px;
+    height: 36px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1439px) and (min-width: 1200px) {
+  .team-page {
+    padding: 46px 20px 28px;
+  }
+
+  .team-card {
+    width: 860px;
+    padding: 34px 18px 18px;
+  }
+
+  .team-card-editing {
+    padding: 42px 42px 22px;
+  }
+
+  .team-card h1 {
+    margin-bottom: 42px;
+    font-size: 28px;
+  }
+
+  .team-card-editing h1 {
+    margin-bottom: 63px;
+    font-size: 28px;
+  }
+
+  .team-info-block {
+    margin-bottom: 21px;
+    padding: 21px;
+    min-height: 70px;
+    gap: 10px;
+  }
+
+  .team-info-block--split {
+    gap: 28px;
+  }
+
+  .team-info-block--split div {
+    gap: 10px;
+  }
+
+  .team-info-block--members div {
+    gap: 11px;
+  }
+
+  .team-info-block--members span {
+    margin-bottom: 11px;
+  }
+
+  .team-info-block span,
+  .team-info-block strong,
+  .team-info-block a,
+  .team-edit-form,
+  .team-edit-field,
+  .team-edit-field span,
+  .team-edit-list h2,
+  .team-grade-editor span,
+  .team-grade-editor label,
+  .team-card .team-edit-form input[type="text"],
+  .team-card .team-add-button[type="button"] {
+    font-size: 18px;
+  }
+
+  .team-summary-grid {
+    grid-template-columns: 282px minmax(0, 1fr);
+    gap: 21px;
+    margin-bottom: 28px;
+  }
+
+  .team-summary-grid .team-info-block {
+    min-height: 126px;
+  }
+
+  .team-edit-field {
+    margin-bottom: 21px;
+    gap: 21px;
+  }
+
+  .team-edit-grid {
+    gap: 42px;
+  }
+
+  .team-edit-list {
+    margin-bottom: 21px;
+  }
+
+  .team-edit-list h2 {
+    margin-bottom: 21px;
+  }
+
+  .team-card .team-edit-form input[type="text"] {
+    height: 46px;
+    padding: 10px;
+  }
+
+  .team-edit-row {
+    grid-template-columns: minmax(0, 1fr) 32px;
+  }
+
+  .team-card .team-remove-button[type="button"] {
+    margin-left: -2px;
+  }
+
+  .team-card .team-remove-button[type="button"],
+  .team-card .team-remove-button[type="button"]::before {
+    width: 32px;
+    height: 32px;
+  }
+
+  .team-card .team-add-button[type="button"] {
+    width: min(320px, 100%);
+    height: 46px;
+    padding: 10px;
+  }
+
+  .team-grade-editor label {
+    grid-template-columns: 184px 136px;
+    gap: 20px;
+  }
+
+  .team-card .team-grade-editor input[type="text"] {
+    width: 136px;
+    height: 46px;
+  }
+
+  .team-card .team-save-button[type="submit"] {
+    width: 116px;
+    height: 34px;
+    font-size: 14px;
+  }
+}

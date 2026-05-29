@@ -19,6 +19,11 @@ export async function getTeam(teamId) {
   return response.data;
 }
 
+export async function updateTeamCard(teamId, payload) {
+  const response = await api.patch(`/team/${teamId}`, payload);
+  return response.data;
+}
+
 export async function getMember(memberId) {
   const response = await api.get(`/member/${memberId}`);
   return response.data;

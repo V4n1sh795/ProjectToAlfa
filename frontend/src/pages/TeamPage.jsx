@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
+import { updateTeamCard } from "../api/meetingsApi";
 import "./css/TeamPage.css";
 import editIcon from "../assets/icons/edit.svg";
 
@@ -14,6 +15,11 @@ const dayLabels = {
   Saturday: "Суббота",
   Sunday: "Воскресенье",
 };
+
+const dayValuesByLabel = Object.entries(dayLabels).reduce(
+  (result, [value, label]) => ({ ...result, [label.toLowerCase()]: value }),
+  {},
+);
 
 const getValue = (source, names, fallback = "") => {
   if (!source) return fallback;
@@ -73,6 +79,24 @@ const getProfileRole = (member) => {
   return String(profile || "").trim().split(/\s+/)[0] || "";
 };
 
+const getDayLabel = (value) => dayLabels[value] || value || emptyValue;
+
+const getDayValue = (value) => {
+  const normalizedValue = String(value || "").trim();
+  return dayValuesByLabel[normalizedValue.toLowerCase()] || normalizedValue;
+};
+
+const createDraftMember = (member) => ({
+  id: member.id ?? null,
+  name: member.name || "",
+  role: member.role || "",
+});
+
+const createDraftCurator = (curator) => ({
+  id: curator.id ?? null,
+  name: curator.name || "",
+});
+
 const TeamPage = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -85,6 +109,8 @@ const TeamPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [savedCard, setSavedCard] = useState(null);
   const [draftCard, setDraftCard] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -159,11 +185,13 @@ const TeamPage = () => {
 
   const teamName = getValue(team, ["name", "Name"], "Команда");
   const linkedProject = normalizeKeyValue(getValue(team, ["project", "Project"], null));
+  const projectId =
+    linkedProject.key || getValue(team, ["projectId", "ProjectId"], null);
   const projectName =
     linkedProject.value ||
     getValue(project, ["name", "Name"], emptyValue);
-  const meetingDay = dayLabels[getValue(team, ["callDay", "CallDay"], "")] ||
-    getValue(team, ["callDay", "CallDay"], emptyValue);
+  const callDay = getValue(team, ["callDay", "CallDay"], "");
+  const meetingDay = getDayLabel(callDay);
   const meetingTime = getValue(team, ["callTime", "CallTime"], emptyValue);
   const artifacts = getValue(
     project,
@@ -176,15 +204,15 @@ const TeamPage = () => {
   const cardData = useMemo(
     () =>
       savedCard || {
+        teamId: id,
+        projectId,
         projectName,
+        callDay,
         meetingDay,
         meetingTime,
         artifacts,
-        members: memberDetails.map((member) => ({
-          name: member.name || emptyValue,
-          role: member.role || "",
-        })),
-        curators: curators.map((curator) => curator.name || emptyValue),
+        members: memberDetails.map(createDraftMember),
+        curators: curators.map(createDraftCurator),
         grades: {
           checkpoint1: "",
           checkpoint2: "",
@@ -195,11 +223,14 @@ const TeamPage = () => {
       },
     [
       artifacts,
+      callDay,
       comment,
       curators,
+      id,
       meetingDay,
       meetingTime,
       memberDetails,
+      projectId,
       projectName,
       savedCard,
     ],
@@ -207,11 +238,16 @@ const TeamPage = () => {
 
   const startEditing = () => {
     setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setSaveError("");
     setIsEditing(true);
   };
 
   const updateDraft = (field, value) => {
-    setDraftCard((prev) => ({ ...prev, [field]: value }));
+    setDraftCard((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "meetingDay" ? { callDay: getDayValue(value) } : {}),
+    }));
   };
 
   const updateMember = (index, field, value) => {
@@ -226,7 +262,7 @@ const TeamPage = () => {
   const addMember = () => {
     setDraftCard((prev) => ({
       ...prev,
-      members: [...prev.members, { name: "", role: "" }],
+      members: [...prev.members, { id: null, name: "", role: "" }],
     }));
   };
 
@@ -241,7 +277,7 @@ const TeamPage = () => {
     setDraftCard((prev) => ({
       ...prev,
       curators: prev.curators.map((curator, curatorIndex) =>
-        curatorIndex === index ? value : curator,
+        curatorIndex === index ? { ...curator, name: value } : curator,
       ),
     }));
   };
@@ -249,7 +285,7 @@ const TeamPage = () => {
   const addCurator = () => {
     setDraftCard((prev) => ({
       ...prev,
-      curators: [...prev.curators, ""],
+      curators: [...prev.curators, { id: null, name: "" }],
     }));
   };
 
@@ -269,23 +305,62 @@ const TeamPage = () => {
 
   const buildTeamPatchPayload = (card) => ({
     id,
-    projectName: card.projectName,
-    callDay: card.meetingDay,
-    callTime: card.meetingTime,
-    artifacts: card.artifacts,
-    members: card.members,
-    curators: card.curators,
-    grades: card.grades,
-    comment: card.comment,
+    project: {
+      id: card.projectId,
+      name: String(card.projectName || "").trim(),
+      artifacts: String(card.artifacts || "").trim(),
+    },
+    callDay: card.callDay || getDayValue(card.meetingDay),
+    callTime: String(card.meetingTime || "").trim(),
+    members: card.members.map((member) => ({
+      id: member.id,
+      name: String(member.name || "").trim(),
+      role: String(member.role || "").trim(),
+    })),
+    curators: card.curators.map((curator) => ({
+      id: curator.id,
+      name: String(curator.name || "").trim(),
+    })),
+    grades: {
+      checkpoint1: String(card.grades.checkpoint1 || "").trim(),
+      checkpoint2: String(card.grades.checkpoint2 || "").trim(),
+      checkpoint3: String(card.grades.checkpoint3 || "").trim(),
+      final: String(card.grades.final || "").trim(),
+    },
+    comment: String(card.comment || "").trim(),
   });
 
-  const saveDraft = (event) => {
+  const saveDraft = async (event) => {
     event.preventDefault();
-    setSavedCard({
-      ...draftCard,
-      backendPayload: buildTeamPatchPayload(draftCard),
-    });
-    setIsEditing(false);
+    const payload = buildTeamPatchPayload(draftCard);
+
+    setIsSaving(true);
+    setSaveError("");
+
+    try {
+      const updatedTeam = await updateTeamCard(id, payload);
+      const nextCard = {
+        ...draftCard,
+        callDay: payload.callDay,
+        meetingDay: getDayLabel(payload.callDay),
+        members: payload.members,
+        curators: payload.curators,
+        grades: payload.grades,
+        comment: payload.comment,
+      };
+
+      setSavedCard(nextCard);
+      if (updatedTeam) setTeam((prev) => ({ ...prev, ...updatedTeam }));
+      setIsEditing(false);
+    } catch (saveError) {
+      setSaveError(
+        saveError.response?.data?.message ||
+          saveError.message ||
+          "Не удалось сохранить изменения команды",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) {
@@ -391,10 +466,10 @@ const TeamPage = () => {
               <section className="team-edit-list">
                 <h2>Кураторы команды</h2>
                 {draftCard.curators.map((curator, index) => (
-                  <div className="team-edit-row" key={`curator-${index}`}>
+                  <div className="team-edit-row" key={`curator-${curator.id ?? index}`}>
                     <input
                       type="text"
-                      value={curator}
+                      value={curator.name}
                       onChange={(event) => updateCurator(index, event.target.value)}
                     />
                     <button
@@ -461,7 +536,9 @@ const TeamPage = () => {
               />
             </label>
 
-            <button className="team-save-button" type="submit">
+            {saveError && <p className="team-save-error">{saveError}</p>}
+
+            <button className="team-save-button" type="submit" disabled={isSaving}>
               Сохранить
             </button>
           </form>
@@ -492,7 +569,7 @@ const TeamPage = () => {
               )}
             </section>
 
-            <section className="team-info-block team-info-block--split">
+            <section className="team-info-block team-info-block--split team-info-block--members">
               <div>
                 <span>Участники команды</span>
                 {cardData.members.map((member, index) => (
@@ -513,7 +590,9 @@ const TeamPage = () => {
               <span>Кураторы команды</span>
               {cardData.curators.length > 0 ? (
                 cardData.curators.map((curator, index) => (
-                  <strong key={`${curator}-${index}`}>{curator}</strong>
+                  <strong key={`${curator.id ?? curator.name}-${index}`}>
+                    {curator.name || emptyValue}
+                  </strong>
                 ))
               ) : (
                 <strong>{emptyValue}</strong>
