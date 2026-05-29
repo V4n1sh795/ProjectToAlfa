@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import "./css/Search.css";
+import "./css/StudentPage.css";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";

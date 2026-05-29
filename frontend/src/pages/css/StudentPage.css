@@ -1,0 +1,327 @@
+.student-page {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 70px);
+  padding: 70px 24px 35px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.student-card {
+  width: min(1212px, 100%);
+  margin: 0;
+  padding: 60px 30px 30px;
+  background: #f2f3f5;
+  border-radius: 15px;
+  box-sizing: border-box;
+}
+
+.student-card-editing {
+  padding: 60px 30px 30px;
+}
+
+.student-card h1 {
+  margin: 0 0 30px;
+  color: #212124;
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  text-align: center;
+}
+
+.student-record h2 {
+  margin: 0px 0 15px;
+  color: #212124;
+  font-size: 36px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.student-record-divider {
+  height: 10px;
+  margin: 0 -10px 60px;
+  background: #e7e8eb;
+  border-radius: 3px;
+}
+
+.student-info-block {
+  height: 130px;
+  margin: 0 0 30px;
+  padding: 30px;
+  background: #e7e8eb;
+  border-radius: 15px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.student-info-block span {
+  color: #212124;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.student-info-block strong {
+  color: #212124;
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.student-info-block strong:empty::before {
+  content: "\00a0";
+}
+
+.student-card .student-edit-button[type="button"] {
+  appearance: none;
+  width: 191px;
+  margin: 60px 10px 0 auto;
+  height: 38px;
+  padding: 7px 15px;
+  border: 2px solid #ef3124;
+  border-radius: 15px;
+  background: #fff;
+  color: #212124;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.student-card .student-edit-button[type="button"]:hover {
+  background: #fff3f2;
+  border-color: #ef3124;
+  color: #212124;
+}
+
+.student-edit-icon {
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.student-edit-form {
+  display: flex;
+  flex-direction: column;
+  background-color: #f2f3f5;
+}
+
+.student-edit-field {
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.student-edit-field::after {
+  content: none;
+}
+
+.student-edit-field span {
+  color: #212124;
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.student-edit-field input {
+  appearance: none;
+  width: 100%;
+  height: 60px;
+  padding: 15px;
+  border: 2px solid #e7e8eb;
+  border-radius: 15px;
+  background: #fff;
+  color: #212124;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 24px;
+  line-height: 38px;
+  font-weight: 500;
+  outline: none;
+}
+
+.student-edit-field input:focus {
+  border-color: #ef3124;
+  box-shadow: 0 0 0 2px rgba(239, 49, 36, 0.12);
+}
+
+.student-edit-field input:focus-visible {
+  outline: none;
+  border-color: #ef3124;
+  box-shadow: 0 0 0 2px rgba(239, 49, 36, 0.12);
+}
+
+.student-record-edit h2 {
+  margin-top: 18px;
+}
+
+.student-record-edit .student-record-divider {
+  margin-bottom: 60px;
+}
+
+.student-card .student-save-button[type="submit"] {
+  appearance: none;
+  align-self: flex-end;
+  height: 38px;
+  width: 138px;
+  margin: 16px 10px 0 0;
+  padding: 3px 14px;
+  border: none;
+  border-radius: 15px;
+  background: #bdeeba;
+  color: #212124;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: background 0.2s ease;
+}
+
+.student-card .student-save-button[type="submit"]:hover {
+  background: #9ee79e;
+  color: #20232a;
+}
+
+.student-page-state {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 70px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2a2c31;
+  font-size: 18px;
+}
+
+
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .student-card {
+    width: min(900px, 100%);
+    padding: 44px 24px 24px;
+  }
+
+  .student-card h1 {
+    font-size: 32px;
+  }
+
+  .student-record h2 {
+    font-size: 28px;
+  }
+
+  .student-info-block {
+    height: 104px;
+    padding: 24px;
+  }
+
+  .student-info-block span,
+  .student-info-block strong,
+  .student-edit-field span,
+  .student-edit-field input {
+    font-size: 20px;
+  }
+
+  .student-edit-field {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .student-edit-field input {
+    height: 52px;
+    padding: 12px 14px;
+    line-height: 28px;
+  }
+
+  .student-record-edit .student-record-divider {
+    margin-bottom: 44px;
+  }
+
+  .student-card .student-edit-button[type="button"] {
+    width: 174px;
+    height: 36px;
+    margin-top: 44px;
+    font-size: 15px;
+  }
+
+  .student-card .student-save-button[type="submit"] {
+    width: 124px;
+    height: 36px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .student-card {
+    width: min(1080px, 100%);
+    padding: 52px 28px 28px;
+  }
+
+  .student-card h1 {
+    font-size: 36px;
+  }
+
+  .student-record h2 {
+    font-size: 32px;
+  }
+
+  .student-info-block {
+    height: 118px;
+    padding: 28px;
+  }
+
+  .student-info-block span,
+  .student-info-block strong,
+  .student-edit-field span,
+  .student-edit-field input {
+    font-size: 22px;
+  }
+
+  .student-edit-field {
+    gap: 14px;
+    margin-bottom: 15px;
+  }
+
+  .student-edit-field input {
+    height: 56px;
+    padding: 14px;
+    line-height: 32px;
+  }
+
+  .student-record-edit .student-record-divider {
+    margin-bottom: 52px;
+  }
+
+  .student-card .student-edit-button[type="button"] {
+    width: 184px;
+    height: 37px;
+    margin-top: 52px;
+  }
+
+  .student-card .student-save-button[type="submit"] {
+    width: 132px;
+    height: 37px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .student-card {
+    width: 1212px;
+  }
+}

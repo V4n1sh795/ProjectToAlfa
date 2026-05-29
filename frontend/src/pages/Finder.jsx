@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./css/Search.css";
+import "./css/Finder.css";
 
 import curatorIcon from "../assets/icons/curator.svg";
 import projectIcon from "../assets/icons/project.svg";
