@@ -118,7 +118,9 @@ function App() {
     <BrowserRouter>
       <div className="app-container">
         <header className="top-bar">
-          <h1 className="top-bar-title">BetaProject</h1>
+          <Link to="/calender" className="top-bar-logo">
+            <h1 className="top-bar-title">BetaProject</h1>
+          </Link>
         </header>
 
         <button
