@@ -19,6 +19,11 @@ export async function getTeam(teamId) {
   return response.data;
 }
 
+export async function getTeams() {
+  const response = await api.get("/get_team");
+  return response.data;
+}
+
 export async function updateTeamCard(teamId, payload) {
   const response = await api.patch(`/team/${teamId}`, payload);
   return response.data;
@@ -26,6 +31,16 @@ export async function updateTeamCard(teamId, payload) {
 
 export async function getMember(memberId) {
   const response = await api.get(`/member/${memberId}`);
+  return response.data;
+}
+
+export async function getCurator(curatorId) {
+  const response = await api.get(`/curator/${curatorId}`);
+  return response.data;
+}
+
+export async function updateCuratorCard(curatorId, payload) {
+  const response = await api.patch(`/curator/${curatorId}`, payload);
   return response.data;
 }
 
