@@ -81,13 +81,13 @@ const CreateCase = () => {
     // Формируем объект проекта
     const projectData = {
       name: projectName,
-      description: description,
-      roles: roles,
-      keyTechnology: keyTechnology,
-      goal: projectGoal,
-      result: projectResult,
-      startDate: startDate,
-      endDate: endDate,
+      description,
+      Main_Goal: projectGoal,
+      Results: projectResult,
+      Roles: roles,
+      Technology: keyTechnology,
+      startDate,
+      endDate,
       semester: semester === 'autumn' ? 'Осенний' : 'Весенний'
     };
     

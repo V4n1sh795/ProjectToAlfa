@@ -169,6 +169,10 @@ const Finder = () => {
     if (result.entityType === "curator") {
       navigate(`/finder/curator/${result.id}`, { state: { curator: result } });
     }
+
+    if (result.entityType === "project") {
+      navigate(`/finder/project/${result.id}`, { state: { project: result } });
+    }
   };
 
   return (
@@ -225,7 +229,7 @@ const Finder = () => {
         <div className="finder-results">
           {results.map((result, index) => {
             const status = result.entityType === "project" ? projectStatuses[result.status] : null;
-            const clickable = ["member", "team", "curator"].includes(result.entityType);
+            const clickable = ["member", "team", "curator", "project"].includes(result.entityType);
 
             return (
               <article

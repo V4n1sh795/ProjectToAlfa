@@ -13,6 +13,7 @@ import Finder from "./pages/Finder";
 import StudentPage from "./pages/StudentPage";
 import TeamPage from "./pages/TeamPage";
 import CuratorPage from "./pages/CuratorPage";
+import ProjectPage from "./pages/ProjectPage";
 import Messenger from "./pages/Messenger";
 import CreateCase from "./pages/CreateCase";
 import CreateTeam from "./pages/CreateTeam";
@@ -195,6 +196,18 @@ function App() {
                   loading={loading}
                 >
                   <CuratorPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/finder/project/:id"
+              element={
+                <ProtectedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                >
+                  <ProjectPage />
                 </ProtectedRoute>
               }
             />
