@@ -63,6 +63,14 @@
   font-weight: 700;
 }
 
+.app-container.auth-layout::before {
+  left: 0;
+}
+
+.auth-layout .top-bar {
+  padding: 0 51px;
+}
+
 .top-bar-logo {
   color: inherit;
   text-decoration: none;
@@ -197,6 +205,11 @@
   background-color: transparent;
 }
 
+.auth-layout .main-content {
+  left: 0;
+  right: 0;
+}
+
 /* Мобильная кнопка пока скрыта */
 .menu-toggle {
   display: none;
@@ -234,6 +247,66 @@
 
 .main-content::-webkit-scrollbar-thumb:hover {
   background: #ef3124;
+}
+
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .auth-layout.app-container::before {
+    background-position:
+      right 0px bottom 0px,
+      right 31px bottom 0px,
+      right 188px bottom 0px,
+      right 375px bottom 0px;
+    background-size:
+      453px 359px,
+      504px 334px,
+      395px 263px,
+      252px 143px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1679px) {
+  .auth-layout.app-container::before {
+    background-position:
+      right 0px bottom 0px,
+      right 38px bottom 0px,
+      right 225px bottom 0px,
+      right 450px bottom 0px;
+    background-size:
+      543px 431px,
+      605px 401px,
+      474px 316px,
+      302px 172px;
+  }
+}
+
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .auth-layout.app-container::before {
+    background-position:
+      right 0px bottom 0px,
+      right 44px bottom 0px,
+      right 263px bottom 0px,
+      right 525px bottom 0px;
+    background-size:
+      634px 502px,
+      706px 468px,
+      553px 368px,
+      353px 200px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .auth-layout.app-container::before {
+    background-position:
+      right 0px bottom 0px,
+      right 50px bottom 0px,
+      right 300px bottom 0px,
+      right 600px bottom 0px;
+    background-size:
+      724px 574px,
+      807px 535px,
+      632px 421px,
+      403px 229px;
+  }
 }
 
 /* Адаптивность */
@@ -292,5 +365,9 @@
 
     cursor: pointer;
     font-size: 22px;
+  }
+
+  .auth-layout .menu-toggle {
+    display: none;
   }
 }

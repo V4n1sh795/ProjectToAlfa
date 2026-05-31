@@ -117,7 +117,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="app-container">
+      <div className={`app-container ${!isAuthenticated ? "auth-layout" : ""}`}>
         <header className="top-bar">
           <Link to="/calender" className="top-bar-logo">
             <h1 className="top-bar-title">BetaProject</h1>

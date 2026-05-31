@@ -113,7 +113,7 @@ function LogIn({ setIsAuthenticated }) {
         navigate('/calender');
       } else {
         // Отправка запроса на регистрацию
-        const response = await authAPI.register(
+        await authAPI.register(
           formData.name,
           formData.email,
           formData.password
@@ -176,7 +176,7 @@ function LogIn({ setIsAuthenticated }) {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <div className={`auth-card ${isLogin ? 'auth-card-login' : 'auth-card-register'}`}>
         <div className="auth-header">
           <h2>{isLogin ? 'Вход в аккаунт' : 'Создать аккаунт'}</h2>
           <p className="auth-subtitle">
@@ -190,17 +190,17 @@ function LogIn({ setIsAuthenticated }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className={`auth-form ${isLogin ? 'auth-form-login' : 'auth-form-register'}`}>
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="name">Имя</label>
+              <label htmlFor="name">Имя<span className="required-mark">*</span></label>
               <input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Введите ваше имя"
+                placeholder="ФИО"
                 className={errors.name ? 'error' : ''}
                 disabled={isLoading}
               />
@@ -209,22 +209,22 @@ function LogIn({ setIsAuthenticated }) {
           )}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email<span className="required-mark">*</span></label>
             <input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="example@mail.com"
+              placeholder="example@mail.ru"
               className={errors.email ? 'error' : ''}
               disabled={isLoading}
             />
             {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Пароль</label>
+          <div className={`form-group ${!isLogin ? 'password-group' : ''}`}>
+            <label htmlFor="password">Пароль<span className="required-mark">*</span></label>
             <input
               type="password"
               id="password"
@@ -236,26 +236,23 @@ function LogIn({ setIsAuthenticated }) {
               disabled={isLoading}
             />
             {errors.password && <span className="error-message">{errors.password}</span>}
-          </div>
 
-          {!isLogin && (
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Подтверждение пароля</label>
+            {!isLogin && (
               <input
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Повторите пароль"
+                placeholder="Подтвердите пароль"
                 className={errors.confirmPassword ? 'error' : ''}
                 disabled={isLoading}
               />
-              {errors.confirmPassword && (
-                <span className="error-message">{errors.confirmPassword}</span>
-              )}
-            </div>
-          )}
+            )}
+            {!isLogin && errors.confirmPassword && (
+              <span className="error-message">{errors.confirmPassword}</span>
+            )}
+          </div>
 
           <button type="submit" className="submit-btn" disabled={isLoading}>
             {isLoading ? (
