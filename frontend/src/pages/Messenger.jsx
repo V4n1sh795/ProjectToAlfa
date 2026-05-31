@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './css/Messenger.css';
+import sendMessageIcon from '../assets/icons/send_message.svg';
+
+const formatMessageTime = (value) => {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 
 const Messenger = () => {
   const [projects, setProjects] = useState([]);
@@ -9,7 +23,11 @@ const Messenger = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [inputText, setInputText] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [scrollbarState, setScrollbarState] = useState({ visible: false, top: 10 });
+  const navigate = useNavigate();
   
+  const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -33,14 +51,52 @@ const Messenger = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
+  const updateScrollbar = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const trackPadding = 10;
+    const thumbHeight = 60;
+    const trackHeight = container.clientHeight - trackPadding * 2;
+    const maxScroll = container.scrollHeight - container.clientHeight;
+
+    if (maxScroll <= 0 || trackHeight <= thumbHeight) {
+      setScrollbarState({ visible: false, top: trackPadding });
+      return;
+    }
+
+    const maxThumbTop = trackHeight - thumbHeight;
+    const top = (container.scrollTop / maxScroll) * maxThumbTop;
+
+    setScrollbarState({ visible: true, top });
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+    requestAnimationFrame(updateScrollbar);
+  }, [messages, scrollToBottom, updateScrollbar]);
+
+  useEffect(() => {
+    updateScrollbar();
+    window.addEventListener('resize', updateScrollbar);
+
+    return () => window.removeEventListener('resize', updateScrollbar);
+  }, [currentChatId, updateScrollbar]);
 
   // Загрузка проектов
   useEffect(() => {
     fetchProjects();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (currentChatId || projects.length === 0) return;
+
+    const preferredProject = projects.find(project =>
+      project.name?.toLowerCase().includes('агента поддержки')
+    );
+
+    setCurrentChatId((preferredProject || projects[1] || projects[0]).id);
+  }, [projects, currentChatId]);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -54,7 +110,7 @@ const Messenger = () => {
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, [api, currentUser.id]);
 
   // Загрузка сообщений с проверкой на дубликаты
   const fetchMessages = useCallback(async (chatId) => {
@@ -132,27 +188,26 @@ const Messenger = () => {
     setInputText(e.target.value);
   }, []);
 
+  const handleOpenProject = useCallback((event, projectId) => {
+    event.stopPropagation();
+    navigate(`/finder/project/${projectId}`);
+  }, [navigate]);
+
+  const filteredProjects = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) return projects;
+
+    return projects.filter(project =>
+      (project.name || '').toLowerCase().includes(normalizedQuery)
+    );
+  }, [projects, searchQuery]);
+
   return (
     <div className="messenger">
-      <div className="messenger-header">
-        <div className="logo">
-          <span className="logo-icon">💬</span>
-          <h1>Мессенджер</h1>
-        </div>
-        <div className="user-info">
-          <div className="user-avatar">
-            {currentUser.name.charAt(0).toUpperCase()}
-          </div>
-          <div className="user-details">
-            <span className="user-name">{currentUser.name}</span>
-            <span className="user-id">ID: {currentUser.id}</span>
-          </div>
-        </div>
-      </div>
-      
       {error && (
         <div className="error-message">
-          <span>⚠️</span> {error}
+          <span>{error}</span>
           <button onClick={() => setError(null)} className="error-close">×</button>
         </div>
       )}
@@ -160,11 +215,17 @@ const Messenger = () => {
       <div className="messenger-main">
         {/* Список чатов */}
         <div className="chat-list">
-          <div className="chat-list-header">
-            <h2>Проекты (Чаты)</h2>
+          <div className="chat-search">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Поиск"
+              aria-label="Поиск по чатам"
+            />
           </div>
           <div className="chat-items">
-            {projects.map(project => (
+            {filteredProjects.map(project => (
               <div
                 key={project.id}
                 className={`chat-item ${currentChatId === project.id ? 'active' : ''}`}
@@ -174,10 +235,18 @@ const Messenger = () => {
                 }}
               >
                 <div className="chat-name">{project.name}</div>
-                <div className="chat-id">ID: {project.id}</div>
+                {currentChatId === project.id && (
+                  <button
+                    type="button"
+                    className="chat-card-button"
+                    onClick={(event) => handleOpenProject(event, project.id)}
+                  >
+                    Открыть карточку
+                  </button>
+                )}
               </div>
             ))}
-            {projects.length === 0 && !loading && (
+            {filteredProjects.length === 0 && !loading && (
               <div className="no-chats">Нет доступных чатов</div>
             )}
             {loading && projects.length === 0 && (
@@ -190,45 +259,44 @@ const Messenger = () => {
         <div className={`chat-window ${!currentChatId ? 'empty' : ''}`}>
           {!currentChatId ? (
             <div className="empty-chat">
-              <div className="empty-icon">💬</div>
               <div className="empty-text">Выберите чат для начала общения</div>
             </div>
           ) : (
             <>
-              <div className="chat-header">
-                <div className="chat-info">
-                  <h3>Чат проекта #{currentChatId}</h3>
-                  <div className="participants-count">
-                    {projects.find(p => p.id === currentChatId)?.name || 'Загрузка...'}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="messages-container">
+              <div
+                className="messages-container"
+                ref={messagesContainerRef}
+                onScroll={updateScrollbar}
+              >
                 {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`message ${message.sender_id === currentUser.id ? 'own' : 'other'}`}
                   >
-                    <div className="message-header">
-                      <span className="sender-name">{message.sender_name}</span>
+                    <div className="message-bubble">
+                      <span className="message-text">{message.text}</span>
                       <span className="message-time">
-                        {message.createdAt ? new Date(message.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                        {formatMessageTime(message.createdAt)}
                       </span>
                     </div>
-                    <div className="message-text">{message.text}</div>
                   </div>
                 ))}
                 
                 {messages.length === 0 && (
                   <div className="no-messages">
-                    <div className="no-messages-icon">📭</div>
                     <div>Сообщений пока нет</div>
-                    <div className="no-messages-hint">Напишите первое сообщение!</div>
                   </div>
                 )}
                 <div ref={messagesEndRef} />
               </div>
+              {scrollbarState.visible && (
+                <div className="chat-scrollbar" aria-hidden="true">
+                  <div
+                    className="chat-scrollbar-thumb"
+                    style={{ transform: `translateY(${scrollbarState.top}px)` }}
+                  />
+                </div>
+              )}
               
               <div className="message-input-container">
                 <textarea
@@ -236,15 +304,16 @@ const Messenger = () => {
                   value={inputText}
                   onChange={handleTextChange}
                   onKeyDown={handleKeyPress}
-                  placeholder="Введите сообщение... (Enter для отправки, Shift+Enter для новой строки)"
+                  placeholder="Введите сообщение..."
                   rows={1}
                 />
                 <button 
                   onClick={sendMessage} 
                   className="send-button"
                   disabled={!inputText.trim()}
+                  aria-label="Отправить сообщение"
                 >
-                  <span>📤</span> Отправить
+                  <img src={sendMessageIcon} alt="" />
                 </button>
               </div>
             </>
