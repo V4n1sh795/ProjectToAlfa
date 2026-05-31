@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import closeAlertIcon from "../assets/icons/close_alert.svg";
 import './css/CreateCase.css';
 
 const CreateCase = () => {
@@ -70,11 +71,6 @@ const CreateCase = () => {
     }
   }, [semester]);
 
-  // ИИ-заполнение (заглушка)
-  const handleAIFill = () => {
-    alert('Функция ИИ-заполнения будет доступна скоро');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -126,13 +122,23 @@ const CreateCase = () => {
       <h2>Создание нового проекта</h2>
       
       {showSuccess && (
-        <div className="success-message">
-          <div className="success-icon">✓</div>
-          <div className="success-text">
+        <div className="create-alert-backdrop">
+          <section className="create-success-alert">
+            <button
+              className="create-success-alert__close"
+              type="button"
+              onClick={() => setShowSuccess(false)}
+              aria-label="Закрыть уведомление"
+            >
+              <img src={closeAlertIcon} alt="" />
+            </button>
             <h3>Успешно</h3>
-            <p>Проект создан.<br/>Вы можете обсудить его в чате или вернуться к списку проектов.</p>
-          </div>
-          <button className="close-success" onClick={() => setShowSuccess(false)}>×</button>
+            <p>
+              Проект создан.<br />
+              Вы можете обсудить её в чате или<br />
+              отредактировать в менеджере проектов
+            </p>
+          </section>
         </div>
       )}
       
@@ -142,7 +148,7 @@ const CreateCase = () => {
           <div className="form-column">
             {/* Название проекта */}
             <div className="form-group">
-              <label htmlFor="projectName">Название проекта *</label>
+              <label htmlFor="projectName">Название проекта <span>*</span></label>
               <input
                 type="text"
                 id="projectName"
@@ -155,7 +161,7 @@ const CreateCase = () => {
 
             {/* Описание проекта */}
             <div className="form-group">
-              <label htmlFor="description">Описание проекта *</label>
+              <label htmlFor="description">Описание проекта <span>*</span></label>
               <textarea
                 id="description"
                 value={description}
@@ -168,7 +174,7 @@ const CreateCase = () => {
 
             {/* Цель проекта */}
             <div className="form-group">
-              <label htmlFor="projectGoal">Цель проекта *</label>
+              <label htmlFor="projectGoal">Цель проекта <span>*</span></label>
               <textarea
                 id="projectGoal"
                 value={projectGoal}
@@ -181,7 +187,7 @@ const CreateCase = () => {
 
             {/* Результат проекта */}
             <div className="form-group">
-              <label htmlFor="projectResult">Результат проекта *</label>
+              <label htmlFor="projectResult">Результат проекта <span>*</span></label>
               <textarea
                 id="projectResult"
                 value={projectResult}
@@ -197,7 +203,7 @@ const CreateCase = () => {
           <div className="form-column">
             {/* Роли в проекте */}
             <div className="form-group">
-              <label htmlFor="roles">Роли в проекте *</label>
+              <label htmlFor="roles">Роли в проекте <span>*</span></label>
               <input
                 type="text"
                 id="roles"
@@ -210,7 +216,7 @@ const CreateCase = () => {
 
             {/* Ключевая технология */}
             <div className="form-group">
-              <label htmlFor="keyTechnology">Ключевая технология *</label>
+              <label htmlFor="keyTechnology">Ключевая технология <span>*</span></label>
               <input
                 type="text"
                 id="keyTechnology"
@@ -224,7 +230,7 @@ const CreateCase = () => {
             {/* Семестр и даты */}
             <div className="form-row-dates">
               <div className="form-group">
-                <label>Семестр *</label>
+                <label>Семестр <span>*</span></label>
                 <div className="semester-group">
                   <label className="radio-label">
                     <input
@@ -259,15 +265,6 @@ const CreateCase = () => {
                 </div>
               </div>
             </div>
-
-            {/* Кнопка ИИ-заполнения */}
-            <button
-              type="button"
-              className="ai-fill-btn"
-              onClick={handleAIFill}
-            >
-              ✨ ИИ-заполнение
-            </button>
 
             {/* Кнопка отправки */}
             <button type="submit" className="submit-btn">
