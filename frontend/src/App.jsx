@@ -11,6 +11,9 @@ import { useEffect, useState } from "react";
 import Calender from "./pages/Calender";
 import Finder from "./pages/Finder";
 import StudentPage from "./pages/StudentPage";
+import TeamPage from "./pages/TeamPage";
+import CuratorPage from "./pages/CuratorPage";
+import ProjectPage from "./pages/ProjectPage";
 import Messenger from "./pages/Messenger";
 import CreateCase from "./pages/CreateCase";
 import CreateTeam from "./pages/CreateTeam";
@@ -114,9 +117,11 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="app-container">
+      <div className={`app-container ${!isAuthenticated ? "auth-layout" : ""}`}>
         <header className="top-bar">
-          <h1 className="top-bar-title">BetaProject</h1>
+          <Link to="/calender" className="top-bar-logo">
+            <h1 className="top-bar-title">BetaProject</h1>
+          </Link>
         </header>
 
         <button
@@ -167,6 +172,42 @@ function App() {
                   loading={loading}
                 >
                   <StudentPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/finder/team/:id"
+              element={
+                <ProtectedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                >
+                  <TeamPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/finder/curator/:id"
+              element={
+                <ProtectedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                >
+                  <CuratorPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/finder/project/:id"
+              element={
+                <ProtectedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                >
+                  <ProjectPage />
                 </ProtectedRoute>
               }
             />

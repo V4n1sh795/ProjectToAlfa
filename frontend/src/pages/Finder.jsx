@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./css/Search.css";
+import "./css/Finder.css";
 
 import curatorIcon from "../assets/icons/curator.svg";
 import projectIcon from "../assets/icons/project.svg";
@@ -24,13 +24,6 @@ const projectStatusByFilter = {
   "project-active": "active",
   "project-archive": "archive",
 };
-
-const periods = [
-  "2025/26 Весенний",
-  "2025/26 Осенний",
-  "2024/25 Весенний",
-  "2024/25 Осенний",
-];
 
 const entities = [
   { id: "student", label: "Студент" },
@@ -81,12 +74,10 @@ const getEntityTitle = (entity) => {
 const Finder = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPeriods, setSelectedPeriods] = useState([]);
   const [selectedEntities, setSelectedEntities] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [isPeriodFilterOpen, setIsPeriodFilterOpen] = useState(true);
   const [isEntityFilterOpen, setIsEntityFilterOpen] = useState(true);
 
   const selectedProjectStatuses = useMemo(
@@ -140,7 +131,6 @@ const Finder = () => {
                 ...item,
                 entityType: entity,
                 status: explicitStatus || item.status || (entity === "project" ? "active" : null),
-                period: selectedPeriods[0] || "current",
               };
             }),
           ),
@@ -157,15 +147,7 @@ const Finder = () => {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, selectedEntities, selectedPeriods, selectedProjectStatuses]);
-
-  const handlePeriodChange = (period) => {
-    setSelectedPeriods((prev) =>
-      prev.includes(period)
-        ? prev.filter((item) => item !== period)
-        : [...prev, period],
-    );
-  };
+  }, [debouncedQuery, selectedEntities, selectedProjectStatuses]);
 
   const handleEntityChange = (entity) => {
     setSelectedEntities((prev) =>
@@ -179,46 +161,24 @@ const Finder = () => {
     if (result.entityType === "member") {
       navigate(`/finder/student/${result.id}`, { state: { student: result } });
     }
+
+    if (result.entityType === "team") {
+      navigate(`/finder/team/${result.id}`, { state: { team: result } });
+    }
+
+    if (result.entityType === "curator") {
+      navigate(`/finder/curator/${result.id}`, { state: { curator: result } });
+    }
+
+    if (result.entityType === "project") {
+      navigate(`/finder/project/${result.id}`, { state: { project: result } });
+    }
   };
 
   return (
     <div className="finder-page">
       <aside className="finder-filter-sidebar">
         <section className="finder-filter-section">
-          <div className="finder-filter-heading">
-            <span>Период</span>
-            <button
-              className="finder-filter-toggle"
-              type="button"
-              onClick={() => setIsPeriodFilterOpen((value) => !value)}
-              aria-expanded={isPeriodFilterOpen}
-              aria-label={isPeriodFilterOpen ? "Скрыть фильтр периода" : "Показать фильтр периода"}
-            >
-              <img
-                src={showLessFiltersIcon}
-                alt=""
-                className={`finder-filter-toggle__icon ${isPeriodFilterOpen ? "is-open" : ""}`}
-              />
-            </button>
-          </div>
-          {isPeriodFilterOpen && (
-            <div className="finder-filter-options">
-              {periods.map((period) => (
-                <label key={period} className="finder-filter-option">
-                  <input
-                    type="checkbox"
-                    checked={selectedPeriods.includes(period)}
-                    onChange={() => handlePeriodChange(period)}
-                  />
-                  <span className="finder-checkbox" />
-                  <span>{period}</span>
-                </label>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="finder-filter-section finder-filter-section--entities">
           <div className="finder-filter-heading">
             <span>Сущность</span>
             <button
@@ -269,7 +229,7 @@ const Finder = () => {
         <div className="finder-results">
           {results.map((result, index) => {
             const status = result.entityType === "project" ? projectStatuses[result.status] : null;
-            const clickable = result.entityType === "member";
+            const clickable = ["member", "team", "curator", "project"].includes(result.entityType);
 
             return (
               <article
