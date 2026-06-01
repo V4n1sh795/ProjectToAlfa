@@ -241,15 +241,17 @@ const CuratorPage = () => {
     id,
     name: String(card.name || "").trim(),
     email: String(card.email || "").trim(),
-    teams: card.currentTeams.map((team) => ({
-      id: team.id,
-      name: String(team.name || "").trim(),
-    })),
-    pastTeams: card.pastTeams.map((team) => ({
-      id: team.id,
-      name: String(team.name || "").trim(),
-    })),
-  });
+    teams: [
+        ...card.currentTeams.map((team) => ({
+            id: team.id,
+            name: String(team.name || "").trim(),
+        })),
+        ...card.pastTeams.map((team) => ({
+            id: team.id,
+            name: String(team.name || "").trim(),
+        }))
+    ],
+});
 
   const getTeamSelectOptions = (selectedTeams, currentTeamId) => {
     const selectedOptions = selectedTeams.filter((team) => team.id !== null && team.name);

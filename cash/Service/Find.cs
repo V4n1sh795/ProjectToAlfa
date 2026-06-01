@@ -8,6 +8,18 @@ namespace Service;
 
 static class Find
 {
+    public record TeamDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+    public record ICurator
+    {
+        public string email {get; set; } 
+        public string id {get; set; }
+        public string name {get; set; }
+        public List<TeamDto> teams {get; set; } = new List<TeamDto>();
+    }
 
     public static async Task<IResult> FindEntity(ILogger<Program> logger, AppDbContext db, string entity, string? query)
     {
@@ -82,16 +94,6 @@ static class Find
         return Results.Ok(results);
  
     }
-    public static async Task<IResult> PatchEntity(ILogger<Program> logger, AppDbContext db, string entity, int id, List<(string param, string new_value)> values)
-    {
-        return entity.ToLower() switch
-            {
-                "project" or "projects" => await PatchProject(db, id, values),
-                "team" or "teamss" => await PatchTeam(db, id, values),
-                "member" or "members" => await PatchMember(db, id, values),
-                "curator" or "curators" => await PatchCurator(db, id, values)
-            };
-    }
     private static async Task<IResult> PatchProject(AppDbContext db, int id, List<(string param, string new_value)> values)
     {
         return Results.NotFound("endpoint not ready");
@@ -110,8 +112,28 @@ static class Find
             return Results.NotFound("endpoint not ready");
         }
     }
-    private static async Task<IResult> PatchCurator(AppDbContext db, int id, List<(string param, string new_value)> values)
+    public static async Task<IResult> PatchCurator(AppDbContext db, int id, ICurator curator)
     {
-        return Results.NotFound("endpoint not ready");
+        cash.Models.Curator c = await db.Curators.FindAsync(id);
+        if (c == null)
+            return Results.NotFound("Curator not found");
+        else
+        {
+            c.Name = curator.name;
+            c.Email = curator.email;
+            List<int> new_teams_id = curator.teams.Select(t => t.Id).ToList();
+            List<cash.Models.Team> new_teams_list = db.Teams.Where(t => new_teams_id.Contains(t.Id)).ToList();
+            List<cash.Models.Team> teams_from_db_by_curator = db.Teams.Where(t => t.Curators.Contains(id)).ToList();
+            foreach (var team in teams_from_db_by_curator)
+            {
+                team.Curators.Remove(id);
+            }
+            foreach (var team in new_teams_list)
+            {
+                team.Curators.Add(id);
+            }
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        }
     }
 }

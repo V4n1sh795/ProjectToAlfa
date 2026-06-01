@@ -147,7 +147,7 @@ app.MapGet("message/{chat_id:int}", Service.Messenger.GetMessages);
 
 app.MapGet("find/{entity}", Service.Find.FindEntity);
 
-app.MapPatch("find/{entity}/{id:int}", Service.Find.PatchEntity);
+app.MapPatch("curator/{id:int}", Service.Find.PatchCurator);
 
 app.MapGet("/week/{monday_date:datetime}", Service.Meeting.GetWeek);
 
