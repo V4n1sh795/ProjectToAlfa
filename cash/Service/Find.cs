@@ -175,10 +175,10 @@ static class Find
             Team.Curators.Clear();
             Team.CallDay = team.CallDay;
             Team.CallTime = team.CallTime;
-            Team.grades[0] = int.Parse(team.Grades.Checkpoint1);
-            Team.grades[1] = int.Parse(team.Grades.Checkpoint2);
-            Team.grades[2] = int.Parse(team.Grades.Checkpoint3);
-            Team.grades[3] = int.Parse(team.Grades.Checkpoint4);
+            Team.grades[0] = float.Parse(team.Grades.Checkpoint1);
+            Team.grades[1] = float.Parse(team.Grades.Checkpoint2);
+            Team.grades[2] = float.Parse(team.Grades.Checkpoint3);
+            Team.grades[3] = float.Parse(team.Grades.Final);
             DayOfWeek dayOfWeek = ParseDayOfWeek(team.CallDay);
             await ShiftMeetings(db, dayOfWeek, TimeOnly.Parse(team.CallTime), Team.Id);
             Team.Comments.Add(team.Comment);

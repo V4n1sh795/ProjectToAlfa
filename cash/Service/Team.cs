@@ -5,12 +5,19 @@ using System.Globalization;
 namespace Service;
 static class Team
 {
+    public record GradesDto(
+        float Checkpoint1,
+        float Checkpoint2,
+        float Checkpoint3,
+        float Final
+    );
     record OTeam
     {
         public string Name { get; set; } = string.Empty;
         public KeyValuePair<int, string> Project = new KeyValuePair<int, string>();
         public List<KeyValuePair<int, string>> Members { get; set; } = new List<KeyValuePair<int, string>>();
         public List<KeyValuePair<int, string>> Curators { get; set; } = new List<KeyValuePair<int, string>>();
+        public GradesDto grades {get; set;}
         public string CallDay { get; set; } = string.Empty;
         public string CallTime { get; set; } = string.Empty;
     }
@@ -174,7 +181,8 @@ static class Team
             Members = pepes,
             Curators = big_pepes,
             CallDay = team.CallDay,
-            CallTime = team.CallTime
+            CallTime = team.CallTime,
+            grades = new GradesDto(team.grades[0], team.grades[1], team.grades[2], team.grades[3])
         };
         return Results.Ok(response);
     }
