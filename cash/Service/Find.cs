@@ -90,12 +90,12 @@ static class Find
     {
         IQueryable<cash.Models.Project> queryset = db.Projects;
 
-        if (!string.IsNullOrEmpty(query))
+        if (!string.IsNullOrEmpty(query.ToLower()))
         {
             queryset = queryset.Where(p =>
-                p.Name.Contains(query) ||
-                p.Description.Contains(query) ||
-                p.Semester.Contains(query));
+                p.Name.ToLower().Contains(query) ||
+                p.Description.ToLower().Contains(query) ||
+                p.Semester.ToLower().Contains(query));
         }
 
         var results = await queryset.ToListAsync();
@@ -106,9 +106,9 @@ static class Find
     {
         IQueryable<cash.Models.Team> queryset = db.Teams;
 
-        if (!string.IsNullOrEmpty(query))
+        if (!string.IsNullOrEmpty(query.ToLower()))
         {
-            queryset = queryset.Where(t => t.Name.Contains(query));
+            queryset = queryset.Where(t => t.Name.ToLower().Contains(query));
         }
 
         var results = await queryset.ToListAsync();
@@ -119,12 +119,12 @@ static class Find
     {
         IQueryable<Member> queryset = db.Members;
 
-        if (!string.IsNullOrEmpty(query))
+        if (!string.IsNullOrEmpty(query.ToLower()))
         {
             queryset = queryset.Where(m =>
-                m.Name.Contains(query) ||
-                m.Surname.Contains(query) ||
-                m.SecondName.Contains(query));
+                m.Name.ToLower().Contains(query) ||
+                m.Surname.ToLower().Contains(query) ||
+                m.SecondName.ToLower().Contains(query));
         }
 
         var results = await queryset.ToListAsync();
@@ -135,11 +135,11 @@ static class Find
     {
         IQueryable<cash.Models.Curator> queryset = db.Curators;
 
-        if (!string.IsNullOrEmpty(query))
+        if (!string.IsNullOrEmpty(query.ToLower()))
         {
             queryset = queryset.Where(c =>
-                c.Name.Contains(query) ||
-                c.Email.Contains(query));
+                c.Name.ToLower().Contains(query) ||
+                c.Email.ToLower().Contains(query));
         }
 
         var results = await queryset.ToListAsync();
