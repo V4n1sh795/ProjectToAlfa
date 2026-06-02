@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { updateTeamCard } from "../api/meetingsApi";
+import { getCurators, updateTeamCard } from "../api/meetingsApi";
 import "./css/TeamPage.css";
 import editIcon from "../assets/icons/edit.svg";
 
@@ -16,10 +16,26 @@ const dayLabels = {
   Sunday: "Воскресенье",
 };
 
+const dayOptions = Object.entries(dayLabels).map(([id, name]) => ({ id, name }));
+
 const dayValuesByLabel = Object.entries(dayLabels).reduce(
   (result, [value, label]) => ({ ...result, [label.toLowerCase()]: value }),
   {},
 );
+
+const buildTimeOptions = () => {
+  const options = [];
+
+  for (let hour = 8; hour <= 20; hour += 1) {
+    ["00", "30"].forEach((minutes) => {
+      if (hour === 20 && minutes === "30") return;
+      const time = `${String(hour).padStart(2, "0")}:${minutes}`;
+      options.push({ id: time, name: time });
+    });
+  }
+
+  return options;
+};
 
 const getValue = (source, names, fallback = "") => {
   if (!source) return fallback;
@@ -86,6 +102,11 @@ const getDayValue = (value) => {
   return dayValuesByLabel[normalizedValue.toLowerCase()] || normalizedValue;
 };
 
+const getTimeValue = (value) => {
+  const normalizedValue = String(value || "").trim();
+  return normalizedValue === emptyValue ? "" : normalizedValue.slice(0, 5);
+};
+
 const createDraftMember = (member) => ({
   id: member.id ?? null,
   name: member.name || "",
@@ -96,6 +117,61 @@ const createDraftCurator = (curator) => ({
   id: curator.id ?? null,
   name: curator.name || "",
 });
+
+const TeamDropdown = ({
+  id,
+  value,
+  options,
+  placeholder,
+  isOpen,
+  onChange,
+  onToggle,
+}) => {
+  const selectedOption = options.find((option) => String(option.id) === String(value));
+
+  return (
+    <div className={`team-select ${isOpen ? "is-open" : ""}`}>
+      <button
+        className="team-select__button"
+        type="button"
+        onClick={onToggle}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span>{selectedOption?.name || placeholder}</span>
+        <span className="team-select__arrow" />
+      </button>
+
+      {isOpen && (
+        <div className="team-select__menu" role="listbox">
+          <button
+            className={`team-select__option ${value ? "" : "is-selected"}`}
+            type="button"
+            role="option"
+            aria-selected={!value}
+            onClick={() => onChange("")}
+          >
+            {placeholder}
+          </button>
+          {options.map((option) => (
+            <button
+              className={`team-select__option ${
+                String(option.id) === String(value) ? "is-selected" : ""
+              }`}
+              key={`${id}-${option.id}`}
+              type="button"
+              role="option"
+              aria-selected={String(option.id) === String(value)}
+              onClick={() => onChange(String(option.id))}
+            >
+              {option.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const TeamPage = () => {
   const { id } = useParams();
@@ -109,8 +185,11 @@ const TeamPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [savedCard, setSavedCard] = useState(null);
   const [draftCard, setDraftCard] = useState(null);
+  const [curatorOptions, setCuratorOptions] = useState([]);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const timeOptions = useMemo(() => buildTimeOptions(), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,6 +199,7 @@ const TeamPage = () => {
       setError("");
 
       try {
+        const curatorOptionsRequest = getCurators().catch(() => []);
         const teamResponse = await fetch(`/api/team/${id}`);
         if (!teamResponse.ok) throw new Error("Команда не найдена");
         const teamData = await teamResponse.json();
@@ -158,6 +238,14 @@ const TeamPage = () => {
         );
 
         if (!cancelled) setMemberDetails(loadedMembers);
+        const curatorsData = await curatorOptionsRequest;
+        if (!cancelled) {
+          setCuratorOptions(
+            normalizeList(curatorsData).filter(
+              (curator) => curator.id !== null && curator.name,
+            ),
+          );
+        }
 
         if (!projectId) return;
 
@@ -182,6 +270,18 @@ const TeamPage = () => {
       cancelled = true;
     };
   }, [id, initialTeam]);
+
+  useEffect(() => {
+    if (!openDropdown) return undefined;
+
+    const closeDropdown = (event) => {
+      if (event.target.closest?.(".team-select")) return;
+      setOpenDropdown(null);
+    };
+
+    document.addEventListener("mousedown", closeDropdown);
+    return () => document.removeEventListener("mousedown", closeDropdown);
+  }, [openDropdown]);
 
   const teamName = getValue(team, ["name", "Name"], "Команда");
   const linkedProject = normalizeKeyValue(getValue(team, ["project", "Project"], null));
@@ -250,6 +350,15 @@ const TeamPage = () => {
     }));
   };
 
+  const updateMeetingDay = (value) => {
+    setDraftCard((prev) => ({
+      ...prev,
+      callDay: value,
+      meetingDay: getDayLabel(value),
+    }));
+    setOpenDropdown(null);
+  };
+
   const updateMember = (index, field, value) => {
     setDraftCard((prev) => ({
       ...prev,
@@ -274,12 +383,22 @@ const TeamPage = () => {
   };
 
   const updateCurator = (index, value) => {
+    const selectedOption = curatorOptions.find(
+      (option) => String(option.id) === String(value),
+    );
+
     setDraftCard((prev) => ({
       ...prev,
       curators: prev.curators.map((curator, curatorIndex) =>
-        curatorIndex === index ? { ...curator, name: value } : curator,
+        curatorIndex === index
+          ? {
+              id: selectedOption?.id ?? null,
+              name: selectedOption?.name || "",
+            }
+          : curator,
       ),
     }));
+    setOpenDropdown(null);
   };
 
   const addCurator = () => {
@@ -294,6 +413,18 @@ const TeamPage = () => {
       ...prev,
       curators: prev.curators.filter((_, curatorIndex) => curatorIndex !== index),
     }));
+  };
+
+  const getCuratorSelectOptions = (selectedCurators, currentCuratorId) => {
+    const selectedIds = new Set(
+      selectedCurators
+        .map((curator) => (curator.id === null ? null : String(curator.id)))
+        .filter(
+          (curatorId) => curatorId && curatorId !== String(currentCuratorId),
+        ),
+    );
+
+    return curatorOptions.filter((curator) => !selectedIds.has(String(curator.id)));
   };
 
   const updateGrade = (field, value) => {
@@ -390,19 +521,38 @@ const TeamPage = () => {
             <div className="team-edit-grid">
               <label className="team-edit-field">
                 <span>День встречи</span>
-                <input
-                  type="text"
-                  value={draftCard.meetingDay}
-                  onChange={(event) => updateDraft("meetingDay", event.target.value)}
+                <TeamDropdown
+                  id="meeting-day"
+                  value={draftCard.callDay || getDayValue(draftCard.meetingDay)}
+                  options={dayOptions}
+                  placeholder="Выберите день"
+                  isOpen={openDropdown === "meeting-day"}
+                  onToggle={() =>
+                    setOpenDropdown((current) =>
+                      current === "meeting-day" ? null : "meeting-day",
+                    )
+                  }
+                  onChange={updateMeetingDay}
                 />
               </label>
 
               <label className="team-edit-field">
                 <span>Время начала встречи</span>
-                <input
-                  type="text"
-                  value={draftCard.meetingTime}
-                  onChange={(event) => updateDraft("meetingTime", event.target.value)}
+                <TeamDropdown
+                  id="meeting-time"
+                  value={getTimeValue(draftCard.meetingTime)}
+                  options={timeOptions}
+                  placeholder="Выберите время"
+                  isOpen={openDropdown === "meeting-time"}
+                  onToggle={() =>
+                    setOpenDropdown((current) =>
+                      current === "meeting-time" ? null : "meeting-time",
+                    )
+                  }
+                  onChange={(value) => {
+                    updateDraft("meetingTime", value);
+                    setOpenDropdown(null);
+                  }}
                 />
               </label>
             </div>
@@ -467,10 +617,21 @@ const TeamPage = () => {
                 <h2>Кураторы команды</h2>
                 {draftCard.curators.map((curator, index) => (
                   <div className="team-edit-row" key={`curator-${curator.id ?? index}`}>
-                    <input
-                      type="text"
-                      value={curator.name}
-                      onChange={(event) => updateCurator(index, event.target.value)}
+                    <TeamDropdown
+                      id={`curator-${index}`}
+                      value={curator.id ?? ""}
+                      options={getCuratorSelectOptions(
+                        draftCard.curators,
+                        curator.id,
+                      )}
+                      placeholder="Выберите куратора"
+                      isOpen={openDropdown === `curator-${index}`}
+                      onToggle={() =>
+                        setOpenDropdown((current) =>
+                          current === `curator-${index}` ? null : `curator-${index}`,
+                        )
+                      }
+                      onChange={(value) => updateCurator(index, value)}
                     />
                     <button
                       className="team-remove-button"
