@@ -122,7 +122,8 @@
 .chat-item {
   position: relative;
   min-height: var(--messenger-chat-item-height);
-  padding: var(--messenger-chat-padding-top) var(--messenger-chat-padding-right) 12px var(--messenger-chat-padding-left);
+  padding: var(--messenger-chat-padding-top) var(--messenger-chat-padding-right)
+    12px var(--messenger-chat-padding-left);
   border: 0;
   color: #20232a;
   cursor: pointer;
@@ -210,7 +211,10 @@
   gap: var(--messenger-messages-gap);
   overflow-x: hidden;
   overflow-y: scroll;
-  padding: var(--messenger-messages-padding-top) var(--messenger-messages-padding-right) var(--messenger-messages-padding-bottom) var(--messenger-messages-padding-left);
+  padding: var(--messenger-messages-padding-top)
+    var(--messenger-messages-padding-right)
+    var(--messenger-messages-padding-bottom)
+    var(--messenger-messages-padding-left);
   background: #ffffff;
   scrollbar-width: none;
 }
@@ -270,14 +274,15 @@
 }
 
 .message-bubble {
-  display: grid;
-  grid-template-columns: minmax(0, auto) auto;
-  align-items: end;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   width: fit-content;
   max-width: 100%;
   min-height: var(--messenger-bubble-min-height);
-  column-gap: var(--messenger-bubble-column-gap);
-  padding: var(--messenger-bubble-padding-top) var(--messenger-bubble-padding-right) var(--messenger-bubble-padding-bottom) var(--messenger-bubble-padding-left);
+  padding: var(--messenger-bubble-padding-top)
+    var(--messenger-bubble-padding-right) var(--messenger-bubble-padding-bottom)
+    var(--messenger-bubble-padding-left);
   border-radius: 15px;
   color: #20232a;
   font-size: var(--messenger-bubble-font-size);
@@ -291,6 +296,28 @@
 
 .message.own .message-bubble {
   background: #ffcac7;
+}
+
+.message-sender {
+  display: block;
+  color: #626262;
+  margin-bottom: 4px;
+  padding-right: calc(
+    var(--messenger-bubble-padding-left) - var(--messenger-bubble-padding-right)
+  );
+  font-size: var(--messenger-message-time-font-size);
+  font-weight: 500;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.message-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: var(--messenger-bubble-column-gap);
+  width: 100%;
+  max-width: 100%;
 }
 
 .message-text {
@@ -319,7 +346,8 @@
   align-items: center;
   gap: var(--messenger-input-gap);
   height: var(--messenger-input-height);
-  padding: 0 var(--messenger-input-padding-right) 0 var(--messenger-input-padding-left);
+  padding: 0 var(--messenger-input-padding-right) 0
+    var(--messenger-input-padding-left);
   background: #f5f6f8;
 }
 
@@ -436,8 +464,16 @@
 
 @media (min-width: 1921px) {
   .messenger {
-    --messenger-message-max-width: clamp(540px, calc(516px + (100vw - 1920px) * 0.08), 640px);
-    --messenger-own-message-max-width: clamp(450px, calc(420px + (100vw - 1920px) * 0.07), 560px);
+    --messenger-message-max-width: clamp(
+      540px,
+      calc(516px + (100vw - 1920px) * 0.08),
+      640px
+    );
+    --messenger-own-message-max-width: clamp(
+      450px,
+      calc(420px + (100vw - 1920px) * 0.07),
+      560px
+    );
     --messenger-bubble-min-height: 54px;
     --messenger-bubble-padding-top: 17px;
     --messenger-bubble-padding-right: 12px;
@@ -478,7 +514,7 @@
     --messenger-bubble-padding-bottom: 5px;
     --messenger-bubble-padding-left: 27px;
     --messenger-bubble-column-gap: 16px;
-    --messenger-bubble-font-size: 15px;
+    --messenger-bubble-font-size: 16px;
     --messenger-message-time-font-size: 15px;
     --messenger-input-height: 54px;
     --messenger-input-padding-left: 68px;
@@ -520,7 +556,7 @@
     --messenger-bubble-padding-bottom: 5px;
     --messenger-bubble-padding-left: 25px;
     --messenger-bubble-column-gap: 15px;
-    --messenger-bubble-font-size: 14px;
+    --messenger-bubble-font-size: 16px;
     --messenger-message-time-font-size: 14px;
     --messenger-input-height: 52px;
     --messenger-input-padding-left: 60px;
@@ -562,7 +598,7 @@
     --messenger-bubble-padding-bottom: 5px;
     --messenger-bubble-padding-left: 22px;
     --messenger-bubble-column-gap: 12px;
-    --messenger-bubble-font-size: 13px;
+    --messenger-bubble-font-size: 16px;
     --messenger-message-time-font-size: 13px;
     --messenger-input-height: 48px;
     --messenger-input-padding-left: 46px;

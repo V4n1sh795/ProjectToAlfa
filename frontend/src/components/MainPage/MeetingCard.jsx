@@ -214,7 +214,7 @@ const getMemberRole = (memberDetails, index) => {
     return missingRoleLabel;
   }
 
-  const shortRole = firstProfile.split(/\s+/).slice(0, 2).join(" ");
+  const shortRole = firstProfile.split(/\s+/).slice(0, 1).join(" ");
 
   return shortRole || missingRoleLabel;
 };
@@ -313,13 +313,13 @@ const getArrayPayload = (data, fieldNames = []) => {
 };
 
 const findKnownAttendanceItem = (item, knownItems = []) => {
-  const itemId = typeof item === "object" && item !== null
-    ? getPairKey(item)
-    : item;
-  const itemName = typeof item === "object" && item !== null
-    ? getPairValue(item) ||
-      readField(item, "fullName", "FullName", "fio", "Fio")
-    : String(item || "");
+  const itemId =
+    typeof item === "object" && item !== null ? getPairKey(item) : item;
+  const itemName =
+    typeof item === "object" && item !== null
+      ? getPairValue(item) ||
+        readField(item, "fullName", "FullName", "fio", "Fio")
+      : String(item || "");
   const normalizedItemName = normalizeText(itemName);
 
   return knownItems.find((known) => {
@@ -363,7 +363,6 @@ const loadMeetingAttendance = async (meetingId, participants, mentors) => {
     getMeetingMembers(meetingId),
     getMeetingCurators(meetingId),
   ]);
-
 
   const memberItems = getArrayPayload(membersData, [
     "members",
