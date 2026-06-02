@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace cash.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260520104942_fix2")]
-    partial class fix2
+    [Migration("20260602160606_fix")]
+    partial class fix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -137,6 +137,16 @@ namespace cash.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("team_id");
 
+                    b.Property<string>("comments")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("comments");
+
+                    b.Property<string>("conntacts")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("contacts");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TeamId");
@@ -195,6 +205,10 @@ namespace cash.Migrations
 
                     b.Property<int?>("MemberId")
                         .HasColumnType("integer");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ProjectId");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -272,6 +286,21 @@ namespace cash.Migrations
                         .HasColumnType("text")
                         .HasColumnName("technology");
 
+                    b.Property<string>("archiveReason")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("archiveReason");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("statusReason")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("statusReason");
+
                     b.HasKey("Id");
 
                     b.ToTable("Project");
@@ -327,9 +356,9 @@ namespace cash.Migrations
                         .HasColumnType("text")
                         .HasColumnName("call_time");
 
-                    b.PrimitiveCollection<string>("Comments")
+                    b.PrimitiveCollection<List<string>>("Comments")
                         .IsRequired()
-                        .HasColumnType("jsonb")
+                        .HasColumnType("text[]")
                         .HasColumnName("comments");
 
                     b.Property<DateTime>("CreatedAt")
@@ -354,6 +383,16 @@ namespace cash.Migrations
                     b.PrimitiveCollection<List<int>>("Tasks")
                         .IsRequired()
                         .HasColumnType("integer[]");
+
+                    b.Property<string>("artifacts")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("artifacts");
+
+                    b.PrimitiveCollection<float[]>("grades")
+                        .IsRequired()
+                        .HasColumnType("real[]")
+                        .HasColumnName("grades");
 
                     b.HasKey("Id");
 

@@ -149,12 +149,12 @@ class Meeting
                 }
                 OMeet omeet = new OMeet
                 {
-                    TeamName = team?.Name ?? "Unknown Team",
-                    CaseName = proj?.Name ?? "Unknown Project",
-                    date = meet?.Date ?? DateTime.MinValue,
-                    startAt = meet?.Time ?? TimeOnly.MinValue,
+                    TeamName = team.Name,
+                    CaseName = proj.Name,
+                    date = meet.Date,
+                    startAt = meet.Time,
                     status = meet.Status,
-                    participants = pepes ?? new List<string>()
+                    participants = pepes
                 };
                 response.Add(omeet);
             }

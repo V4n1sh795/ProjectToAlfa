@@ -40,7 +40,9 @@ namespace cash.Migrations
                     result = table.Column<short>(type: "smallint", nullable: false),
                     tasks = table.Column<List<int>>(type: "integer[]", nullable: false),
                     status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Comment = table.Column<List<string>>(type: "text[]", nullable: false)
+                    Comment = table.Column<List<string>>(type: "text[]", nullable: false),
+                    WasCurators = table.Column<List<int>>(type: "integer[]", nullable: false),
+                    WasMembers = table.Column<List<int>>(type: "integer[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,7 +81,10 @@ namespace cash.Migrations
                     Curator_ids = table.Column<List<int>>(type: "integer[]", nullable: false),
                     startDate = table.Column<string>(type: "text", nullable: false),
                     endDate = table.Column<string>(type: "text", nullable: false),
-                    Semester = table.Column<string>(type: "text", nullable: false)
+                    Semester = table.Column<string>(type: "text", nullable: false),
+                    status = table.Column<string>(type: "text", nullable: false),
+                    statusReason = table.Column<string>(type: "text", nullable: false),
+                    archiveReason = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -109,13 +114,15 @@ namespace cash.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    comments = table.Column<string>(type: "jsonb", nullable: false),
+                    comments = table.Column<List<string>>(type: "text[]", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     project_id = table.Column<int>(type: "integer", nullable: false),
                     curators = table.Column<List<int>>(type: "integer[]", nullable: false),
                     call_day = table.Column<string>(type: "text", nullable: false),
                     call_time = table.Column<string>(type: "text", nullable: false),
-                    Tasks = table.Column<List<int>>(type: "integer[]", nullable: false)
+                    Tasks = table.Column<List<int>>(type: "integer[]", nullable: false),
+                    artifacts = table.Column<string>(type: "text", nullable: false),
+                    grades = table.Column<float[]>(type: "real[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -131,7 +138,9 @@ namespace cash.Migrations
                     name = table.Column<string>(type: "text", nullable: false),
                     surname = table.Column<string>(type: "text", nullable: false),
                     second_name = table.Column<string>(type: "text", nullable: false),
-                    team_id = table.Column<int>(type: "integer", nullable: true)
+                    team_id = table.Column<int>(type: "integer", nullable: true),
+                    contacts = table.Column<string>(type: "text", nullable: false),
+                    comments = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -151,6 +160,7 @@ namespace cash.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     role = table.Column<string>(type: "text", nullable: false),
                     Stack = table.Column<string>(type: "text", nullable: false),
+                    ProjectId = table.Column<int>(type: "integer", nullable: false),
                     gruop_number = table.Column<string>(type: "text", nullable: false),
                     MemberId = table.Column<int>(type: "integer", nullable: true)
                 },
