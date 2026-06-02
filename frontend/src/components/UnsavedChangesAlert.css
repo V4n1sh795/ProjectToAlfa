@@ -1,0 +1,180 @@
+.project-alert-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.project-alert {
+  position: relative;
+  width: 575px;
+  height: 248px;
+  min-height: 248px;
+  padding: 30px;
+  border-radius: 15px;
+  background: #fff;
+  color: #212124;
+  box-sizing: border-box;
+  box-shadow: 0 20px 60px rgba(33, 33, 36, 0.16);
+}
+
+.project-alert--exit {
+  height: 188px;
+  min-height: 188px;
+}
+
+.project-alert .project-alert__close[type="button"] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  top: 23px;
+  right: 23px;
+  width: 43px;
+  height: 43px;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+.project-alert__close img {
+  width: 43px;
+  height: 43px;
+  display: block;
+}
+
+.project-alert .project-alert__close[type="button"]:hover,
+.project-alert .project-alert__close[type="button"]:focus,
+.project-alert .project-alert__close[type="button"]:focus-visible,
+.project-alert .project-alert__close[type="button"]:active {
+  border: 0 !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.project-alert h2 {
+  max-width: 430px;
+  margin: 0;
+  color: #212124;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+.project-alert .project-alert-red-button[type="button"],
+.project-alert .project-alert-green-button[type="button"] {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 40px;
+  padding: 10px 14px;
+  border-radius: 15px;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.project-alert .project-alert-red-button[type="button"] {
+  border: 2px solid #ef3124 !important;
+  background: #fff !important;
+  color: #212124 !important;
+}
+
+.project-alert .project-alert-green-button[type="button"] {
+  width: 138px;
+  height: 38px;
+  border: 0 !important;
+  background: #bdeeba !important;
+  color: #212124 !important;
+}
+
+.project-alert .project-alert-red-button[type="button"]:hover,
+.project-alert .project-alert-red-button[type="button"]:focus,
+.project-alert .project-alert-red-button[type="button"]:focus-visible,
+.project-alert .project-alert-red-button[type="button"]:active {
+  background: #fff3f2 !important;
+  color: #212124 !important;
+  border-color: #ef3124 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.project-alert .project-alert-green-button[type="button"]:hover,
+.project-alert .project-alert-green-button[type="button"]:focus,
+.project-alert .project-alert-green-button[type="button"]:focus-visible,
+.project-alert .project-alert-green-button[type="button"]:active {
+  background: #9ee79e !important;
+  color: #212124 !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.project-alert-green-button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.project-alert-actions--exit {
+  margin: 60px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.project-alert .project-alert-red-button--cancel[type="button"] {
+  width: 97px !important;
+  height: 38px !important;
+}
+
+@media (min-width: 1200px) {
+  .project-alert-backdrop {
+    padding-left: 64px;
+    box-sizing: border-box;
+  }
+
+  .project-alert {
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 560px) {
+  .project-alert-backdrop {
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .project-alert {
+    width: calc(100vw - 32px);
+  }
+
+  .project-alert-actions--exit {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}

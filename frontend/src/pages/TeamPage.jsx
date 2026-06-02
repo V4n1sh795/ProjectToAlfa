@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCurators, updateTeamCard } from "../api/meetingsApi";
 import "./css/TeamPage.css";
+import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";
@@ -118,6 +119,36 @@ const createDraftCurator = (curator) => ({
   name: curator.name || "",
 });
 
+const cloneCard = (card) => JSON.parse(JSON.stringify(card));
+
+const createComparableTeamCard = (card) => {
+  if (!card) return null;
+
+  return {
+    projectId: card.projectId ?? null,
+    projectName: String(card.projectName || "").trim(),
+    callDay: card.callDay || getDayValue(card.meetingDay),
+    meetingTime: String(card.meetingTime || "").trim(),
+    artifacts: String(card.artifacts || "").trim(),
+    members: (card.members || []).map((member) => ({
+      id: member.id ?? null,
+      name: String(member.name || "").trim(),
+      role: String(member.role || "").trim(),
+    })),
+    curators: (card.curators || []).map((curator) => ({
+      id: curator.id ?? null,
+      name: String(curator.name || "").trim(),
+    })),
+    grades: {
+      checkpoint1: String(card.grades?.checkpoint1 || "").trim(),
+      checkpoint2: String(card.grades?.checkpoint2 || "").trim(),
+      checkpoint3: String(card.grades?.checkpoint3 || "").trim(),
+      final: String(card.grades?.final || "").trim(),
+    },
+    comment: String(card.comment || "").trim(),
+  };
+};
+
 const TeamDropdown = ({
   id,
   value,
@@ -176,6 +207,7 @@ const TeamDropdown = ({
 const TeamPage = () => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const initialTeam = location.state?.team;
   const [team, setTeam] = useState(initialTeam || null);
   const [project, setProject] = useState(null);
@@ -187,8 +219,11 @@ const TeamPage = () => {
   const [draftCard, setDraftCard] = useState(null);
   const [curatorOptions, setCuratorOptions] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const cardRef = useRef(null);
   const timeOptions = useMemo(() => buildTimeOptions(), []);
 
   useEffect(() => {
@@ -336,16 +371,84 @@ const TeamPage = () => {
     ],
   );
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (!isEditing || !draftCard) return false;
+
+    return (
+      JSON.stringify(createComparableTeamCard(draftCard)) !==
+      JSON.stringify(createComparableTeamCard(cardData))
+    );
+  }, [cardData, draftCard, isEditing]);
+
+  useEffect(() => {
+    if (!isEditing) return undefined;
+
+    const showExitAlert = () => {
+      if (!hasUnsavedChanges) return false;
+      if (!activeModal) setActiveModal("exit");
+      return true;
+    };
+
+    const handleClick = (event) => {
+      if (activeModal || cardRef.current?.contains(event.target)) return;
+
+      const link = event.target.closest?.("a[href]");
+      if (!link) return;
+
+      if (!hasUnsavedChanges) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+
+      const href = link.getAttribute("href");
+      if (href && !href.startsWith("#")) {
+        const url = new URL(link.href, window.location.origin);
+        setPendingNavigation(`${url.pathname}${url.search}${url.hash}`);
+      }
+
+      showExitAlert();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) showExitAlert();
+    };
+
+    const handleWindowBlur = () => {
+      showExitAlert();
+    };
+
+    const handleBeforeUnload = (event) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [activeModal, hasUnsavedChanges, isEditing]);
+
   const startEditing = () => {
-    setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setDraftCard(cloneCard(cardData));
     setSaveError("");
     setIsEditing(true);
   };
 
   const cancelEditing = () => {
-    setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setDraftCard(cloneCard(cardData));
     setSaveError("");
     setOpenDropdown(null);
+    setActiveModal(null);
+    setPendingNavigation(null);
     setIsEditing(false);
   };
 
@@ -468,8 +571,9 @@ const TeamPage = () => {
     comment: String(card.comment || "").trim(),
   });
 
-  const saveDraft = async (event) => {
-    event.preventDefault();
+  const commitDraft = async () => {
+    if (!draftCard || isSaving) return;
+
     const payload = buildTeamPatchPayload(draftCard);
 
     setIsSaving(true);
@@ -489,7 +593,11 @@ const TeamPage = () => {
 
       setSavedCard(nextCard);
       if (updatedTeam) setTeam((prev) => ({ ...prev, ...updatedTeam }));
+      const navigationTarget = pendingNavigation;
+      setPendingNavigation(null);
+      setActiveModal(null);
       setIsEditing(false);
+      if (navigationTarget) navigate(navigationTarget);
     } catch (saveError) {
       setSaveError(
         saveError.response?.data?.message ||
@@ -499,6 +607,16 @@ const TeamPage = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const saveDraft = async (event) => {
+    event.preventDefault();
+    await commitDraft();
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setPendingNavigation(null);
   };
 
   if (loading) {
@@ -511,7 +629,10 @@ const TeamPage = () => {
 
   return (
     <div className="team-page">
-      <article className={`team-card ${isEditing ? "team-card-editing" : ""}`}>
+      <article
+        className={`team-card ${isEditing ? "team-card-editing" : ""}`}
+        ref={cardRef}
+      >
         <h1>{teamName}</h1>
 
         {isEditing && draftCard ? (
@@ -808,6 +929,29 @@ const TeamPage = () => {
           </>
         )}
       </article>
+
+      {activeModal === "exit" && (
+        <UnsavedChangesAlert onClose={closeModal}>
+          <h2>Вы хотите сохранить изменения?</h2>
+          <div className="project-alert-actions project-alert-actions--exit">
+            <button
+              className="project-alert-red-button project-alert-red-button--cancel"
+              type="button"
+              onClick={closeModal}
+            >
+              Отмена
+            </button>
+            <button
+              className="project-alert-green-button"
+              type="button"
+              onClick={commitDraft}
+              disabled={isSaving}
+            >
+              Сохранить
+            </button>
+          </div>
+        </UnsavedChangesAlert>
+      )}
     </div>
   );
 };
