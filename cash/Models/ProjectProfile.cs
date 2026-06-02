@@ -20,6 +20,9 @@ public class Profile
     public string Stack { get; set; } = string.Empty;
 
     [Required]
+    [Column("ProjectId")]
+    public int ProjectId{ get; set; }
+    [Required]
     [Column("gruop_number")]
     public string GroupNumber { get; set; } = string.Empty;
 }

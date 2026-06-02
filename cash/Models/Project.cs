@@ -50,6 +50,14 @@ public record Project
     [Column("Semester")]
     public string Semester { get; init; } = string.Empty;
 
+    [Column("status")]
+    public string status {get; set; } = "idea";
+
+    [Column("statusReason")]
+    public string statusReason {get; set; } = string.Empty;
+
+    [Column("archiveReason")]
+    public string archiveReason {get; set; } = string.Empty;
     // [Required]
     // [Column("Status")]
     // public bool Status { get; set; } = true;

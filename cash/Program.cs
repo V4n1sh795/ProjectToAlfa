@@ -149,6 +149,12 @@ app.MapGet("find/{entity}", Service.Find.FindEntity);
 
 app.MapPatch("curator/{id:int}", Service.Find.PatchCurator);
 
+app.MapPatch("project/{id:int}", Service.Find.PatchProject);
+
+app.MapPatch("team/{id:int}", Service.Find.PatchTeam);
+
+app.MapPatch("member/{id:int}", Service.Find.PatchMember);
+
 app.MapGet("/week/{monday_date:datetime}", Service.Meeting.GetWeek);
 
 
