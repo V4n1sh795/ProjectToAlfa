@@ -494,9 +494,16 @@ const ProjectPage = () => {
     if (!draftCard || draftCard.status === nextStatus) return;
 
     setDraftCard((prev) => ({ ...prev, status: nextStatus }));
-    setPendingStatus(nextStatus);
+
+    if (nextStatus === "archive") {
+      setPendingStatus(nextStatus);
+      setStatusReason("");
+      setActiveModal("status");
+      return;
+    }
+
+    setPendingStatus(null);
     setStatusReason("");
-    setActiveModal("status");
   };
 
   const confirmStatusChange = () => {
