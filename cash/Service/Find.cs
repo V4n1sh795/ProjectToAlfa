@@ -173,26 +173,22 @@ static class Find
         cash.Models.Team Team = db.Teams.Where(t => t.Id == id)
                                         .Include(t => t.Members)
                                         .ToList()[0];
-        if (Team == null)
-            return Results.BadRequest("Team with id not found");
-        else
+        if (Team != null)
         {
             Team.Curators.Clear();
             Team.CallDay = team.CallDay;
             Team.CallTime = team.CallTime;
             Team.Comments.Add(team.Comment);
             Team.artifacts = team.Project.Artifacts;
-            foreach(CuratorDto curator in team.Curators)
+            foreach (CuratorDto curator in team.Curators)
             {
                 Team.Curators.Add(int.Parse(curator.id));
             }
-            foreach(MemberDto member in team.Members)
+            foreach (MemberDto member in team.Members)
             {
                 if (member.Id != 0) // patch old member
                 {
-                    cash.Models.Member ExistingMember = db.Members.Where(m => m.Id == member.Id)
-                                                                        .Include(m => m.Profiles)
-                                                                        .ToList()[0];
+                    Member ExistingMember = db.Members.Where(m => m.Id == member.Id).Include(m => m.Profiles).ToList()[0];
                     if (ExistingMember == null)
                         return Results.BadRequest("Member with this id not found");
                     else
@@ -219,7 +215,7 @@ static class Find
                             Role = member.Role,
                             Stack = "?",
                             ProjectId = team.Project.Id,
-                            GroupNumber = "?" 
+                            GroupNumber = "?"
                         }]
                     };
                 }
@@ -227,6 +223,8 @@ static class Find
             Team.ProjectId = team.Project.Id;
             return Results.Ok($"db log - {db.SaveChangesAsync()}");
         }
+        else
+            return Results.BadRequest("Team with id not found");
     }
     public static async Task<IResult> PatchMember(AppDbContext db, int id, List<(string param, string new_value)> values)
     {
