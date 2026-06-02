@@ -149,7 +149,7 @@ app.MapGet("find/{entity}", Service.Find.FindEntity);
 
 app.MapPatch("curator/{id:int}", Service.Find.PatchCurator);
 
-// app.MapPatch("project/{id:int}", Service.Find.PatchProject);
+app.MapPatch("project/{id:int}", Service.Find.PatchProject);
 
 app.MapPatch("team/{id:int}", Service.Find.PatchTeam);
 

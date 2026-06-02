@@ -6,94 +6,72 @@ namespace Service;
 using System.Globalization;
 static class Find
 {
-    public record TeamDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
-    public record ICurator
-    {
-        public string email {get; set; } 
-        public string id {get; set; }
-        public string name {get; set; }
-        public List<TeamDto> teams {get; set; } = new List<TeamDto>();
-    }
+
+    public record ProjectRecord(
+        [property: JsonPropertyName("id")] int Id,
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("description")] string Description,
+        [property: JsonPropertyName("Main_Goal")] string MainGoal,
+        [property: JsonPropertyName("Results")] string Results,
+        [property: JsonPropertyName("Roles")] string Roles,
+        [property: JsonPropertyName("Technology")] string Technology,
+        [property: JsonPropertyName("startDate")] string StartDate,
+        [property: JsonPropertyName("endDate")] string EndDate,
+        [property: JsonPropertyName("semester")] string Semester,
+        [property: JsonPropertyName("status")] string Status,
+        [property: JsonPropertyName("statusReason")] string StatusReason,
+        [property: JsonPropertyName("archiveReason")] string ArchiveReason,
+        [property: JsonPropertyName("teams")] List<TeamDto> Teams,
+        [property: JsonPropertyName("curators")] List<CuratorDto> Curators
+    );
 
 
-    public record ProjectDto
-    {
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
+    public record TeamDto(
+        [property: JsonPropertyName("id")] int Id,
+        [property: JsonPropertyName("name")] string Name
+    );
 
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+    public record ICurator(
+        [property: JsonPropertyName("email")] string Email,
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("teams")] List<TeamDto> Teams
+    );
 
-        [JsonPropertyName("artifacts")]
-        public string Artifacts { get; set; } = string.Empty;
-    }
+    public record ProjectDto(
+        [property: JsonPropertyName("id")] int Id,
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("artifacts")] string Artifacts
+    );
 
-    // Модель участника
-    public record MemberDto
-    {
-        [JsonPropertyName("id")]
-        public int? Id { get; set; }
+    public record MemberDto(
+        [property: JsonPropertyName("id")] int? Id,
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("role")] string Role
+    );
 
-        [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+    public record GradesDto(
+        [property: JsonPropertyName("checkpoint1")] string Checkpoint1,
+        [property: JsonPropertyName("checkpoint2")] string Checkpoint2,
+        [property: JsonPropertyName("checkpoint3")] string Checkpoint3,
+        [property: JsonPropertyName("final")] string Final
+    );
 
-        [JsonPropertyName("role")]
-        public string Role { get; set; } = string.Empty;
-    }
+    public record CuratorDto(
+        [property: JsonPropertyName("id")] int Id,
+        [property: JsonPropertyName("name")] string Name
+    );
 
-    // Модель оценок
-    public record GradesDto
-    {
-        [JsonPropertyName("checkpoint1")]
-        public string Checkpoint1 { get; set; } = string.Empty;
-
-        [JsonPropertyName("checkpoint2")]
-        public string Checkpoint2 { get; set; } = string.Empty;
-
-        [JsonPropertyName("checkpoint3")]
-        public string Checkpoint3 { get; set; } = string.Empty;
-
-        [JsonPropertyName("final")]
-        public string Final { get; set; } = string.Empty;
-    }
-    public record CuratorDto
-    {
-        [JsonPropertyName("id")]
-        public int id { get; set; } 
-        [JsonPropertyName("name")]
-        public string name{ get; set; } = string.Empty; 
-    }
-    // Корневая модель
-    public class ITeam
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; } = string.Empty;
-
-        [JsonPropertyName("project")]
-        public ProjectDto Project { get; set; } = new();
-
-        [JsonPropertyName("callDay")]
-        public string CallDay { get; set; } = string.Empty;
-
-        [JsonPropertyName("callTime")]
-        public string CallTime { get; set; } = string.Empty;
-
-        [JsonPropertyName("members")]
-        public List<MemberDto> Members { get; set; } = new();
-
-        [JsonPropertyName("curators")]
-        public List<CuratorDto> Curators { get; set; } = new List<CuratorDto>(); // или замените на конкретный тип
-
-        [JsonPropertyName("grades")]
-        public GradesDto Grades { get; set; } = new();
-
-        [JsonPropertyName("comment")]
-        public string Comment { get; set; } = string.Empty;
-    }
+    public record ITeam(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("project")] ProjectDto Project,
+        [property: JsonPropertyName("callDay")] string CallDay,
+        [property: JsonPropertyName("callTime")] string CallTime,
+        [property: JsonPropertyName("members")] List<MemberDto> Members,
+        [property: JsonPropertyName("curators")] List<CuratorDto> Curators,
+        [property: JsonPropertyName("grades")] GradesDto Grades,
+        [property: JsonPropertyName("comment")] string Comment
+    );
 
     public static async Task<IResult> FindEntity(ILogger<Program> logger, AppDbContext db, string entity, string? query)
     {
@@ -203,7 +181,7 @@ static class Find
             Team.artifacts = team.Project.Artifacts;
             foreach (CuratorDto curator in team.Curators)
             {
-                Team.Curators.Add(curator.id);
+                Team.Curators.Add(curator.Id);
             }
 
             var membersResult = await UpdateTeamMembersAsync(db, Team, team.Members, team.Project.Id);
@@ -314,9 +292,9 @@ static class Find
             return Results.NotFound("Curator not found");
         else
         {
-            c.Name = curator.name;
-            c.Email = curator.email;
-            List<int> new_teams_id = curator.teams.Select(t => t.Id).ToList();
+            c.Name = curator.Name;
+            c.Email = curator.Email;
+            List<int> new_teams_id = curator.Teams.Select(t => t.Id).ToList();
             List<cash.Models.Team> new_teams_list = db.Teams.Where(t => new_teams_id.Contains(t.Id)).ToList();
             List<cash.Models.Team> teams_from_db_by_curator = db.Teams.Where(t => t.Curators.Contains(id)).ToList();
             foreach (var team in teams_from_db_by_curator)
@@ -332,8 +310,51 @@ static class Find
         }
     }
 
-    internal static async System.Threading.Tasks.Task PatchProject(HttpContext context)
+    public static async Task<IResult> PatchProject(AppDbContext db, int id, ProjectRecord project)
     {
-        throw new NotImplementedException();
+        cash.Models.Project Project = await db.Projects.FindAsync(id);
+        if (Project == null)
+            return Results.BadRequest("Project with this id not found");
+        else
+        {
+            Project.Name = project.Name;
+            Project.Description = project.Description;
+            Project.Main_Goal = project.MainGoal;
+            Project.Results = project.Results;
+            Project.Roles = project.Roles;
+            Project.Technology = project.Technology;
+            Project.status = project.Status;
+            Project.statusReason = project.StatusReason;
+            Project.archiveReason = project.ArchiveReason;
+            Project.CuratorIds = project.Curators.Select(c => c.Id).ToList();
+            await UpdateTeam(db, project.Teams, Project.Id);
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        }
+        
+        
+    }
+    public static async System.Threading.Tasks.Task UpdateTeam(AppDbContext db, List<TeamDto> teams, int projectId)
+    {
+        var teamIds = teams.Select(t => t.Id).ToList();
+        var allTeams = await db.Teams
+            .Where(t => teamIds.Contains(t.Id))
+            .ToListAsync();
+        
+        foreach (var team in allTeams)
+        {
+            team.ProjectId = projectId;
+        }
+        
+        var teamsToUnlink = await db.Teams
+            .Where(t => t.ProjectId == projectId && !teamIds.Contains(t.Id))
+            .ToListAsync();
+        
+        foreach (var team in teamsToUnlink)
+        {
+            team.ProjectId = 0; 
+        }
+        
+        await db.SaveChangesAsync();
     }
 }

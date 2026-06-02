@@ -34,6 +34,8 @@ static class Project
         public string StartDate { get; init; } = string.Empty;
         public string EndDate { get; init; } = string.Empty;
         public string Semester { get; init; } = string.Empty;
+        public string Status { get; init; } = string.Empty;
+        public string archiveReason { get; init; } = string.Empty;
     }
     public static async Task<IResult> Create(AppDbContext db, IProject p)
     {
@@ -48,7 +50,7 @@ static class Project
             Technology = p.Technology,
             StartDate = p.startDate,
             EndDate = p.endDate,
-            Semester = p.semester
+            Semester = p.semester,
         };
         await db.Projects.AddAsync(project);
         await db.SaveChangesAsync();
@@ -86,7 +88,9 @@ static class Project
                 Teams = TeamsL,
                 StartDate = project.StartDate,
                 EndDate = project.EndDate,
-                Semester = project.Semester
+                Semester = project.Semester,
+                Status = project.status,
+                archiveReason = project.archiveReason
             };
             return Results.Ok(response);
         }
