@@ -327,6 +327,12 @@ const StudentPage = () => {
     setIsEditing(true);
   };
 
+  const cancelEditing = () => {
+    setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setOpenDropdown(null);
+    setIsEditing(false);
+  };
+
   const updateDraft = (field, value, recordIndex = null) => {
     setDraftCard((prev) => {
       if (recordIndex === null) {
@@ -506,9 +512,18 @@ const StudentPage = () => {
               </section>
             ))}
 
-            <button className="student-save-button" type="submit">
-              Сохранить
-            </button>
+            <div className="student-edit-actions">
+              <button
+                className="student-cancel-button"
+                type="button"
+                onClick={cancelEditing}
+              >
+                Отменить изменения
+              </button>
+              <button className="student-save-button" type="submit">
+                Сохранить
+              </button>
+            </div>
           </form>
         ) : (
           <>

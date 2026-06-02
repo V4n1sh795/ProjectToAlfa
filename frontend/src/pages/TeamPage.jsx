@@ -342,6 +342,13 @@ const TeamPage = () => {
     setIsEditing(true);
   };
 
+  const cancelEditing = () => {
+    setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setSaveError("");
+    setOpenDropdown(null);
+    setIsEditing(false);
+  };
+
   const updateDraft = (field, value) => {
     setDraftCard((prev) => ({
       ...prev,
@@ -699,9 +706,19 @@ const TeamPage = () => {
 
             {saveError && <p className="team-save-error">{saveError}</p>}
 
-            <button className="team-save-button" type="submit" disabled={isSaving}>
-              Сохранить
-            </button>
+            <div className="team-edit-actions">
+              <button
+                className="team-cancel-button"
+                type="button"
+                onClick={cancelEditing}
+                disabled={isSaving}
+              >
+                Отменить изменения
+              </button>
+              <button className="team-save-button" type="submit" disabled={isSaving}>
+                Сохранить
+              </button>
+            </div>
           </form>
         ) : (
           <>

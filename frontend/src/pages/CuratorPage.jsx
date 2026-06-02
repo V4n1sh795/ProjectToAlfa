@@ -202,6 +202,13 @@ const CuratorPage = () => {
     setIsEditing(true);
   };
 
+  const cancelEditing = () => {
+    setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setSaveError("");
+    setOpenDropdown(null);
+    setIsEditing(false);
+  };
+
   const updateDraft = (field, value) => {
     setDraftCard((prev) => ({ ...prev, [field]: value }));
   };
@@ -405,13 +412,23 @@ const CuratorPage = () => {
 
             {saveError && <p className="curator-save-error">{saveError}</p>}
 
-            <button
-              className="curator-save-button"
-              type="submit"
-              disabled={isSaving}
-            >
-              {isSaving ? "Сохранение..." : "Сохранить"}
-            </button>
+            <div className="curator-edit-actions">
+              <button
+                className="curator-cancel-button"
+                type="button"
+                onClick={cancelEditing}
+                disabled={isSaving}
+              >
+                Отменить изменения
+              </button>
+              <button
+                className="curator-save-button"
+                type="submit"
+                disabled={isSaving}
+              >
+                {isSaving ? "Сохранение..." : "Сохранить"}
+              </button>
+            </div>
           </form>
         ) : (
           <>
