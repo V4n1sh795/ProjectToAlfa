@@ -446,16 +446,22 @@
   box-shadow: none;
 }
 
+.curator-edit-actions {
+  align-self: flex-end;
+  margin: 0 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.curator-card .curator-cancel-button[type="button"],
 .curator-card .curator-save-button[type="submit"] {
   appearance: none;
-  align-self: flex-end;
-  width: 138px;
   height: 38px;
-  margin: 0 0 0 auto;
   padding: 7px 15px;
-  border: none;
   border-radius: 15px;
-  background: #bdeeba;
   color: #212124;
   font-family: inherit;
   font-size: 16px;
@@ -470,6 +476,19 @@
   transition: background 0.2s ease;
 }
 
+.curator-card .curator-cancel-button[type="button"] {
+  width: 205px;
+  border: 2px solid #ef3124;
+  background: #fff;
+  color: #ef3124;
+}
+
+.curator-card .curator-save-button[type="submit"] {
+  width: 138px;
+  border: none;
+  background: #bdeeba;
+}
+
 .curator-save-error {
   margin: 0 0 12px;
   color: #ef3124;
@@ -478,9 +497,22 @@
   font-weight: 500;
 }
 
+.curator-card .curator-cancel-button[type="button"]:disabled,
 .curator-card .curator-save-button[type="submit"]:disabled {
   cursor: default;
   opacity: 0.7;
+}
+
+.curator-card .curator-cancel-button[type="button"]:hover,
+.curator-card .curator-cancel-button[type="button"]:focus,
+.curator-card .curator-cancel-button[type="button"]:focus-visible,
+.curator-card .curator-cancel-button[type="button"]:active {
+  background: #fff3f2;
+  color: #ef3124;
+  border-color: #ef3124;
+  outline: none;
+  box-shadow: none;
+  transform: none;
 }
 
 .curator-card .curator-save-button[type="submit"]:hover,

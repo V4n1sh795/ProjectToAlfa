@@ -77,3 +77,11 @@
     padding-top: 42px;
   }
 }
+@media (min-width: 1600px) {
+  .calendar-page__sidebar {
+    box-sizing: border-box;
+    flex: 0 0 425px;
+    width: 425px;
+    max-width: 425px;
+  }
+}

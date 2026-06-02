@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./css/StudentPage.css";
+import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";
@@ -85,6 +86,26 @@ const formatSemester = (semester, index) => {
   return normalized;
 };
 
+const cloneCard = (card) => JSON.parse(JSON.stringify(card));
+
+const createComparableStudentCard = (card) => {
+  if (!card) return null;
+
+  return {
+    contact: String(card.contact || "").trim(),
+    records: (card.records || []).map((record) => ({
+      semesterTitle: String(record.semesterTitle || "").trim(),
+      teamId: record.teamId ?? null,
+      teamName: String(record.teamName || "").trim(),
+      projectId: record.projectId ?? null,
+      projectName: String(record.projectName || "").trim(),
+      role: String(record.role || "").trim(),
+      stack: String(record.stack || "").trim(),
+      comment: String(record.comment || "").trim(),
+    })),
+  };
+};
+
 const StudentDropdown = ({
   id,
   value,
@@ -143,6 +164,7 @@ const StudentDropdown = ({
 const StudentPage = () => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const initialStudent = location.state?.student;
   const [student, setStudent] = useState(initialStudent || null);
   const [team, setTeam] = useState(null);
@@ -155,6 +177,9 @@ const StudentPage = () => {
   const [teamOptions, setTeamOptions] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
+  const cardRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -322,9 +347,83 @@ const StudentPage = () => {
     ],
   );
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (!isEditing || !draftCard) return false;
+
+    return (
+      JSON.stringify(createComparableStudentCard(draftCard)) !==
+      JSON.stringify(createComparableStudentCard(cardData))
+    );
+  }, [cardData, draftCard, isEditing]);
+
+  useEffect(() => {
+    if (!isEditing) return undefined;
+
+    const showExitAlert = () => {
+      if (!hasUnsavedChanges) return false;
+      if (!activeModal) setActiveModal("exit");
+      return true;
+    };
+
+    const handleClick = (event) => {
+      if (activeModal || cardRef.current?.contains(event.target)) return;
+
+      const link = event.target.closest?.("a[href]");
+      if (!link) return;
+
+      if (!hasUnsavedChanges) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+
+      const href = link.getAttribute("href");
+      if (href && !href.startsWith("#")) {
+        const url = new URL(link.href, window.location.origin);
+        setPendingNavigation(`${url.pathname}${url.search}${url.hash}`);
+      }
+
+      showExitAlert();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) showExitAlert();
+    };
+
+    const handleWindowBlur = () => {
+      showExitAlert();
+    };
+
+    const handleBeforeUnload = (event) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [activeModal, hasUnsavedChanges, isEditing]);
+
   const startEditing = () => {
-    setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setDraftCard(cloneCard(cardData));
     setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setDraftCard(cloneCard(cardData));
+    setOpenDropdown(null);
+    setActiveModal(null);
+    setPendingNavigation(null);
+    setIsEditing(false);
   };
 
   const updateDraft = (field, value, recordIndex = null) => {
@@ -374,10 +473,25 @@ const StudentPage = () => {
     return options.filter((option) => !selectedIds.has(String(option.id)));
   };
 
+  const commitDraft = () => {
+    if (!draftCard) return;
+
+    setSavedCard(draftCard);
+    const navigationTarget = pendingNavigation;
+    setPendingNavigation(null);
+    setActiveModal(null);
+    setIsEditing(false);
+    if (navigationTarget) navigate(navigationTarget);
+  };
+
   const saveDraft = (event) => {
     event.preventDefault();
-    setSavedCard(draftCard);
-    setIsEditing(false);
+    commitDraft();
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setPendingNavigation(null);
   };
 
   if (loading) {
@@ -392,6 +506,7 @@ const StudentPage = () => {
     <div className="student-page">
       <article
         className={`student-card ${isEditing ? "student-card-editing" : ""}`}
+        ref={cardRef}
       >
         <h1>{fullName}</h1>
 
@@ -506,9 +621,18 @@ const StudentPage = () => {
               </section>
             ))}
 
-            <button className="student-save-button" type="submit">
-              Сохранить
-            </button>
+            <div className="student-edit-actions">
+              <button
+                className="student-cancel-button"
+                type="button"
+                onClick={cancelEditing}
+              >
+                Отменить изменения
+              </button>
+              <button className="student-save-button" type="submit">
+                Сохранить
+              </button>
+            </div>
           </form>
         ) : (
           <>
@@ -564,6 +688,28 @@ const StudentPage = () => {
           </>
         )}
       </article>
+
+      {activeModal === "exit" && (
+        <UnsavedChangesAlert onClose={closeModal}>
+          <h2>Вы хотите сохранить изменения?</h2>
+          <div className="project-alert-actions project-alert-actions--exit">
+            <button
+              className="project-alert-red-button project-alert-red-button--cancel"
+              type="button"
+              onClick={closeModal}
+            >
+              Отмена
+            </button>
+            <button
+              className="project-alert-green-button"
+              type="button"
+              onClick={commitDraft}
+            >
+              Сохранить
+            </button>
+          </div>
+        </UnsavedChangesAlert>
+      )}
     </div>
   );
 };

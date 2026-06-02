@@ -445,6 +445,17 @@ const ProjectPage = () => {
     setIsEditing(true);
   };
 
+  const cancelEditing = () => {
+    setDraftCard(cloneCard(cardData));
+    setSaveError("");
+    setOpenDropdown(null);
+    setActiveModal(null);
+    setPendingStatus(null);
+    setPendingNavigation(null);
+    setStatusReason("");
+    setIsEditing(false);
+  };
+
   const updateDraft = (field, value) => {
     setDraftCard((prev) => ({ ...prev, [field]: value }));
   };
@@ -494,9 +505,16 @@ const ProjectPage = () => {
     if (!draftCard || draftCard.status === nextStatus) return;
 
     setDraftCard((prev) => ({ ...prev, status: nextStatus }));
-    setPendingStatus(nextStatus);
+
+    if (nextStatus === "archive") {
+      setPendingStatus(nextStatus);
+      setStatusReason("");
+      setActiveModal("status");
+      return;
+    }
+
+    setPendingStatus(null);
     setStatusReason("");
-    setActiveModal("status");
   };
 
   const confirmStatusChange = () => {
@@ -775,13 +793,23 @@ const ProjectPage = () => {
               >
                 Удалить проект
               </button>
-              <button
-                className="project-save-button"
-                type="submit"
-                disabled={isSaving}
-              >
-                {isSaving ? "Сохранение..." : "Сохранить"}
-              </button>
+              <div className="project-save-actions">
+                <button
+                  className="project-cancel-button"
+                  type="button"
+                  onClick={cancelEditing}
+                  disabled={isSaving}
+                >
+                  Отменить изменения
+                </button>
+                <button
+                  className="project-save-button"
+                  type="submit"
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Сохранение..." : "Сохранить"}
+                </button>
+              </div>
             </div>
           </form>
         ) : (

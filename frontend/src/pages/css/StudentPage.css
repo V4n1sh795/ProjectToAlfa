@@ -311,16 +311,22 @@
   margin-bottom: 60px;
 }
 
+.student-edit-actions {
+  align-self: flex-end;
+  margin: 16px 10px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.student-card .student-cancel-button[type="button"],
 .student-card .student-save-button[type="submit"] {
   appearance: none;
-  align-self: flex-end;
   height: 38px;
-  width: 138px;
-  margin: 16px 10px 0 0;
   padding: 3px 14px;
-  border: none;
   border-radius: 15px;
-  background: #bdeeba;
   color: #212124;
   font-size: 16px;
   line-height: 1;
@@ -329,6 +335,24 @@
   font-family: inherit;
   box-sizing: border-box;
   transition: background 0.2s ease;
+}
+
+.student-card .student-cancel-button[type="button"] {
+  width: 205px;
+  border: 2px solid #ef3124;
+  background: #fff;
+  color: #ef3124;
+}
+
+.student-card .student-save-button[type="submit"] {
+  width: 138px;
+  border: none;
+  background: #bdeeba;
+}
+
+.student-card .student-cancel-button[type="button"]:hover {
+  background: #fff3f2;
+  color: #ef3124;
 }
 
 .student-card .student-save-button[type="submit"]:hover {
@@ -403,6 +427,12 @@
     font-size: 15px;
   }
 
+  .student-card .student-cancel-button[type="button"] {
+    width: 190px;
+    height: 36px;
+    font-size: 15px;
+  }
+
   .student-card .student-save-button[type="submit"] {
     width: 124px;
     height: 36px;
@@ -462,6 +492,11 @@
     width: 184px;
     height: 37px;
     margin-top: 52px;
+  }
+
+  .student-card .student-cancel-button[type="button"] {
+    width: 198px;
+    height: 37px;
   }
 
   .student-card .student-save-button[type="submit"] {
