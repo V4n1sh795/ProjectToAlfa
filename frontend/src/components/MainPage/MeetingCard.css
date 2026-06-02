@@ -270,7 +270,7 @@
 .meeting-card__participant small {
   margin-bottom: 6px;
   color: #626262;
-  font-size: 24px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 1;
 }
@@ -309,7 +309,7 @@
 .meeting-card__empty-mentors {
   margin: 0;
   color: #626262;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 500;
   line-height: 1;
   text-align: center;
@@ -555,7 +555,7 @@
   padding: 0;
   border: none !important;
   border-radius: 15px;
-  background: #BDEEBA !important;
+  background: #bdeeba !important;
   box-shadow: none !important;
   color: #212124 !important;
   cursor: pointer;
@@ -574,7 +574,7 @@
 .meeting-card .meeting-card__save-button[type="button"]:active {
   border: none !important;
   outline: none !important;
-  background: #BDEEBA !important;
+  background: #bdeeba !important;
   box-shadow: none !important;
   color: #212124 !important;
   transform: none !important;
@@ -605,7 +605,7 @@
 
 .meeting-card__toast strong {
   margin-bottom: 22px;
-  color: #11FF00;
+  color: #11ff00;
   font-size: 32px;
   font-weight: 500;
   line-height: 1;
@@ -904,10 +904,6 @@
     font-size: 21px;
   }
 
-  .meeting-card__participant small {
-    font-size: 21px;
-  }
-
   .meeting-card__actions {
     margin-top: 28px;
   }
@@ -1031,10 +1027,6 @@
   .meeting-card__participant,
   .meeting-card__attendance-item,
   .meeting-card__panel--field textarea {
-    font-size: 18px;
-  }
-
-  .meeting-card__participant small {
     font-size: 18px;
   }
 
