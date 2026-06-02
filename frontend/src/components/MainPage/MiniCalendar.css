@@ -42,6 +42,7 @@
 }
 
 .calendar-day {
+  font-family: "Alexandria", sans-serif;
   border: none;
   background: transparent;
   cursor: pointer;
