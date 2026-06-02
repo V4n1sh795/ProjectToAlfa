@@ -36,7 +36,7 @@ static class Find
     public record MemberDto
     {
         [JsonPropertyName("id")]
-        public int Id { get; set; }
+        public int? Id { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
@@ -63,7 +63,7 @@ static class Find
     public record CuratorDto
     {
         [JsonPropertyName("id")]
-        public string id { get; set; } = string.Empty;
+        public int id { get; set; } 
         [JsonPropertyName("name")]
         public string name{ get; set; } = string.Empty; 
     }
@@ -175,6 +175,7 @@ static class Find
                                         .ToList()[0];
         if (Team != null)
         {
+            // ВАЖНО !!! ПЕРЕСОЗДАТЬ МИТИНГИ
             Team.Curators.Clear();
             Team.CallDay = team.CallDay;
             Team.CallTime = team.CallTime;
@@ -182,11 +183,11 @@ static class Find
             Team.artifacts = team.Project.Artifacts;
             foreach (CuratorDto curator in team.Curators)
             {
-                Team.Curators.Add(int.Parse(curator.id));
+                Team.Curators.Add(curator.id);
             }
             foreach (MemberDto member in team.Members)
             {
-                if (member.Id != 0) // patch old member
+                if (member.Id != null) // patch old member
                 {
                     Member ExistingMember = db.Members.Where(m => m.Id == member.Id).Include(m => m.Profiles).ToList()[0];
                     if (ExistingMember == null)
@@ -200,6 +201,7 @@ static class Find
                         cash.Models.Profile profile = ExistingMember.Profiles
                             .Where(profile => profile.ProjectId == Team.ProjectId).ToList()[0];
                         profile.Role = member.Role;
+                        await db.SaveChangesAsync();
                     }
                 }
                 else // add new member
@@ -210,18 +212,26 @@ static class Find
                         Surname = FIO.Length > 0 ? FIO[0] : "",
                         Name = FIO.Length > 1 ? FIO[1] : "",
                         SecondName = FIO.Length > 2 ? FIO[2] : "",
-                        Profiles = [new cash.Models.Profile
+                        Profiles = new List<cash.Models.Profile>
                         {
-                            Role = member.Role,
-                            Stack = "?",
-                            ProjectId = team.Project.Id,
-                            GroupNumber = "?"
-                        }]
+                            new cash.Models.Profile
+                            {
+                                Role = member.Role,
+                                Stack = "?",
+                                ProjectId = team.Project.Id,
+                                GroupNumber = "?"
+                            }
+                        }
                     };
+                    Team.Members.Add(new_member);
+                    // КЛЮЧЕВОЕ: добавляем в контекст
+                    db.Members.Add(new_member);
+                    await db.SaveChangesAsync();
                 }
             }
             Team.ProjectId = team.Project.Id;
-            return Results.Ok($"db log - {db.SaveChangesAsync()}");
+            await db.SaveChangesAsync();
+            return Results.Ok(team);
         }
         else
             return Results.BadRequest("Team with id not found");
