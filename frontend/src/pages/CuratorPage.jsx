@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCurator, getTeams, updateCuratorCard } from "../api/meetingsApi";
 import "./css/CuratorPage.css";
+import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";
@@ -47,6 +48,25 @@ const createDraftTeam = (team) => ({
   id: team.id ?? null,
   name: team.name || "",
 });
+
+const cloneCard = (card) => JSON.parse(JSON.stringify(card));
+
+const createComparableCuratorCard = (card) => {
+  if (!card) return null;
+
+  return {
+    name: String(card.name || "").trim(),
+    email: String(card.email || "").trim(),
+    currentTeams: (card.currentTeams || []).map((team) => ({
+      id: team.id ?? null,
+      name: String(team.name || "").trim(),
+    })),
+    pastTeams: (card.pastTeams || []).map((team) => ({
+      id: team.id ?? null,
+      name: String(team.name || "").trim(),
+    })),
+  };
+};
 
 const normalizeTeamOptions = (items) =>
   normalizeList(items).filter((team) => team.id !== null && team.name);
@@ -111,6 +131,7 @@ const TeamDropdown = ({
 const CuratorPage = () => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const initialCurator = location.state?.curator;
 
   const [curator, setCurator] = useState(initialCurator || null);
@@ -121,6 +142,8 @@ const CuratorPage = () => {
   const [draftCard, setDraftCard] = useState(null);
   const [teamOptions, setTeamOptions] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const cardRef = useRef(null);
@@ -196,10 +219,85 @@ const CuratorPage = () => {
     [currentTeams, curatorName, email, id, pastTeams, savedCard],
   );
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (!isEditing || !draftCard) return false;
+
+    return (
+      JSON.stringify(createComparableCuratorCard(draftCard)) !==
+      JSON.stringify(createComparableCuratorCard(cardData))
+    );
+  }, [cardData, draftCard, isEditing]);
+
+  useEffect(() => {
+    if (!isEditing) return undefined;
+
+    const showExitAlert = () => {
+      if (!hasUnsavedChanges) return false;
+      if (!activeModal) setActiveModal("exit");
+      return true;
+    };
+
+    const handleClick = (event) => {
+      if (activeModal || cardRef.current?.contains(event.target)) return;
+
+      const link = event.target.closest?.("a[href]");
+      if (!link) return;
+
+      if (!hasUnsavedChanges) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+
+      const href = link.getAttribute("href");
+      if (href && !href.startsWith("#")) {
+        const url = new URL(link.href, window.location.origin);
+        setPendingNavigation(`${url.pathname}${url.search}${url.hash}`);
+      }
+
+      showExitAlert();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) showExitAlert();
+    };
+
+    const handleWindowBlur = () => {
+      showExitAlert();
+    };
+
+    const handleBeforeUnload = (event) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [activeModal, hasUnsavedChanges, isEditing]);
+
   const startEditing = () => {
-    setDraftCard(JSON.parse(JSON.stringify(cardData)));
+    setDraftCard(cloneCard(cardData));
     setSaveError("");
     setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setDraftCard(cloneCard(cardData));
+    setSaveError("");
+    setOpenDropdown(null);
+    setActiveModal(null);
+    setPendingNavigation(null);
+    setIsEditing(false);
   };
 
   const updateDraft = (field, value) => {
@@ -241,15 +339,17 @@ const CuratorPage = () => {
     id,
     name: String(card.name || "").trim(),
     email: String(card.email || "").trim(),
-    teams: card.currentTeams.map((team) => ({
-      id: team.id,
-      name: String(team.name || "").trim(),
-    })),
-    pastTeams: card.pastTeams.map((team) => ({
-      id: team.id,
-      name: String(team.name || "").trim(),
-    })),
-  });
+    teams: [
+        ...card.currentTeams.map((team) => ({
+            id: team.id,
+            name: String(team.name || "").trim(),
+        })),
+        ...card.pastTeams.map((team) => ({
+            id: team.id,
+            name: String(team.name || "").trim(),
+        }))
+    ],
+});
 
   const getTeamSelectOptions = (selectedTeams, currentTeamId) => {
     const selectedOptions = selectedTeams.filter((team) => team.id !== null && team.name);
@@ -269,8 +369,9 @@ const CuratorPage = () => {
     return [...optionsById.values()];
   };
 
-  const saveDraft = async (event) => {
-    event.preventDefault();
+  const commitDraft = async () => {
+    if (!draftCard || isSaving) return;
+
     const payload = buildCuratorPatchPayload(draftCard);
 
     setIsSaving(true);
@@ -290,7 +391,11 @@ const CuratorPage = () => {
       if (updatedCurator) {
         setCurator((prev) => ({ ...prev, ...updatedCurator }));
       }
+      const navigationTarget = pendingNavigation;
+      setPendingNavigation(null);
+      setActiveModal(null);
       setIsEditing(false);
+      if (navigationTarget) navigate(navigationTarget);
     } catch (saveError) {
       setSaveError(
         saveError.response?.data?.message ||
@@ -300,6 +405,16 @@ const CuratorPage = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const saveDraft = async (event) => {
+    event.preventDefault();
+    await commitDraft();
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setPendingNavigation(null);
   };
 
   if (loading) {
@@ -405,13 +520,23 @@ const CuratorPage = () => {
 
             {saveError && <p className="curator-save-error">{saveError}</p>}
 
-            <button
-              className="curator-save-button"
-              type="submit"
-              disabled={isSaving}
-            >
-              {isSaving ? "Сохранение..." : "Сохранить"}
-            </button>
+            <div className="curator-edit-actions">
+              <button
+                className="curator-cancel-button"
+                type="button"
+                onClick={cancelEditing}
+                disabled={isSaving}
+              >
+                Отменить изменения
+              </button>
+              <button
+                className="curator-save-button"
+                type="submit"
+                disabled={isSaving}
+              >
+                {isSaving ? "Сохранение..." : "Сохранить"}
+              </button>
+            </div>
           </form>
         ) : (
           <>
@@ -457,6 +582,29 @@ const CuratorPage = () => {
           </>
         )}
       </article>
+
+      {activeModal === "exit" && (
+        <UnsavedChangesAlert onClose={closeModal}>
+          <h2>Вы хотите сохранить изменения?</h2>
+          <div className="project-alert-actions project-alert-actions--exit">
+            <button
+              className="project-alert-red-button project-alert-red-button--cancel"
+              type="button"
+              onClick={closeModal}
+            >
+              Отмена
+            </button>
+            <button
+              className="project-alert-green-button"
+              type="button"
+              onClick={commitDraft}
+              disabled={isSaving}
+            >
+              Сохранить
+            </button>
+          </div>
+        </UnsavedChangesAlert>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { getMeetings } from "../api/meetingsApi";
+import { getMeetings, getTeams } from "../api/meetingsApi";
 import { useState, useEffect } from "react";
 // import { authAPI } from "./js/LogIn";
 // import { redirect } from "react-router-dom";
@@ -7,8 +7,7 @@ import MiniCalendar from "../components/MainPage/MiniCalendar";
 import "./css/Calendar.css";
 
 function mapMeetingFromApi(meeting) {
-  const teamName =
-    meeting.teamName || `Команда ${meeting.teamId || "неизвестно"}`;
+  const teamName = getMeetingTeamName(meeting) || "Команда неизвестна";
   const caseName = meeting.caseName || "Кейс не указан";
   const date = meeting.date?.slice(0, 10);
   const startAt = meeting.startAt || meeting.time;
@@ -23,6 +22,22 @@ function mapMeetingFromApi(meeting) {
     status: meeting.status || "scheduled",
     participants: meeting.participants || [],
   };
+}
+
+function normalizeTeamName(name) {
+  return String(name || "").trim().toLowerCase();
+}
+
+function getTeamName(team) {
+  return team.name ?? team.Name ?? "";
+}
+
+function getMeetingTeamName(meeting) {
+  return meeting.teamName ?? meeting.TeamName ?? "";
+}
+
+function getTeamCurators(team) {
+  return team.curators ?? team.Curators ?? [];
 }
 
 // В getWeekStart и getWeekEnd могут быть косяки с датой из-за toISOString
@@ -51,7 +66,6 @@ const getTodayDate = () => {
 
 function Calender() {
   const [meetings, setMeetings] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(getTodayDate);
   const weekStart = getWeekStart(selectedDate);
@@ -59,18 +73,34 @@ function Calender() {
 
   useEffect(() => {
     async function loadMeetings() {
-      setLoading(true);
       setError(null);
 
       try {
-        const data = await getMeetings(weekStart);
-        const preparedMeetings = data.map(mapMeetingFromApi);
+        const curatorId = localStorage.getItem("id");
+        const [meetingsData, teamsData] = await Promise.all([
+          getMeetings(weekStart),
+          getTeams(),
+        ]);
+        const curatorTeamNames = new Set(
+          teamsData
+            .filter((team) =>
+              getTeamCurators(team).some(
+                (teamCuratorId) => String(teamCuratorId) === String(curatorId),
+              ),
+            )
+            .map(getTeamName)
+            .filter(Boolean)
+            .map(normalizeTeamName),
+        );
+        const preparedMeetings = meetingsData
+          .filter((meeting) =>
+            curatorTeamNames.has(normalizeTeamName(getMeetingTeamName(meeting))),
+          )
+          .map(mapMeetingFromApi);
 
         setMeetings(preparedMeetings);
       } catch (err) {
         setError(err.message);
-      } finally {
-        setLoading(false);
       }
     }
 
@@ -84,10 +114,6 @@ function Calender() {
         ? m1.date.localeCompare(m2.date)
         : (m1.startAt || "").localeCompare(m2.startAt || ""),
     );
-
-  // if (loading) {
-  //   return <div>Загрузка встреч...</div>;
-  // }
 
   if (error) {
     return <div>Ошибка загрузки встреч: {error}</div>;

@@ -57,7 +57,8 @@ static class Team
                 {
                     Role = m.role,
                     Stack = m.stack,
-                    GroupNumber = m.group
+                    GroupNumber = m.group,
+                    ProjectId = team.projectId 
                 });
                 await db.SaveChangesAsync();
             }
@@ -67,7 +68,8 @@ static class Team
                     {
                         Role = m.role,
                         Stack = m.stack,
-                        GroupNumber = m.group
+                        GroupNumber = m.group,
+                        ProjectId = team.projectId 
                     };
                 Member member = new Member(l[1], l[0], l[2]);
                 member.Profiles.Add(profile);

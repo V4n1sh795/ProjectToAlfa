@@ -16,27 +16,27 @@ public record Project
 
     [Required]
     [Column("Name")]
-    public string Name { get; init; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     [Required]
     [Column("description")]
-    public string Description { get; init; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     [Required]
     [Column("goal")]
-    public string Main_Goal { get; init; } = string.Empty;
+    public string Main_Goal { get; set; } = string.Empty;
     [Required]
     [Column("result")]
-    public string Results { get; init; } = string.Empty;
+    public string Results { get; set; } = string.Empty;
     [Required]
     [Column("roles")]
-    public string Roles { get; init; } = string.Empty;
+    public string Roles { get; set; } = string.Empty;
     [Required]
     [Column("technology")]
-    public string Technology { get; init; } = string.Empty;
+    public string Technology { get; set; } = string.Empty;
 
     [Required]
     [Column("Curator_ids")]
-    public List<int> CuratorIds { get; init; } = new List<int>();
+    public List<int> CuratorIds { get; set; } = new List<int>();
 
     [Required]
     [Column("startDate")]
@@ -50,6 +50,14 @@ public record Project
     [Column("Semester")]
     public string Semester { get; init; } = string.Empty;
 
+    [Column("status")]
+    public string status {get; set; } = "idea";
+
+    [Column("statusReason")]
+    public string statusReason {get; set; } = string.Empty;
+
+    [Column("archiveReason")]
+    public string archiveReason {get; set; } = string.Empty;
     // [Required]
     // [Column("Status")]
     // public bool Status { get; set; } = true;

@@ -16,8 +16,7 @@ public record Team
     [Column("name")]
     public string Name { get; set; } = string.Empty;
     
-    // Для PostgreSQL - хранить как JSONB или отдельную таблицу
-    [Column("comments", TypeName = "jsonb")]
+    [Column("comments")]
     public List<string> Comments { get; set; } = new List<string>();
     
     [Column("created_at")]
@@ -28,7 +27,7 @@ public record Team
     public int ProjectId { get; set; }
     
     // Навигационное свойство - ICollection вместо List для EF Core
-    public virtual ICollection<Member> Members { get; set; } = new List<Member>();
+    public virtual ICollection<cash.Models.Member> Members { get; set; } = new List<Member>();
     
     [Column("curators")]
     public List<int> Curators { get; set; } = new List<int>();
@@ -42,4 +41,9 @@ public record Team
     public string CallTime { get; set; } = string.Empty;
 
     public List<int> Tasks {get; set; } = new List<int>();
+
+    [Column("artifacts")]
+    public string artifacts {get; set; } = string.Empty;
+    [Column("grades")]
+    public float[] grades {get; set; } = new float[4] {0, 0, 0, 0}; 
 }
