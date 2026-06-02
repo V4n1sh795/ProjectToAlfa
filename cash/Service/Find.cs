@@ -3,7 +3,7 @@ using cash.Models;
 using DBContext;
 using System.Text.Json.Serialization;
 namespace Service;
-
+using System.Globalization;
 static class Find
 {
     public record TeamDto
@@ -168,6 +168,25 @@ static class Find
         return Results.Ok(results);
  
     }
+    public static async System.Threading.Tasks.Task ShiftMeetings(AppDbContext db,DayOfWeek newDayOfWeek, TimeOnly newTime, int TeamId)
+    {
+        var meetings = await db.Meetings.Where(m => m.TeamId == TeamId).ToListAsync();
+
+        foreach (var meeting in meetings)
+        {
+            int daysDiff = newDayOfWeek - meeting.Date.DayOfWeek;
+            
+            if (daysDiff < 0)
+            {
+                daysDiff += 7;
+            }
+
+            meeting.Date = meeting.Date.AddDays(daysDiff);
+            meeting.Time = newTime;
+        }
+
+        await db.SaveChangesAsync();
+    }
     public static async Task<IResult> PatchTeam(AppDbContext db, int id, ITeam team)
     {
         cash.Models.Team Team = db.Teams.Where(t => t.Id == id)
@@ -175,66 +194,108 @@ static class Find
                                         .ToList()[0];
         if (Team != null)
         {
-            // ВАЖНО !!! ПЕРЕСОЗДАТЬ МИТИНГИ
             Team.Curators.Clear();
             Team.CallDay = team.CallDay;
             Team.CallTime = team.CallTime;
+            DayOfWeek dayOfWeek = ParseDayOfWeek(team.CallDay);
+            await ShiftMeetings(db, dayOfWeek, TimeOnly.Parse(team.CallTime), Team.Id);
             Team.Comments.Add(team.Comment);
             Team.artifacts = team.Project.Artifacts;
             foreach (CuratorDto curator in team.Curators)
             {
                 Team.Curators.Add(curator.id);
             }
-            foreach (MemberDto member in team.Members)
-            {
-                if (member.Id != null) // patch old member
-                {
-                    Member ExistingMember = db.Members.Where(m => m.Id == member.Id).Include(m => m.Profiles).ToList()[0];
-                    if (ExistingMember == null)
-                        return Results.BadRequest("Member with this id not found");
-                    else
-                    {
-                        string[] FIO = member.Name.Split(" ");
-                        ExistingMember.Surname = FIO.Length > 0 ? FIO[0] : "";
-                        ExistingMember.Name = FIO.Length > 1 ? FIO[1] : "";
-                        ExistingMember.SecondName = FIO.Length > 2 ? FIO[2] : "";
-                        cash.Models.Profile profile = ExistingMember.Profiles
-                            .Where(profile => profile.ProjectId == Team.ProjectId).ToList()[0];
-                        profile.Role = member.Role;
-                        await db.SaveChangesAsync();
-                    }
-                }
-                else // add new member
-                {
-                    string[] FIO = member.Name.Split(" ");
-                    cash.Models.Member new_member = new Member
-                    {
-                        Surname = FIO.Length > 0 ? FIO[0] : "",
-                        Name = FIO.Length > 1 ? FIO[1] : "",
-                        SecondName = FIO.Length > 2 ? FIO[2] : "",
-                        Profiles = new List<cash.Models.Profile>
-                        {
-                            new cash.Models.Profile
-                            {
-                                Role = member.Role,
-                                Stack = "?",
-                                ProjectId = team.Project.Id,
-                                GroupNumber = "?"
-                            }
-                        }
-                    };
-                    Team.Members.Add(new_member);
-                    // КЛЮЧЕВОЕ: добавляем в контекст
-                    db.Members.Add(new_member);
-                    await db.SaveChangesAsync();
-                }
-            }
+
+            var membersResult = await UpdateTeamMembersAsync(db, Team, team.Members, team.Project.Id);
+            if (membersResult != null)
+                return membersResult;
+
             Team.ProjectId = team.Project.Id;
             await db.SaveChangesAsync();
             return Results.Ok(team);
         }
         else
             return Results.BadRequest("Team with id not found");
+    }
+    private static async Task<IResult?> UpdateTeamMembersAsync(
+                                                            AppDbContext db,
+                                                            cash.Models.Team team,
+                                                            IEnumerable<MemberDto> membersDto,
+                                                            int projectId)
+    {
+        foreach (MemberDto member in membersDto)
+        {
+            if (member.Id != null)
+            {
+                // Patch существующего участника
+                var existingMember = db.Members
+                    .Where(m => m.Id == member.Id)
+                    .Include(m => m.Profiles)
+                    .ToList()
+                    .FirstOrDefault();
+
+                if (existingMember == null)
+                    return Results.BadRequest("Member with this id not found");
+
+                var fio = member.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                existingMember.Surname = fio.Length > 0 ? fio[0] : "";
+                existingMember.Name = fio.Length > 1 ? fio[1] : "";
+                existingMember.SecondName = fio.Length > 2 ? fio[2] : "";
+
+                var profile = existingMember.Profiles
+                    .FirstOrDefault(p => p.ProjectId == team.ProjectId);
+
+                if (profile == null)
+                    return Results.BadRequest($"Profile not found for member {member.Id} in project {team.ProjectId}");
+
+                profile.Role = member.Role;
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                // Добавление нового участника
+                var fio = member.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var newMember = new cash.Models.Member
+                {
+                    Surname = fio.Length > 0 ? fio[0] : "",
+                    Name = fio.Length > 1 ? fio[1] : "",
+                    SecondName = fio.Length > 2 ? fio[2] : "",
+                    Profiles = new List<cash.Models.Profile>
+                    {
+                        new cash.Models.Profile
+                        {
+                            Role = member.Role,
+                            Stack = "?",
+                            ProjectId = projectId,
+                            GroupNumber = "?"
+                        }
+                    }
+                };
+
+                team.Members.Add(newMember);
+                db.Members.Add(newMember);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        return null;
+    }
+    public static DayOfWeek ParseDayOfWeek(string Day)
+    {
+        var days = new Dictionary<string, DayOfWeek>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["monday"] = DayOfWeek.Monday,
+            ["tuesday"] = DayOfWeek.Tuesday,
+            ["wednesday"] = DayOfWeek.Wednesday,
+            ["thursday"] = DayOfWeek.Thursday,
+            ["friday"] = DayOfWeek.Friday,
+            ["saturday"] = DayOfWeek.Saturday,
+            ["sunday"] = DayOfWeek.Sunday
+        };
+        
+        return days.TryGetValue(Day, out var result) 
+            ? result 
+            : throw new ArgumentException($"Unknown day: {Day}");
     }
     public static async Task<IResult> PatchMember(AppDbContext db, int id, List<(string param, string new_value)> values)
     {
