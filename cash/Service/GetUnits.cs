@@ -13,7 +13,12 @@ static class GetUnits
         public string Teamname {get; set;}
         public string conntacts {get; set;}
         public string comments {get; set;}
-        public List<string> profiles {get; set;} = new List<string>();
+        public List<ProfileRec1> profiles {get; set;} = new List<ProfileRec1>();
+    }
+    public record ProfileRec1
+    {
+        public int ProfileId {get; set;}
+        public string MetaData {get; set;} = string.Empty;
     }
     public static async Task<IResult> Member(AppDbContext db, int id)
     {
@@ -23,10 +28,15 @@ static class GetUnits
         else
         {
             var profiles = member.Profiles;
-            List<string> sprofiles = new List<string>();
+            List<ProfileRec1> sprofiles = new List<ProfileRec1>();
             foreach (var profile in profiles)
             {
-                sprofiles.Add($"{profile.Role} {profile.Stack} {profile.GroupNumber}" );
+                ProfileRec1 prof = new ProfileRec1
+                {
+                    ProfileId = profile.Id,
+                    MetaData = $"{profile.Role} {profile.Stack} {profile.GroupNumber}"
+                };
+                sprofiles.Add(prof);
             }
             var response = new OMemeber
             {
