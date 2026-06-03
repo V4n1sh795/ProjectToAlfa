@@ -44,9 +44,27 @@ const normalizeList = (items) => {
   });
 };
 
+const getStudentProfiles = (student) => {
+  const profiles = getValue(student, ["profiles", "Profiles"], null);
+  if (Array.isArray(profiles)) return profiles;
+
+  const duplicateIdProfiles = getValue(student, ["id", "Id"], null);
+  return Array.isArray(duplicateIdProfiles) ? duplicateIdProfiles : [];
+};
+
 const parseProfile = (profile) => {
   if (typeof profile === "object" && profile !== null) {
     return {
+      profileId: getValue(profile, ["profileId", "profileid", "ProfileId"], null),
+      semesterTitle: getValue(
+        profile,
+        ["semesterTitle", "Semestr", "semestr", "semester", "Semester"],
+        "",
+      ),
+      teamId: getValue(profile, ["teamid", "teamId", "TeamId"], null),
+      teamName: getValue(profile, ["teamName", "TeamName"], ""),
+      projectId: getValue(profile, ["projectId", "ProjectId"], null),
+      projectName: getValue(profile, ["projectName", "ProjectName"], ""),
       role: getValue(profile, ["role", "Role"], emptyValue),
       stack: getValue(profile, ["stack", "Stack"], emptyValue),
       group: getValue(
@@ -66,6 +84,12 @@ const parseProfile = (profile) => {
     .trim()
     .split(/\s+/);
   return {
+    profileId: null,
+    semesterTitle: "",
+    teamId: null,
+    teamName: "",
+    projectId: null,
+    projectName: "",
     role: parts[0] || emptyValue,
     stack: parts.slice(1, -1).join(" ") || emptyValue,
     group: parts[parts.length - 1] || emptyValue,
@@ -102,6 +126,7 @@ const createComparableStudentCard = (card) => {
   return {
     contact: String(card.contact || "").trim(),
     records: (card.records || []).map((record) => ({
+      profileId: record.profileId ?? null,
       semesterTitle: String(record.semesterTitle || "").trim(),
       teamId: record.teamId ?? null,
       teamName: String(record.teamName || "").trim(),
@@ -234,7 +259,7 @@ const StudentPage = () => {
         setStudent((prev) => ({
           ...member,
           ...prev,
-          profiles: getValue(member, ["profiles", "Profiles"], []),
+          profiles: getStudentProfiles(member),
           teamname: getValue(member, ["teamname", "Teamname"], ""),
           team_id: teamId,
         }));
@@ -294,7 +319,7 @@ const StudentPage = () => {
   }, [openDropdown]);
 
   const profiles = useMemo(() => {
-    const rawProfiles = getValue(student, ["profiles", "Profiles"], []);
+    const rawProfiles = getStudentProfiles(student);
     if (!Array.isArray(rawProfiles) || rawProfiles.length === 0)
       return [parseProfile(null)];
     return rawProfiles.map(parseProfile);
@@ -325,7 +350,7 @@ const StudentPage = () => {
   );
   const contact = getValue(
     student,
-    ["email", "Email", "phone", "Phone"],
+    ["contact", "Contact", "conntacts", "contacts", "email", "Email", "phone", "Phone"],
     "",
   );
 
@@ -334,11 +359,12 @@ const StudentPage = () => {
       savedCard || {
         contact,
         records: profiles.map((profile, index) => ({
-          semesterTitle: formatSemester(semester, index),
-          teamId,
-          teamName,
-          projectId,
-          projectName,
+          profileId: profile.profileId,
+          semesterTitle: formatSemester(profile.semesterTitle || semester, index),
+          teamId: profile.teamId ?? teamId,
+          teamName: profile.teamName || teamName,
+          projectId: profile.projectId ?? projectId,
+          projectName: profile.projectName || projectName,
           role: profile.role,
           stack: profile.stack || technology,
           comment: profile.comment,
@@ -486,9 +512,10 @@ const StudentPage = () => {
   const buildStudentPatchPayload = (card) => ({
     id: normalizeOptionalId(id),
     contact: String(card.contact || "").trim(),
-    records: card.records.map((record) => ({
+    profiles: card.records.map((record) => ({
+      profileId: normalizeOptionalId(record.profileId),
       semesterTitle: String(record.semesterTitle || "").trim(),
-      teamId: normalizeOptionalId(record.teamId),
+      teamid: normalizeOptionalId(record.teamId),
       teamName: String(record.teamName || "").trim(),
       projectId: normalizeOptionalId(record.projectId),
       projectName: String(record.projectName || "").trim(),
@@ -522,7 +549,7 @@ const StudentPage = () => {
         });
       }
 
-      setSavedCard(payload);
+      setSavedCard(cloneCard(draftCard));
       if (updatedMember) setStudent((prev) => ({ ...prev, ...updatedMember }));
       const navigationTarget = pendingNavigation;
       setPendingNavigation(null);
