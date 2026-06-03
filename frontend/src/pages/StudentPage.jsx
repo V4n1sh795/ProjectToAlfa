@@ -52,8 +52,30 @@ const getStudentProfiles = (student) => {
   return Array.isArray(duplicateIdProfiles) ? duplicateIdProfiles : [];
 };
 
+const parseProfileMetaData = (metaData) => {
+  const parts = String(metaData || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  return {
+    role: parts[0] || emptyValue,
+    stack: parts.slice(1, -1).join(" ") || emptyValue,
+    group: parts[parts.length - 1] || emptyValue,
+  };
+};
+
+const buildProfileMetaData = (record) =>
+  [record.role, record.stack, record.group]
+    .map((value) => String(value || "").trim())
+    .filter((value) => value && value !== emptyValue)
+    .join(" ");
+
 const parseProfile = (profile) => {
   if (typeof profile === "object" && profile !== null) {
+    const metaData = getValue(profile, ["metaData", "MetaData"], "");
+    const parsedMetaData = parseProfileMetaData(metaData);
+
     return {
       profileId: getValue(profile, ["profileId", "profileid", "ProfileId"], null),
       semesterTitle: getValue(
@@ -65,12 +87,12 @@ const parseProfile = (profile) => {
       teamName: getValue(profile, ["teamName", "TeamName"], ""),
       projectId: getValue(profile, ["projectId", "ProjectId"], null),
       projectName: getValue(profile, ["projectName", "ProjectName"], ""),
-      role: getValue(profile, ["role", "Role"], emptyValue),
-      stack: getValue(profile, ["stack", "Stack"], emptyValue),
+      role: getValue(profile, ["role", "Role"], parsedMetaData.role),
+      stack: getValue(profile, ["stack", "Stack"], parsedMetaData.stack),
       group: getValue(
         profile,
         ["groupNumber", "GroupNumber", "group"],
-        emptyValue,
+        parsedMetaData.group,
       ),
       comment: getValue(
         profile,
@@ -134,6 +156,7 @@ const createComparableStudentCard = (card) => {
       projectName: String(record.projectName || "").trim(),
       role: String(record.role || "").trim(),
       stack: String(record.stack || "").trim(),
+      group: String(record.group || "").trim(),
       comment: String(record.comment || "").trim(),
     })),
   };
@@ -367,6 +390,7 @@ const StudentPage = () => {
           projectName: profile.projectName || projectName,
           role: profile.role,
           stack: profile.stack || technology,
+          group: profile.group,
           comment: profile.comment,
         })),
       },
@@ -509,21 +533,22 @@ const StudentPage = () => {
     return options.filter((option) => !selectedIds.has(String(option.id)));
   };
 
-  const buildStudentPatchPayload = (card) => ({
-    id: normalizeOptionalId(id),
-    contact: String(card.contact || "").trim(),
-    profiles: card.records.map((record) => ({
-      profileId: normalizeOptionalId(record.profileId),
-      semesterTitle: String(record.semesterTitle || "").trim(),
-      teamid: normalizeOptionalId(record.teamId),
-      teamName: String(record.teamName || "").trim(),
-      projectId: normalizeOptionalId(record.projectId),
-      projectName: String(record.projectName || "").trim(),
-      role: String(record.role || "").trim(),
-      stack: String(record.stack || "").trim(),
-      comment: String(record.comment || "").trim(),
-    })),
-  });
+  const buildStudentPatchPayload = (card) => {
+    const firstRecord = card.records[0] || {};
+
+    return {
+      id: normalizeOptionalId(id),
+      Team_id: normalizeOptionalId(firstRecord.teamId ?? teamId),
+      Name: fullName,
+      Teamname: String(firstRecord.teamName || teamName || "").trim(),
+      conntacts: String(card.contact || "").trim(),
+      comments: String(firstRecord.comment || "").trim(),
+      profiles: card.records.map((record) => ({
+        ProfileId: normalizeOptionalId(record.profileId),
+        MetaData: buildProfileMetaData(record),
+      })),
+    };
+  };
 
   const commitDraft = async () => {
     if (!draftCard || isSaving) return;
