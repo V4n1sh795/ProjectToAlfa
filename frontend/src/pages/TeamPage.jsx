@@ -218,6 +218,7 @@ const TeamPage = () => {
   const [savedCard, setSavedCard] = useState(null);
   const [draftCard, setDraftCard] = useState(null);
   const [curatorOptions, setCuratorOptions] = useState([]);
+  const [projectOptions, setProjectOptions] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
   const [pendingNavigation, setPendingNavigation] = useState(null);
@@ -235,6 +236,7 @@ const TeamPage = () => {
 
       try {
         const curatorOptionsRequest = getCurators().catch(() => []);
+        const projectOptionsRequest = fetch("/api/project").catch(() => null);
         const teamResponse = await fetch(`/api/team/${id}`);
         if (!teamResponse.ok) throw new Error("Команда не найдена");
         const teamData = await teamResponse.json();
@@ -273,11 +275,20 @@ const TeamPage = () => {
         );
 
         if (!cancelled) setMemberDetails(loadedMembers);
-        const curatorsData = await curatorOptionsRequest;
+        const [curatorsData, projectsResponse] = await Promise.all([
+          curatorOptionsRequest,
+          projectOptionsRequest,
+        ]);
+        const projectsData = projectsResponse?.ok ? await projectsResponse.json() : [];
         if (!cancelled) {
           setCuratorOptions(
             normalizeList(curatorsData).filter(
               (curator) => curator.id !== null && curator.name,
+            ),
+          );
+          setProjectOptions(
+            normalizeList(projectsData).filter(
+              (project) => project.id !== null && project.name,
             ),
           );
         }
@@ -469,6 +480,24 @@ const TeamPage = () => {
     setOpenDropdown(null);
   };
 
+  const updateProject = (value) => {
+    if (!value) {
+      setOpenDropdown(null);
+      return;
+    }
+
+    const selectedOption = projectOptions.find(
+      (option) => String(option.id) === String(value),
+    );
+
+    setDraftCard((prev) => ({
+      ...prev,
+      projectId: selectedOption?.id ?? null,
+      projectName: selectedOption?.name || "",
+    }));
+    setOpenDropdown(null);
+  };
+
   const updateMember = (index, field, value) => {
     setDraftCard((prev) => ({
       ...prev,
@@ -639,10 +668,18 @@ const TeamPage = () => {
           <form className="team-edit-form" onSubmit={saveDraft}>
             <label className="team-edit-field team-edit-field--wide">
               <span>Название проекта</span>
-              <input
-                type="text"
-                value={draftCard.projectName}
-                onChange={(event) => updateDraft("projectName", event.target.value)}
+              <TeamDropdown
+                id="project"
+                value={draftCard.projectId ?? ""}
+                options={projectOptions}
+                placeholder="Выберите проект"
+                isOpen={openDropdown === "project"}
+                onToggle={() =>
+                  setOpenDropdown((current) =>
+                    current === "project" ? null : "project",
+                  )
+                }
+                onChange={updateProject}
               />
             </label>
 
