@@ -9,7 +9,7 @@ static class Find
     public record StudentRedcord(
         [property: JsonPropertyName("contact")] string contact,
         [property: JsonPropertyName("id")] int Id,
-        [property: JsonPropertyName("id")] List<ProfileRec> Profiles
+        [property: JsonPropertyName("records")] List<ProfileRec> Profiles
     );
     public record ProfileRec(
         [property: JsonPropertyName("comment")] string comment,
