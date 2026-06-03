@@ -7,20 +7,18 @@ using System.Globalization;
 static class Find
 {
     public record StudentRedcord(
-        [property: JsonPropertyName("contact")] string contact,
+        [property: JsonPropertyName("conntacts")] string contact,
         [property: JsonPropertyName("id")] int Id,
-        [property: JsonPropertyName("records")] List<ProfileRec> Profiles
+        [property: JsonPropertyName("profiles")] List<ProfileRec> Profiles,
+        [property: JsonPropertyName("comment")] string comment,
+        [property: JsonPropertyName("teamid")] int TeamId
     );
     public record ProfileRec(
-        [property: JsonPropertyName("comment")] string comment,
-        [property: JsonPropertyName("projectId")] int ProjectId,
-        [property: JsonPropertyName("projectName")] string ProjectName,
-        [property: JsonPropertyName("role")] string Role,
-        [property: JsonPropertyName("semesterTitle")] string Semestr,
-        [property: JsonPropertyName("stack")] string Stack,
-        [property: JsonPropertyName("teamid")] int TeamId,
-        [property: JsonPropertyName("teamName")] string TeamName,
-        [property: JsonPropertyName("profileId")] int profileId
+        [property: JsonPropertyName("group")] string group,
+        [property: JsonPropertyName("ProfileId")] int Id,
+        [property: JsonPropertyName("role")] string role,
+        [property: JsonPropertyName("stack")] string stack, 
+        [property: JsonPropertyName("projectId")] int ProjectId
     );
     public record ProjectRecord(
         [property: JsonPropertyName("id")] int Id,
@@ -306,19 +304,21 @@ static class Find
             return Results.BadRequest("Member dont found");
         else
         {
-            member.conntacts = student.contact;
-            member.comments = student.Profiles.First().comment;
-            member.Team = await db.Teams.Where(t=> t.Id == student.Profiles.First().TeamId).FirstOrDefaultAsync();
+            member.conntacts = student.contact ?? "";
+            member.comments = student.comment ?? "";
+            member.Team = await db.Teams.Where(t=> t.Id == student.TeamId).FirstOrDefaultAsync();
             foreach (ProfileRec profile in student.Profiles)
             {
-                cash.Models.Profile? Profile = member.Profiles.Where(x => x.ProjectId == profile.profileId).FirstOrDefault();
+                cash.Models.Profile? Profile = member.Profiles.FirstOrDefault(p => p.Id == profile.Id);
                 if (Profile == null)
                     return Results.BadRequest("Profile dont found");
                 else
                 {
-                    Profile.ProjectId = profile.profileId;
-                    Profile.Role = profile.Role;
-                    Profile.Stack = profile.Stack;    
+                    Profile.ProjectId = profile.Id;
+                    Profile.Role = profile.role;
+                    Profile.Stack = profile.stack;   
+                    Profile.ProjectId = profile.ProjectId;
+                    Profile.GroupNumber = profile.group; 
                 }
             }
             await db.SaveChangesAsync();

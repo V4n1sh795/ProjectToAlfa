@@ -23,6 +23,7 @@ static class Team
     }
     public record IMember
     {
+        public bool exists {get; set; }
         public string name {get; set; }= string.Empty; //FIO
         public string group {get; set; } = string.Empty;
         public string role {get; set; } = string.Empty;
@@ -58,7 +59,7 @@ static class Team
                                         m.Surname == l[0] && 
                                         m.SecondName == l[2]);
 
-            if (existingMember != null)
+            if (m.exists)
             {
                 existingMember.Profiles.Add(new Profile
                 {

@@ -12,7 +12,7 @@ static class GetUnits
         public string Name {get; set;}
         public string Teamname {get; set;}
         public string conntacts {get; set;}
-        public string comments {get; set;}
+        public string comment {get; set;}
         public List<ProfileRec1> profiles {get; set;} = new List<ProfileRec1>();
     }
     public record ProfileRec1
@@ -43,7 +43,7 @@ static class GetUnits
                 id = member.Id,
                 Team_id = member.TeamId,
                 conntacts = member.conntacts,
-                comments = member.comments,
+                comment = member.comments,
                 Name = $"{member.Surname} {member.Name} {member.SecondName}",
                 Teamname = db.Teams.FirstOrDefault(t => t.Id == member.TeamId).Name,
                 profiles = sprofiles

@@ -65,12 +65,6 @@ const parseProfileMetaData = (metaData) => {
   };
 };
 
-const buildProfileMetaData = (record) =>
-  [record.role, record.stack, record.group]
-    .map((value) => String(value || "").trim())
-    .filter((value) => value && value !== emptyValue)
-    .join(" ");
-
 const parseProfile = (profile) => {
   if (typeof profile === "object" && profile !== null) {
     const metaData = getValue(profile, ["metaData", "MetaData"], "");
@@ -328,7 +322,11 @@ const StudentPage = () => {
       cancelled = true;
     };
   }, [id]);
-
+  const studentComment = getValue(
+    student,
+    ["comment", "Comment"],
+    "",
+  );
   useEffect(() => {
     if (!openDropdown) return undefined;
 
@@ -373,39 +371,41 @@ const StudentPage = () => {
   );
   const contact = getValue(
     student,
-    ["contact", "Contact", "conntacts", "contacts", "email", "Email", "phone", "Phone"],
+    ["contact", "Contact", "conntacts", "contacts", "email", "Email", "phone", "Phone", "conntacts"],
     "",
   );
 
   const cardData = useMemo(
-    () =>
-      savedCard || {
-        contact,
-        records: profiles.map((profile, index) => ({
-          profileId: profile.profileId,
-          semesterTitle: formatSemester(profile.semesterTitle || semester, index),
-          teamId: profile.teamId ?? teamId,
-          teamName: profile.teamName || teamName,
-          projectId: profile.projectId ?? projectId,
-          projectName: profile.projectName || projectName,
-          role: profile.role,
-          stack: profile.stack || technology,
-          group: profile.group,
-          comment: profile.comment,
-        })),
-      },
-    [
-      contact,
-      profiles,
-      projectId,
-      projectName,
-      savedCard,
-      semester,
-      teamId,
-      teamName,
-      technology,
-    ],
-  );
+  () =>
+    savedCard || {
+      contact: contact || emptyValue, // используйте emptyValue по умолчанию
+      studentComment: studentComment || emptyValue,
+      records: profiles.map((profile, index) => ({
+        profileId: profile.profileId,
+        semesterTitle: formatSemester(profile.semesterTitle || semester, index),
+        teamId: profile.teamId ?? teamId,
+        teamName: profile.teamName || teamName || emptyValue,
+        projectId: profile.projectId ?? projectId,
+        projectName: profile.projectName || projectName || emptyValue,
+        role: profile.role || emptyValue,
+        stack: profile.stack || technology || emptyValue,
+        group: profile.group || emptyValue,
+        comment: profile.comment || emptyValue, // добавьте emptyValue
+      })),
+    },
+  [
+    contact,
+    studentComment,
+    profiles,
+    projectId,
+    projectName,
+    savedCard,
+    semester,
+    teamId,
+    teamName,
+    technology,
+  ],
+);
 
   const hasUnsavedChanges = useMemo(() => {
     if (!isEditing || !draftCard) return false;
@@ -538,14 +538,15 @@ const StudentPage = () => {
 
     return {
       id: normalizeOptionalId(id),
-      Team_id: normalizeOptionalId(firstRecord.teamId ?? teamId),
-      Name: fullName,
-      Teamname: String(firstRecord.teamName || teamName || "").trim(),
       conntacts: String(card.contact || "").trim(),
-      comments: String(firstRecord.comment || "").trim(),
+      comment: String(card.studentComment || "").trim(), // сохраняем общий комментарий
+      teamId: normalizeOptionalId(firstRecord.teamId ?? teamId),
       profiles: card.records.map((record) => ({
         ProfileId: normalizeOptionalId(record.profileId),
-        MetaData: buildProfileMetaData(record),
+        stack: record.stack,
+        role: record.role,
+        group: record.group,
+        // comment: record.comment, // убираем, если не нужно сохранять комментарий записи
       })),
     };
   };
@@ -627,7 +628,13 @@ const StudentPage = () => {
                 onChange={(event) => updateDraft("contact", event.target.value)}
               />
             </label>
-
+            <label className="student-edit-field">
+              <span>Комментарий</span>
+              <input
+                value={draftCard.studentComment}
+                onChange={(event) => updateDraft("studentComment", event.target.value)}
+              />
+            </label>
             {draftCard.records.map((record, index) => (
               <section
                 className="student-record student-record-edit"
@@ -716,16 +723,6 @@ const StudentPage = () => {
                     }
                   />
                 </label>
-
-                <label className="student-edit-field">
-                  <span>Комментарий</span>
-                  <input
-                    value={record.comment}
-                    onChange={(event) =>
-                      updateDraft("comment", event.target.value, index)
-                    }
-                  />
-                </label>
               </section>
             ))}
 
@@ -747,56 +744,56 @@ const StudentPage = () => {
           </form>
         ) : (
           <>
-            <section className="student-info-block">
-              <span>Контакты</span>
-              <strong>{cardData.contact}</strong>
-            </section>
-
-            {cardData.records.map((record, index) => (
-              <section
-                className="student-record"
-                key={`${record.role}-${index}`}
-              >
-                <h2>{record.semesterTitle}</h2>
-
-                <div className="student-record-divider" />
-
-                <div className="student-info-block">
-                  <span>Участник команды</span>
-                  <strong>{record.teamName}</strong>
-                </div>
-
-                <div className="student-info-block">
-                  <span>Проект</span>
-                  <strong>{record.projectName}</strong>
-                </div>
-
-                <div className="student-info-block">
-                  <span>Роль</span>
-                  <strong>{record.role}</strong>
-                </div>
-
-                <div className="student-info-block">
-                  <span>Стек</span>
-                  <strong>{record.stack}</strong>
-                </div>
-
-                <div className="student-info-block">
-                  <span>Комментарий</span>
-                  <strong>{record.comment}</strong>
-                </div>
-              </section>
-            ))}
-
-            <button
-              className="student-edit-button"
-              type="button"
-              onClick={startEditing}
+          {/* Блок контактов - отдельно, вне цикла записей */}
+          <div className="student-info-block">
+            <span>Контакты</span>
+            <strong>{cardData.contact || emptyValue}</strong>
+          </div>
+          <div className="student-info-block">
+                <span>Комментарий</span>
+                <strong>{cardData.studentComment || emptyValue}</strong>
+          </div>
+          {/* Записи по семестрам */}
+          {cardData.records.map((record, index) => (
+            <section
+              className="student-record"
+              key={`${record.role}-${index}`}
             >
-              Редактировать
-              <img src={editIcon} alt="" className="student-edit-icon" />
-            </button>
-          </>
+              <h2>{record.semesterTitle}</h2>
+
+              <div className="student-record-divider" />
+
+              <div className="student-info-block">
+                <span>Участник команды</span>
+                <strong>{record.teamName || emptyValue}</strong>
+              </div>
+
+              <div className="student-info-block">
+                <span>Проект</span>
+                <strong>{record.projectName || emptyValue}</strong>
+              </div>
+
+              <div className="student-info-block">
+                <span>Роль</span>
+                <strong>{record.role || emptyValue}</strong>
+              </div>
+
+              <div className="student-info-block">
+                <span>Стек</span>
+                <strong>{record.stack || emptyValue}</strong>
+              </div>
+            </section>
+          ))}
+
+          <button
+            className="student-edit-button"
+            type="button"
+            onClick={startEditing}
+          >
+            Редактировать
+            <img src={editIcon} alt="" className="student-edit-icon" />
+          </button>
+        </>
         )}
       </article>
 
