@@ -153,7 +153,6 @@ function CreateTeam() {
   const [members, setMembers] = useState([createEmptyMember()]);
   const [callDay, setCallDay] = useState("");
   const [callTime, setCallTime] = useState("");
-  const [teamExists, setTeamExists] = useState(true);
   const [errors, setErrors] = useState({});
   const [openSelect, setOpenSelect] = useState(null);
   const [alert, setAlert] = useState(null);
@@ -191,7 +190,6 @@ function CreateTeam() {
     setMembers([createEmptyMember()]);
     setCallDay("");
     setCallTime("");
-    setTeamExists(true);
     setErrors({});
     setOpenSelect(null);
   };
@@ -306,6 +304,7 @@ function CreateTeam() {
         group: member.group.trim(),
         role: member.role.trim(),
         stack: member.stack.trim(),
+        exists: member.exists,
       })),
       curators: [],
       callDay: getDayLabel(callDay),
@@ -345,15 +344,6 @@ function CreateTeam() {
               />
               {errors.teamName && <p className="create-team-error">{errors.teamName}</p>}
             </div>
-
-            <label className="create-team-radio">
-              <input
-                type="checkbox"
-                checked={teamExists}
-                onChange={(event) => setTeamExists(event.target.checked)}
-              />
-              <span>Команда есть в базе</span>
-            </label>
 
             <div className="create-team-field create-team-field--project">
               <label>
