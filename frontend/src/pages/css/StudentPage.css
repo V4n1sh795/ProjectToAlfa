@@ -350,6 +350,14 @@
   background: #bdeeba;
 }
 
+.student-save-error {
+  margin: 4px 10px 0 auto;
+  color: #ef3124;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: right;
+}
+
 .student-card .student-cancel-button[type="button"]:hover {
   background: #fff3f2;
   color: #ef3124;
@@ -358,6 +366,12 @@
 .student-card .student-save-button[type="submit"]:hover {
   background: #9ee79e;
   color: #20232a;
+}
+
+.student-card .student-cancel-button[type="button"]:disabled,
+.student-card .student-save-button[type="submit"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .student-page-state {

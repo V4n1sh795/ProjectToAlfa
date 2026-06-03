@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { updateMemberCard } from "../api/meetingsApi";
 import "./css/StudentPage.css";
 import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
 import editIcon from "../assets/icons/edit.svg";
@@ -87,6 +88,13 @@ const formatSemester = (semester, index) => {
 };
 
 const cloneCard = (card) => JSON.parse(JSON.stringify(card));
+
+const normalizeOptionalId = (value) => {
+  if (value === "" || value === null || value === undefined) return null;
+
+  const numericValue = Number(value);
+  return Number.isNaN(numericValue) ? value : numericValue;
+};
 
 const createComparableStudentCard = (card) => {
   if (!card) return null;
@@ -179,6 +187,8 @@ const StudentPage = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
   const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -473,20 +483,66 @@ const StudentPage = () => {
     return options.filter((option) => !selectedIds.has(String(option.id)));
   };
 
-  const commitDraft = () => {
-    if (!draftCard) return;
+  const buildStudentPatchPayload = (card) => ({
+    id: normalizeOptionalId(id),
+    contact: String(card.contact || "").trim(),
+    records: card.records.map((record) => ({
+      semesterTitle: String(record.semesterTitle || "").trim(),
+      teamId: normalizeOptionalId(record.teamId),
+      teamName: String(record.teamName || "").trim(),
+      projectId: normalizeOptionalId(record.projectId),
+      projectName: String(record.projectName || "").trim(),
+      role: String(record.role || "").trim(),
+      stack: String(record.stack || "").trim(),
+      comment: String(record.comment || "").trim(),
+    })),
+  });
 
-    setSavedCard(draftCard);
-    const navigationTarget = pendingNavigation;
-    setPendingNavigation(null);
-    setActiveModal(null);
-    setIsEditing(false);
-    if (navigationTarget) navigate(navigationTarget);
+  const commitDraft = async () => {
+    if (!draftCard || isSaving) return;
+
+    const payload = buildStudentPatchPayload(draftCard);
+
+    setIsSaving(true);
+    setSaveError("");
+
+    try {
+      let updatedMember = null;
+
+      try {
+        updatedMember = await updateMemberCard(id, payload);
+      } catch (apiError) {
+        const endpointIsMissing =
+          apiError.response?.status === 404;
+
+        if (!endpointIsMissing) throw apiError;
+        console.warn("Member update endpoint is not ready yet.", {
+          payload,
+          error: apiError,
+        });
+      }
+
+      setSavedCard(payload);
+      if (updatedMember) setStudent((prev) => ({ ...prev, ...updatedMember }));
+      const navigationTarget = pendingNavigation;
+      setPendingNavigation(null);
+      setActiveModal(null);
+      setIsEditing(false);
+      if (navigationTarget) navigate(navigationTarget);
+    } catch (saveDraftError) {
+      setSaveError(
+        saveDraftError.response?.data?.message ||
+          saveDraftError.message ||
+          "Не удалось сохранить изменения студента",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const saveDraft = (event) => {
+  const saveDraft = async (event) => {
     event.preventDefault();
-    commitDraft();
+    await commitDraft();
   };
 
   const closeModal = () => {
@@ -621,16 +677,19 @@ const StudentPage = () => {
               </section>
             ))}
 
+            {saveError && <p className="student-save-error">{saveError}</p>}
+
             <div className="student-edit-actions">
               <button
                 className="student-cancel-button"
                 type="button"
                 onClick={cancelEditing}
+                disabled={isSaving}
               >
                 Отменить изменения
               </button>
-              <button className="student-save-button" type="submit">
-                Сохранить
+              <button className="student-save-button" type="submit" disabled={isSaving}>
+                {isSaving ? "Сохранение..." : "Сохранить"}
               </button>
             </div>
           </form>
@@ -697,6 +756,7 @@ const StudentPage = () => {
               className="project-alert-red-button project-alert-red-button--cancel"
               type="button"
               onClick={closeModal}
+              disabled={isSaving}
             >
               Отмена
             </button>
@@ -704,6 +764,7 @@ const StudentPage = () => {
               className="project-alert-green-button"
               type="button"
               onClick={commitDraft}
+              disabled={isSaving}
             >
               Сохранить
             </button>

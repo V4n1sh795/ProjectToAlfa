@@ -44,6 +44,11 @@ export async function getMember(memberId) {
   return response.data;
 }
 
+export async function updateMemberCard(memberId, payload) {
+  const response = await api.patch(`/member/${memberId}`, payload);
+  return response.data;
+}
+
 export async function getCurator(curatorId) {
   const response = await api.get(`/curator/${curatorId}`);
   return response.data;
