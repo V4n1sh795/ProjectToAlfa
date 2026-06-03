@@ -383,8 +383,8 @@ const CuratorPage = () => {
         ...draftCard,
         name: payload.name,
         email: payload.email,
-        currentTeams: payload.teams,
-        pastTeams: payload.pastTeams,
+        currentTeams: draftCard.currentTeams.map(createDraftTeam),
+        pastTeams: draftCard.pastTeams.map(createDraftTeam),
       };
 
       setSavedCard(nextCard);

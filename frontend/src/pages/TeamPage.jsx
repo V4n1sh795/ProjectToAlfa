@@ -75,6 +75,30 @@ const normalizeList = (items) => {
   });
 };
 
+const normalizeGrades = (grades) => {
+  if (Array.isArray(grades)) {
+    return {
+      checkpoint1: String(grades[0] ?? "").trim(),
+      checkpoint2: String(grades[1] ?? "").trim(),
+      checkpoint3: String(grades[2] ?? "").trim(),
+      final: String(grades[3] ?? "").trim(),
+    };
+  }
+
+  return {
+    checkpoint1: String(
+      getValue(grades, ["checkpoint1", "Checkpoint1"], ""),
+    ).trim(),
+    checkpoint2: String(
+      getValue(grades, ["checkpoint2", "Checkpoint2"], ""),
+    ).trim(),
+    checkpoint3: String(
+      getValue(grades, ["checkpoint3", "Checkpoint3"], ""),
+    ).trim(),
+    final: String(getValue(grades, ["final", "Final"], "")).trim(),
+  };
+};
+
 const getFirstComment = (source) => {
   const comment = getValue(source, ["comment", "Comment"], "");
   if (comment) return comment;
@@ -139,12 +163,7 @@ const createComparableTeamCard = (card) => {
       id: curator.id ?? null,
       name: String(curator.name || "").trim(),
     })),
-    grades: {
-      checkpoint1: String(card.grades?.checkpoint1 || "").trim(),
-      checkpoint2: String(card.grades?.checkpoint2 || "").trim(),
-      checkpoint3: String(card.grades?.checkpoint3 || "").trim(),
-      final: String(card.grades?.final || "").trim(),
-    },
+    grades: normalizeGrades(card.grades),
     comment: String(card.comment || "").trim(),
   };
 };
@@ -218,6 +237,7 @@ const TeamPage = () => {
   const [savedCard, setSavedCard] = useState(null);
   const [draftCard, setDraftCard] = useState(null);
   const [curatorOptions, setCuratorOptions] = useState([]);
+  const [projectOptions, setProjectOptions] = useState([]);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
   const [pendingNavigation, setPendingNavigation] = useState(null);
@@ -235,6 +255,7 @@ const TeamPage = () => {
 
       try {
         const curatorOptionsRequest = getCurators().catch(() => []);
+        const projectOptionsRequest = fetch("/api/project").catch(() => null);
         const teamResponse = await fetch(`/api/team/${id}`);
         if (!teamResponse.ok) throw new Error("Команда не найдена");
         const teamData = await teamResponse.json();
@@ -273,11 +294,20 @@ const TeamPage = () => {
         );
 
         if (!cancelled) setMemberDetails(loadedMembers);
-        const curatorsData = await curatorOptionsRequest;
+        const [curatorsData, projectsResponse] = await Promise.all([
+          curatorOptionsRequest,
+          projectOptionsRequest,
+        ]);
+        const projectsData = projectsResponse?.ok ? await projectsResponse.json() : [];
         if (!cancelled) {
           setCuratorOptions(
             normalizeList(curatorsData).filter(
               (curator) => curator.id !== null && curator.name,
+            ),
+          );
+          setProjectOptions(
+            normalizeList(projectsData).filter(
+              (project) => project.id !== null && project.name,
             ),
           );
         }
@@ -334,6 +364,7 @@ const TeamPage = () => {
     "",
   );
   const curators = normalizeList(getValue(team, ["curators", "Curators"], []));
+  const grades = normalizeGrades(getValue(team, ["grades", "Grades"], null));
   const comment = getFirstComment(team);
 
   const cardData = useMemo(
@@ -348,12 +379,7 @@ const TeamPage = () => {
         artifacts,
         members: memberDetails.map(createDraftMember),
         curators: curators.map(createDraftCurator),
-        grades: {
-          checkpoint1: "",
-          checkpoint2: "",
-          checkpoint3: "",
-          final: "",
-        },
+        grades,
         comment,
       },
     [
@@ -367,6 +393,7 @@ const TeamPage = () => {
       memberDetails,
       projectId,
       projectName,
+      grades,
       savedCard,
     ],
   );
@@ -469,6 +496,24 @@ const TeamPage = () => {
     setOpenDropdown(null);
   };
 
+  const updateProject = (value) => {
+    if (!value) {
+      setOpenDropdown(null);
+      return;
+    }
+
+    const selectedOption = projectOptions.find(
+      (option) => String(option.id) === String(value),
+    );
+
+    setDraftCard((prev) => ({
+      ...prev,
+      projectId: selectedOption?.id ?? null,
+      projectName: selectedOption?.name || "",
+    }));
+    setOpenDropdown(null);
+  };
+
   const updateMember = (index, field, value) => {
     setDraftCard((prev) => ({
       ...prev,
@@ -562,12 +607,7 @@ const TeamPage = () => {
       id: curator.id,
       name: String(curator.name || "").trim(),
     })),
-    grades: {
-      checkpoint1: String(card.grades.checkpoint1 || "").trim(),
-      checkpoint2: String(card.grades.checkpoint2 || "").trim(),
-      checkpoint3: String(card.grades.checkpoint3 || "").trim(),
-      final: String(card.grades.final || "").trim(),
-    },
+    grades: normalizeGrades(card.grades),
     comment: String(card.comment || "").trim(),
   });
 
@@ -639,10 +679,18 @@ const TeamPage = () => {
           <form className="team-edit-form" onSubmit={saveDraft}>
             <label className="team-edit-field team-edit-field--wide">
               <span>Название проекта</span>
-              <input
-                type="text"
-                value={draftCard.projectName}
-                onChange={(event) => updateDraft("projectName", event.target.value)}
+              <TeamDropdown
+                id="project"
+                value={draftCard.projectId ?? ""}
+                options={projectOptions}
+                placeholder="Выберите проект"
+                isOpen={openDropdown === "project"}
+                onToggle={() =>
+                  setOpenDropdown((current) =>
+                    current === "project" ? null : "project",
+                  )
+                }
+                onChange={updateProject}
               />
             </label>
 

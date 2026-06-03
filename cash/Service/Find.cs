@@ -6,7 +6,20 @@ namespace Service;
 using System.Globalization;
 static class Find
 {
-
+    public record StudentRedcord(
+        [property: JsonPropertyName("conntacts")] string contact,
+        [property: JsonPropertyName("id")] int Id,
+        [property: JsonPropertyName("profiles")] List<ProfileRec> Profiles,
+        [property: JsonPropertyName("comment")] string comment,
+        [property: JsonPropertyName("teamid")] int TeamId
+    );
+    public record ProfileRec(
+        [property: JsonPropertyName("group")] string group,
+        [property: JsonPropertyName("ProfileId")] int Id,
+        [property: JsonPropertyName("role")] string role,
+        [property: JsonPropertyName("stack")] string stack, 
+        [property: JsonPropertyName("projectId")] int ProjectId
+    );
     public record ProjectRecord(
         [property: JsonPropertyName("id")] int Id,
         [property: JsonPropertyName("name")] string Name,
@@ -282,14 +295,34 @@ static class Find
             ? result 
             : throw new ArgumentException($"Unknown day: {Day}");
     }
-    public static async Task<IResult> PatchMember(AppDbContext db, int id, List<(string param, string new_value)> values)
+    public static async Task<IResult> PatchMember(AppDbContext db, int id, StudentRedcord student)
     {
-        cash.Models.Member? member = await db.Members.FindAsync(id);
+        cash.Models.Member? member = await db.Members.Where(m => m.Id == id)
+                                    .Include(m => m.Profiles)
+                                    .FirstOrDefaultAsync();
         if (member == null)
-            return Results.NotFound("endpoint not ready");
+            return Results.BadRequest("Member dont found");
         else
         {
-            return Results.NotFound("endpoint not ready");
+            member.conntacts = student.contact ?? "";
+            member.comments = student.comment ?? "";
+            member.Team = await db.Teams.Where(t=> t.Id == student.TeamId).FirstOrDefaultAsync();
+            foreach (ProfileRec profile in student.Profiles)
+            {
+                cash.Models.Profile? Profile = member.Profiles.FirstOrDefault(p => p.Id == profile.Id);
+                if (Profile == null)
+                    return Results.BadRequest("Profile dont found");
+                else
+                {
+                    Profile.ProjectId = profile.Id;
+                    Profile.Role = profile.role;
+                    Profile.Stack = profile.stack;   
+                    Profile.ProjectId = profile.ProjectId;
+                    Profile.GroupNumber = profile.group; 
+                }
+            }
+            await db.SaveChangesAsync();
+            return Results.Ok("Sucssed");
         }
     }
     public static async Task<IResult> PatchCurator(AppDbContext db, int id, ICurator curator)
