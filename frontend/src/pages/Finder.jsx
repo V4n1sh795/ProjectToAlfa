@@ -63,6 +63,20 @@ const projectStatuses = {
   },
 };
 
+const normalizeProjectStatus = (status) => {
+  const normalized = String(status || "").trim().toLowerCase();
+
+  if (["idea", "идея", "идея проекта"].includes(normalized)) {
+    return "idea";
+  }
+
+  if (["archive", "archived", "архив", "в архиве", "проект в архиве"].includes(normalized)) {
+    return "archive";
+  }
+
+  return "active";
+};
+
 const getEntityTitle = (entity) => {
   if (entity.entityType === "member") {
     return [entity.surname, entity.name, entity.secondName].filter(Boolean).join(" ") || "Без имени";
@@ -121,16 +135,24 @@ const Finder = () => {
 
         setResults(
           allResults.flatMap(({ entity, data }) =>
-            data.map((item) => {
-              const explicitStatus =
-                entity === "project" && selectedProjectStatuses.length > 0
-                  ? selectedProjectStatuses[0]
+            (Array.isArray(data) ? data : []).flatMap((item) => {
+              const status =
+                entity === "project"
+                  ? normalizeProjectStatus(item.status ?? item.Status)
                   : null;
+
+              if (
+                entity === "project" &&
+                selectedProjectStatuses.length > 0 &&
+                !selectedProjectStatuses.includes(status)
+              ) {
+                return [];
+              }
 
               return {
                 ...item,
                 entityType: entity,
-                status: explicitStatus || item.status || (entity === "project" ? "active" : null),
+                status,
               };
             }),
           ),
@@ -228,7 +250,10 @@ const Finder = () => {
 
         <div className="finder-results">
           {results.map((result, index) => {
-            const status = result.entityType === "project" ? projectStatuses[result.status] : null;
+            const status =
+              result.entityType === "project"
+                ? projectStatuses[normalizeProjectStatus(result.status)]
+                : null;
             const clickable = ["member", "team", "curator", "project"].includes(result.entityType);
 
             return (
