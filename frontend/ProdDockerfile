@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 # Если используете Vite, замените на: RUN npm run build
-RUN npm run build
+RUN CI=false npm run build
 
 # Этап 2: Раздача через Nginx
 FROM nginx:alpine
