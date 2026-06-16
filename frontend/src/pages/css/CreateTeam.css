@@ -127,7 +127,7 @@
   margin: 0 6px 0 0;
   padding: 0;
   border: 1px solid #ef3124;
-  border-radius: 50%;
+  border-radius: 0;
   background: #fff;
   box-sizing: border-box;
   cursor: pointer;
@@ -137,8 +137,8 @@
 
 .create-team-radio input:checked,
 .create-team-member .create-team-radio input[type="checkbox"]:checked {
-  background:
-    radial-gradient(circle, #ef3124 0 9px, transparent 10px);
+  background: #ef3124;
+  box-shadow: inset 0 0 0 3px #fff;
 }
 
 .create-team-radio input:focus-visible,
@@ -247,6 +247,10 @@
 .create-team-add[type="button"]:focus-visible {
   background: #fff3f2;
   outline: none;
+}
+
+.create-team-field .member-in-db {
+  color: #212124;
 }
 
 .create-team-submit[type="submit"] {
@@ -555,12 +559,6 @@
     flex-basis: 25px;
   }
 
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 9px, transparent 10px);
-  }
-
   .create-team-members {
     gap: 28px;
   }
@@ -656,12 +654,6 @@
     max-width: 25px;
     max-height: 25px;
     flex-basis: 25px;
-  }
-
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 9px, transparent 10px);
   }
 
   .create-team-members {
@@ -775,12 +767,6 @@
     flex-basis: 24px;
   }
 
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 8px, transparent 9px);
-  }
-
   .create-team-members {
     gap: 24px;
   }
@@ -885,12 +871,6 @@
     max-width: 22px;
     max-height: 22px;
     flex-basis: 22px;
-  }
-
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 7px, transparent 8px);
   }
 
   .create-team-members {
