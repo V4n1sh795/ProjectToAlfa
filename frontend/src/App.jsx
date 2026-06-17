@@ -17,6 +17,7 @@ import ProjectPage from "./pages/ProjectPage";
 import Messenger from "./pages/Messenger";
 import CreateCase from "./pages/CreateCase";
 import CreateTeam from "./pages/CreateTeam";
+import StatisticsPage from "./pages/StatisticsPage";
 import LogOut from "./pages/LogOut";
 import LogIn from "./pages/LogIn";
 import { authAPI } from "./pages/js/LogIn";
@@ -27,6 +28,7 @@ import searchIcon from "./assets/icons/finder.svg";
 import chatsIcon from "./assets/icons/chats.svg";
 import createCaseIcon from "./assets/icons/create_case.svg";
 import createTeamIcon from "./assets/icons/create_team.svg";
+import statisticsIcon from "./assets/icons/statistics.svg";
 import logoutIcon from "./assets/icons/logout.svg";
 
 // Компонент защищенного маршрута
@@ -69,6 +71,7 @@ const Sidebar = ({ isAuthenticated, onLogout }) => {
     { path: "/messenger", label: "", icon: chatsIcon },
     { path: "/createcase", label: "", icon: createCaseIcon },
     { path: "/createteam", label: "", icon: createTeamIcon },
+    { path: "/statistics", label: "", icon: statisticsIcon },
   ];
 
   return (
@@ -244,6 +247,18 @@ function App() {
                   loading={loading}
                 >
                   <CreateTeam />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/statistics"
+              element={
+                <ProtectedRoute
+                  isAuthenticated={isAuthenticated}
+                  loading={loading}
+                >
+                  <StatisticsPage />
                 </ProtectedRoute>
               }
             />

@@ -59,6 +59,16 @@ export async function getCurators() {
   return response.data;
 }
 
+export async function getCuratorStatistics({ curatorId, startDate, endDate }) {
+  const response = await api.get(`/statistics/curator/${curatorId}`, {
+    params: {
+      startDate,
+      endDate,
+    },
+  });
+  return response.data;
+}
+
 export async function updateCuratorCard(curatorId, payload) {
   const response = await api.patch(`/curator/${curatorId}`, payload);
   return response.data;
