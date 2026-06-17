@@ -155,9 +155,17 @@ app.MapPatch("team/{id:int}", Service.Find.PatchTeam);
 
 app.MapPatch("member/{id:int}", Service.Find.PatchMember);
 
+app.MapDelete("curator/{id:int}", Service.Find.DeleteCurator);
+
+app.MapDelete("project/{id:int}", Service.Find.DeleteProject);
+
+app.MapDelete("team/{id:int}", Service.Find.DeleteTeam);
+
+app.MapDelete("member/{id:int}", Service.Find.DeleteMember);
+
 app.MapGet("/week/{monday_date:datetime}", Service.Meeting.GetWeek);
 
-
+app.MapGet("/statistics/curator/{curatorid}", Service.Curator.Stat);
 
 await app.RunAsync();
 

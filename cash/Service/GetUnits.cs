@@ -9,10 +9,10 @@ static class GetUnits
     {
         public int id {get; set;}
         public int? Team_id {get; set;}
-        public string Name {get; set;}
-        public string Teamname {get; set;}
-        public string conntacts {get; set;}
-        public string comment {get; set;}
+        public string? Name {get; set;}
+        public string? Teamname {get; set;}
+        public string? conntacts {get; set;}
+        public string? comment {get; set;}
         public List<ProfileRec1> profiles {get; set;} = new List<ProfileRec1>();
     }
     public record ProfileRec1
@@ -45,7 +45,7 @@ static class GetUnits
                 conntacts = member.conntacts,
                 comment = member.comments,
                 Name = $"{member.Surname} {member.Name} {member.SecondName}",
-                Teamname = db.Teams.FirstOrDefault(t => t.Id == member.TeamId).Name,
+                Teamname = db.Teams.FirstOrDefault(t => t.Id == member.TeamId)?.Name ?? "null",
                 profiles = sprofiles
             };
             return Results.Ok(response);    
