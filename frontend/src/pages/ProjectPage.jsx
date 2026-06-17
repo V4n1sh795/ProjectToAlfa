@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
+  deleteProject,
   getCurators,
   getProject,
   getTeams,
@@ -257,7 +258,9 @@ const ProjectPage = () => {
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [statusReason, setStatusReason] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -557,10 +560,32 @@ const ProjectPage = () => {
   };
 
   const closeModal = () => {
+    if (isDeleting) return;
     setActiveModal(null);
     setPendingStatus(null);
     setPendingNavigation(null);
     setStatusReason("");
+    setDeleteError("");
+  };
+
+  const confirmDeleteProject = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      await deleteProject(id);
+      navigate("/finder");
+    } catch (deleteProjectError) {
+      setDeleteError(
+        deleteProjectError.response?.data?.message ||
+          deleteProjectError.message ||
+          "Не удалось удалить проект",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -883,11 +908,13 @@ const ProjectPage = () => {
 
       {activeModal === "delete" && (
         <ProjectAlert onClose={closeModal} className="project-alert--delete">
+          {deleteError && <p className="project-save-error">{deleteError}</p>}
           <h2>Вы уверены, что хотите безвозвратно удалить проект?</h2>
           <button
             className="project-alert-red-button project-alert-red-button--confirm"
             type="button"
-            onClick={closeModal}
+            onClick={confirmDeleteProject}
+            disabled={isDeleting}
           >
             Подтвердить
           </button>

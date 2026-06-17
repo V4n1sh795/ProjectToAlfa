@@ -255,15 +255,17 @@
 }
 
 .student-edit-actions {
-  align-self: flex-end;
+  align-self: stretch;
+  width: 100%;
   margin: 16px 10px 0 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
 }
 
+.student-card .student-delete-button[type="button"],
 .student-card .student-cancel-button[type="button"],
 .student-card .student-save-button[type="submit"] {
   appearance: none;
@@ -278,6 +280,16 @@
   font-family: inherit;
   box-sizing: border-box;
   transition: background 0.2s ease;
+}
+
+.student-card .student-delete-button[type="button"] {
+  width: max-content;
+  min-width: 160px;
+  margin-right: auto;
+  border: none;
+  background: #ef3124;
+  color: #fff;
+  white-space: nowrap;
 }
 
 .student-card .student-cancel-button[type="button"] {
@@ -301,6 +313,11 @@
   text-align: right;
 }
 
+.student-card .student-delete-button[type="button"]:hover {
+  background: #d6281f;
+  color: #fff;
+}
+
 .student-card .student-cancel-button[type="button"]:hover {
   background: #fff3f2;
   color: #ef3124;
@@ -311,6 +328,7 @@
   color: #20232a;
 }
 
+.student-card .student-delete-button[type="button"]:disabled,
 .student-card .student-cancel-button[type="button"]:disabled,
 .student-card .student-save-button[type="submit"]:disabled {
   cursor: not-allowed;

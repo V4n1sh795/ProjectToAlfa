@@ -34,8 +34,18 @@ export async function updateProjectCard(projectId, payload) {
   return response.data;
 }
 
+export async function deleteProject(projectId) {
+  const response = await api.delete(`/project/${projectId}`);
+  return response.data;
+}
+
 export async function updateTeamCard(teamId, payload) {
   const response = await api.patch(`/team/${teamId}`, payload);
+  return response.data;
+}
+
+export async function deleteTeam(teamId) {
+  const response = await api.delete(`/team/${teamId}`);
   return response.data;
 }
 
@@ -46,6 +56,11 @@ export async function getMember(memberId) {
 
 export async function updateMemberCard(memberId, payload) {
   const response = await api.patch(`/member/${memberId}`, payload);
+  return response.data;
+}
+
+export async function deleteMember(memberId) {
+  const response = await api.delete(`/member/${memberId}`);
   return response.data;
 }
 
@@ -71,6 +86,11 @@ export async function getCuratorStatistics({ curatorId, startDate, endDate }) {
 
 export async function updateCuratorCard(curatorId, payload) {
   const response = await api.patch(`/curator/${curatorId}`, payload);
+  return response.data;
+}
+
+export async function deleteCurator(curatorId) {
+  const response = await api.delete(`/curator/${curatorId}`);
   return response.data;
 }
 

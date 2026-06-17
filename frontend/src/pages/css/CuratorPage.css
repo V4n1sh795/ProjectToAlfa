@@ -392,15 +392,17 @@
 }
 
 .curator-edit-actions {
-  align-self: flex-end;
-  margin: 0 0 0 auto;
+  align-self: stretch;
+  width: 100%;
+  margin: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
 }
 
+.curator-card .curator-delete-button[type="button"],
 .curator-card .curator-cancel-button[type="button"],
 .curator-card .curator-save-button[type="submit"] {
   appearance: none;
@@ -419,6 +421,16 @@
   box-sizing: border-box;
   box-shadow: none;
   transition: background 0.2s ease;
+}
+
+.curator-card .curator-delete-button[type="button"] {
+  width: max-content;
+  min-width: 160px;
+  margin-right: auto;
+  border: none;
+  background: #ef3124;
+  color: #fff;
+  white-space: nowrap;
 }
 
 .curator-card .curator-cancel-button[type="button"] {
@@ -442,10 +454,23 @@
   font-weight: 500;
 }
 
+.curator-card .curator-delete-button[type="button"]:disabled,
 .curator-card .curator-cancel-button[type="button"]:disabled,
 .curator-card .curator-save-button[type="submit"]:disabled {
   cursor: default;
   opacity: 0.7;
+}
+
+.curator-card .curator-delete-button[type="button"]:hover,
+.curator-card .curator-delete-button[type="button"]:focus,
+.curator-card .curator-delete-button[type="button"]:focus-visible,
+.curator-card .curator-delete-button[type="button"]:active {
+  background: #d6281f;
+  color: #fff;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  transform: none;
 }
 
 .curator-card .curator-cancel-button[type="button"]:hover,

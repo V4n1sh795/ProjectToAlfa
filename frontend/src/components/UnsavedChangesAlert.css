@@ -26,6 +26,12 @@
   min-height: 188px;
 }
 
+.project-alert--delete {
+  height: auto;
+  min-height: 208px;
+  padding-bottom: 30px;
+}
+
 .project-alert .project-alert__close[type="button"] {
   appearance: none;
   -webkit-appearance: none;
@@ -72,6 +78,18 @@
   font-size: 24px;
   line-height: 1;
   font-weight: 500;
+}
+
+.project-alert--delete .student-save-error,
+.project-alert--delete .curator-save-error,
+.project-alert--delete .team-save-error {
+  max-width: 430px;
+  margin: 0 0 12px;
+  color: #ef3124;
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 500;
+  text-align: left;
 }
 
 .project-alert .project-alert-red-button[type="button"],
@@ -150,6 +168,17 @@
 .project-alert .project-alert-red-button--cancel[type="button"] {
   width: 97px !important;
   height: 38px !important;
+}
+
+.project-alert .project-alert-red-button--confirm[type="button"] {
+  width: 144px !important;
+  height: 38px !important;
+  margin: 60px auto 0;
+}
+
+.project-alert .project-alert-red-button[type="button"]:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
 @media (min-width: 1200px) {

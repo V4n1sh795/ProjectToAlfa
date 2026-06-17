@@ -1,9 +1,13 @@
 import closeAlertIcon from "../assets/icons/close_alert.svg";
 import "./UnsavedChangesAlert.css";
 
-const UnsavedChangesAlert = ({ children, onClose }) => (
+const UnsavedChangesAlert = ({
+  children,
+  onClose,
+  className = "project-alert--exit",
+}) => (
   <div className="project-alert-backdrop">
-    <section className="project-alert project-alert--exit">
+    <section className={`project-alert ${className}`}>
       <button
         className="project-alert__close"
         type="button"

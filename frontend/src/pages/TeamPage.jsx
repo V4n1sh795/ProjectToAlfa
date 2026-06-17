@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getCurators, updateTeamCard } from "../api/meetingsApi";
+import { deleteTeam, getCurators, updateTeamCard } from "../api/meetingsApi";
 import "./css/TeamPage.css";
 import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
 import SelectDropdown from "../components/SelectDropdown";
@@ -188,7 +188,9 @@ const TeamPage = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const cardRef = useRef(null);
   const timeOptions = useMemo(() => buildTimeOptions(), []);
 
@@ -601,8 +603,30 @@ const TeamPage = () => {
   };
 
   const closeModal = () => {
+    if (isDeleting) return;
     setActiveModal(null);
     setPendingNavigation(null);
+    setDeleteError("");
+  };
+
+  const confirmDeleteTeam = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      await deleteTeam(id);
+      navigate("/finder");
+    } catch (deleteTeamError) {
+      setDeleteError(
+        deleteTeamError.response?.data?.message ||
+          deleteTeamError.message ||
+          "Не удалось удалить команду",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -827,6 +851,14 @@ const TeamPage = () => {
 
             <div className="team-edit-actions">
               <button
+                className="team-delete-button"
+                type="button"
+                onClick={() => setActiveModal("delete")}
+                disabled={isSaving}
+              >
+                Удалить команду
+              </button>
+              <button
                 className="team-cancel-button"
                 type="button"
                 onClick={cancelEditing}
@@ -948,6 +980,21 @@ const TeamPage = () => {
               Сохранить
             </button>
           </div>
+        </UnsavedChangesAlert>
+      )}
+
+      {activeModal === "delete" && (
+        <UnsavedChangesAlert onClose={closeModal} className="project-alert--delete">
+          {deleteError && <p className="team-save-error">{deleteError}</p>}
+          <h2>Вы уверены, что хотите безвозвратно удалить команду?</h2>
+          <button
+            className="project-alert-red-button project-alert-red-button--confirm"
+            type="button"
+            onClick={confirmDeleteTeam}
+            disabled={isDeleting}
+          >
+            Подтвердить
+          </button>
         </UnsavedChangesAlert>
       )}
     </div>

@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getCurator, getTeams, updateCuratorCard } from "../api/meetingsApi";
+import {
+  deleteCurator,
+  getCurator,
+  getTeams,
+  updateCuratorCard,
+} from "../api/meetingsApi";
 import "./css/CuratorPage.css";
 import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
 import SelectDropdown from "../components/SelectDropdown";
@@ -89,7 +94,9 @@ const CuratorPage = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -359,8 +366,30 @@ const CuratorPage = () => {
   };
 
   const closeModal = () => {
+    if (isDeleting) return;
     setActiveModal(null);
     setPendingNavigation(null);
+    setDeleteError("");
+  };
+
+  const confirmDeleteCurator = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      await deleteCurator(id);
+      navigate("/finder");
+    } catch (deleteCuratorError) {
+      setDeleteError(
+        deleteCuratorError.response?.data?.message ||
+          deleteCuratorError.message ||
+          "Не удалось удалить куратора",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -488,6 +517,14 @@ const CuratorPage = () => {
 
             <div className="curator-edit-actions">
               <button
+                className="curator-delete-button"
+                type="button"
+                onClick={() => setActiveModal("delete")}
+                disabled={isSaving}
+              >
+                Удалить куратора
+              </button>
+              <button
                 className="curator-cancel-button"
                 type="button"
                 onClick={cancelEditing}
@@ -569,6 +606,21 @@ const CuratorPage = () => {
               Сохранить
             </button>
           </div>
+        </UnsavedChangesAlert>
+      )}
+
+      {activeModal === "delete" && (
+        <UnsavedChangesAlert onClose={closeModal} className="project-alert--delete">
+          {deleteError && <p className="curator-save-error">{deleteError}</p>}
+          <h2>Вы уверены, что хотите безвозвратно удалить куратора?</h2>
+          <button
+            className="project-alert-red-button project-alert-red-button--confirm"
+            type="button"
+            onClick={confirmDeleteCurator}
+            disabled={isDeleting}
+          >
+            Подтвердить
+          </button>
         </UnsavedChangesAlert>
       )}
     </div>
