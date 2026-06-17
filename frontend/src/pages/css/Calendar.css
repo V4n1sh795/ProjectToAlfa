@@ -26,6 +26,16 @@
   padding-top: 60px;
 }
 
+.calendar-page__error {
+  max-width: 720px;
+  padding: 18px 22px;
+  border-left: 4px solid #ef3124;
+  background-color: #fff1f0;
+  color: #212124;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
 @media (min-width: 2100px) {
   .calendar-page__sidebar {
     width: 470px;

@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { updateMemberCard } from "../api/meetingsApi";
 import "./css/StudentPage.css";
 import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
+import SelectDropdown from "../components/SelectDropdown";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";
@@ -154,61 +155,6 @@ const createComparableStudentCard = (card) => {
       comment: String(record.comment || "").trim(),
     })),
   };
-};
-
-const StudentDropdown = ({
-  id,
-  value,
-  options,
-  placeholder,
-  isOpen,
-  onChange,
-  onToggle,
-}) => {
-  const selectedOption = options.find((option) => String(option.id) === String(value));
-
-  return (
-    <div className={`student-select ${isOpen ? "is-open" : ""}`}>
-      <button
-        className="student-select__button"
-        type="button"
-        onClick={onToggle}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span>{selectedOption?.name || placeholder}</span>
-        <span className="student-select__arrow" />
-      </button>
-
-      {isOpen && (
-        <div className="student-select__menu" role="listbox">
-          <button
-            className={`student-select__option ${value ? "" : "is-selected"}`}
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => onChange("")}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className={`student-select__option ${
-                String(option.id) === String(value) ? "is-selected" : ""
-              }`}
-              key={`${id}-${option.id}`}
-              type="button"
-              role="option"
-              aria-selected={String(option.id) === String(value)}
-              onClick={() => onChange(String(option.id))}
-            >
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 };
 
 const StudentPage = () => {
@@ -646,7 +592,7 @@ const StudentPage = () => {
 
                 <label className="student-edit-field">
                   <span>Участник команды</span>
-                  <StudentDropdown
+                  <SelectDropdown
                     id={`team-${index}`}
                     value={record.teamId ?? ""}
                     options={getSelectOptions(
@@ -657,6 +603,7 @@ const StudentPage = () => {
                     )}
                     placeholder="Выберите команду"
                     isOpen={openDropdown === `team-${index}`}
+                    classNamePrefix="student-select"
                     onToggle={() =>
                       setOpenDropdown((current) =>
                         current === `team-${index}` ? null : `team-${index}`,
@@ -676,7 +623,7 @@ const StudentPage = () => {
 
                 <label className="student-edit-field">
                   <span>Проект</span>
-                  <StudentDropdown
+                  <SelectDropdown
                     id={`project-${index}`}
                     value={record.projectId ?? ""}
                     options={getSelectOptions(
@@ -687,6 +634,7 @@ const StudentPage = () => {
                     )}
                     placeholder="Выберите проект"
                     isOpen={openDropdown === `project-${index}`}
+                    classNamePrefix="student-select"
                     onToggle={() =>
                       setOpenDropdown((current) =>
                         current === `project-${index}` ? null : `project-${index}`,

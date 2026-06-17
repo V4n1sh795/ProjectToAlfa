@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCurator, getTeams, updateCuratorCard } from "../api/meetingsApi";
 import "./css/CuratorPage.css";
 import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
+import SelectDropdown from "../components/SelectDropdown";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";
@@ -70,63 +71,6 @@ const createComparableCuratorCard = (card) => {
 
 const normalizeTeamOptions = (items) =>
   normalizeList(items).filter((team) => team.id !== null && team.name);
-
-const TeamDropdown = ({
-  id,
-  value,
-  options,
-  placeholder,
-  isOpen,
-  onChange,
-  onToggle,
-}) => {
-  const selectedTeam = options.find((team) => String(team.id) === String(value));
-
-  return (
-    <div className={`curator-team-select ${isOpen ? "is-open" : ""}`}>
-      <button
-        className="curator-team-select__button"
-        type="button"
-        onClick={onToggle}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span>{selectedTeam?.name || placeholder}</span>
-        <span className="curator-team-select__arrow" />
-      </button>
-
-      {isOpen && (
-        <div className="curator-team-select__menu" role="listbox">
-          <button
-            className={`curator-team-select__option ${
-              value ? "" : "is-selected"
-            }`}
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => onChange("")}
-          >
-            {placeholder}
-          </button>
-          {options.map((team) => (
-            <button
-              className={`curator-team-select__option ${
-                String(team.id) === String(value) ? "is-selected" : ""
-              }`}
-              key={`${id}-${team.id}`}
-              type="button"
-              role="option"
-              aria-selected={String(team.id) === String(value)}
-              onClick={() => onChange(String(team.id))}
-            >
-              {team.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const CuratorPage = () => {
   const { id } = useParams();
@@ -340,19 +284,21 @@ const CuratorPage = () => {
     name: String(card.name || "").trim(),
     email: String(card.email || "").trim(),
     teams: [
-        ...card.currentTeams.map((team) => ({
-            id: team.id,
-            name: String(team.name || "").trim(),
-        })),
-        ...card.pastTeams.map((team) => ({
-            id: team.id,
-            name: String(team.name || "").trim(),
-        }))
+      ...card.currentTeams.map((team) => ({
+        id: team.id,
+        name: String(team.name || "").trim(),
+      })),
+      ...card.pastTeams.map((team) => ({
+        id: team.id,
+        name: String(team.name || "").trim(),
+      })),
     ],
-});
+  });
 
   const getTeamSelectOptions = (selectedTeams, currentTeamId) => {
-    const selectedOptions = selectedTeams.filter((team) => team.id !== null && team.name);
+    const selectedOptions = selectedTeams.filter(
+      (team) => team.id !== null && team.name,
+    );
     const selectedIds = new Set(
       selectedTeams
         .map((team) => (team.id === null ? null : String(team.id)))
@@ -363,8 +309,8 @@ const CuratorPage = () => {
     [...selectedOptions, ...teamOptions]
       .filter((team) => !selectedIds.has(String(team.id)))
       .forEach((team) => {
-      optionsById.set(String(team.id), team);
-    });
+        optionsById.set(String(team.id), team);
+      });
 
     return [...optionsById.values()];
   };
@@ -446,21 +392,32 @@ const CuratorPage = () => {
 
             <div className="curator-edit-grid">
               <section className="curator-edit-list">
-                <h2>Команды в ведении</h2>
+                <h2>Текущие команды</h2>
                 {draftCard.currentTeams.map((team, index) => (
-                  <div className="curator-edit-row" key={`current-${team.id ?? index}`}>
-                    <TeamDropdown
+                  <div
+                    className="curator-edit-row"
+                    key={`current-${team.id ?? index}`}
+                  >
+                    <SelectDropdown
                       id={`current-${index}`}
                       value={team.id ?? ""}
-                      options={getTeamSelectOptions(draftCard.currentTeams, team.id)}
+                      options={getTeamSelectOptions(
+                        draftCard.currentTeams,
+                        team.id,
+                      )}
                       placeholder="Выберите команду"
                       isOpen={openDropdown === `current-${index}`}
+                      classNamePrefix="curator-team-select"
                       onToggle={() =>
                         setOpenDropdown((current) =>
-                          current === `current-${index}` ? null : `current-${index}`,
+                          current === `current-${index}`
+                            ? null
+                            : `current-${index}`,
                         )
                       }
-                      onChange={(value) => updateTeam("currentTeams", index, value)}
+                      onChange={(value) =>
+                        updateTeam("currentTeams", index, value)
+                      }
                     />
                     <button
                       className="curator-remove-button"
@@ -484,19 +441,28 @@ const CuratorPage = () => {
               <section className="curator-edit-list">
                 <h2>Прошлые команды</h2>
                 {draftCard.pastTeams.map((team, index) => (
-                  <div className="curator-edit-row" key={`past-${team.id ?? index}`}>
-                    <TeamDropdown
+                  <div
+                    className="curator-edit-row"
+                    key={`past-${team.id ?? index}`}
+                  >
+                    <SelectDropdown
                       id={`past-${index}`}
                       value={team.id ?? ""}
-                      options={getTeamSelectOptions(draftCard.pastTeams, team.id)}
+                      options={getTeamSelectOptions(
+                        draftCard.pastTeams,
+                        team.id,
+                      )}
                       placeholder="Выберите команду"
                       isOpen={openDropdown === `past-${index}`}
+                      classNamePrefix="curator-team-select"
                       onToggle={() =>
                         setOpenDropdown((current) =>
                           current === `past-${index}` ? null : `past-${index}`,
                         )
                       }
-                      onChange={(value) => updateTeam("pastTeams", index, value)}
+                      onChange={(value) =>
+                        updateTeam("pastTeams", index, value)
+                      }
                     />
                     <button
                       className="curator-remove-button"
@@ -546,7 +512,7 @@ const CuratorPage = () => {
             </section>
 
             <section className="curator-info-block">
-              <span>Команды в ведении</span>
+              <span>Текущие команды</span>
               {cardData.currentTeams.length > 0 ? (
                 cardData.currentTeams.map((team, index) => (
                   <strong key={`${team.id ?? team.name}-${index}`}>

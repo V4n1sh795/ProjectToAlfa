@@ -115,10 +115,6 @@ function Calender() {
         : (m1.startAt || "").localeCompare(m2.startAt || ""),
     );
 
-  if (error) {
-    return <div>Ошибка загрузки встреч: {error}</div>;
-  }
-
   return (
     <div className="calendar-page">
       <div className="calendar-page__sidebar">
@@ -131,7 +127,11 @@ function Calender() {
       </div>
 
       <div className="calendar-page__content">
-        {filteredMeetings.length === 0 ? (
+        {error ? (
+          <div className="calendar-page__error">
+            Ошибка загрузки встреч: {error}
+          </div>
+        ) : filteredMeetings.length === 0 ? (
           <h1>На эту неделю встречи не запланированы</h1>
         ) : (
           <MeetingsList meetings={filteredMeetings} />

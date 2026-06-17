@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import closeAlertIcon from "../assets/icons/close_alert.svg";
+import SelectDropdown from "../components/SelectDropdown";
 import "./css/CreateTeam.css";
 
 const api = axios.create({
@@ -79,65 +80,6 @@ const createEmptyMember = () => ({
   contact: "",
   exists: true,
 });
-
-const TeamSelect = ({
-  id,
-  value,
-  placeholder,
-  options,
-  isOpen,
-  onChange,
-  onToggle,
-}) => {
-  const selectedOption = options.find(
-    (option) => String(option.id) === String(value),
-  );
-
-  return (
-    <div
-      className={`create-team-select ${isOpen ? "is-open" : ""} ${value ? "has-value" : ""}`}
-    >
-      <button
-        className="create-team-select__button"
-        type="button"
-        onClick={onToggle}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span>{selectedOption?.name || placeholder}</span>
-        <span className="create-team-select__arrow" />
-      </button>
-
-      {isOpen && (
-        <div className="create-team-select__menu" role="listbox">
-          <button
-            className={`create-team-select__option ${value ? "" : "is-selected"}`}
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => onChange("")}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className={`create-team-select__option ${
-                String(option.id) === String(value) ? "is-selected" : ""
-              }`}
-              key={`${id}-${option.id}`}
-              type="button"
-              role="option"
-              aria-selected={String(option.id) === String(value)}
-              onClick={() => onChange(String(option.id))}
-            >
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const TeamAlert = ({ type, title, message, onClose }) => (
   <div className="create-team-alert-backdrop">
@@ -366,12 +308,14 @@ function CreateTeam() {
               <label>
                 Проект <span>*</span>
               </label>
-              <TeamSelect
+              <SelectDropdown
                 id="project"
                 value={projectId}
                 placeholder="Выберите проект"
                 options={projectOptions}
                 isOpen={openSelect === "project"}
+                classNamePrefix="create-team-select"
+                showHasValueClass
                 onToggle={() =>
                   setOpenSelect((current) =>
                     current === "project" ? null : "project",
@@ -393,12 +337,14 @@ function CreateTeam() {
               </label>
               <div className="create-team-schedule-row">
                 <div>
-                  <TeamSelect
+                  <SelectDropdown
                     id="call-day"
                     value={callDay}
                     placeholder="Выберите день недели"
                     options={dayOptions}
                     isOpen={openSelect === "call-day"}
+                    classNamePrefix="create-team-select"
+                    showHasValueClass
                     onToggle={() =>
                       setOpenSelect((current) =>
                         current === "call-day" ? null : "call-day",
@@ -414,12 +360,14 @@ function CreateTeam() {
                   )}
                 </div>
                 <div>
-                  <TeamSelect
+                  <SelectDropdown
                     id="call-time"
                     value={callTime}
                     placeholder="Выберите время (доп.)"
                     options={timeOptions}
                     isOpen={openSelect === "call-time"}
+                    classNamePrefix="create-team-select"
+                    showHasValueClass
                     onToggle={() =>
                       setOpenSelect((current) =>
                         current === "call-time" ? null : "call-time",

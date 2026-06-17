@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getCurators, updateTeamCard } from "../api/meetingsApi";
 import "./css/TeamPage.css";
 import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
+import SelectDropdown from "../components/SelectDropdown";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";
@@ -166,61 +167,6 @@ const createComparableTeamCard = (card) => {
     grades: normalizeGrades(card.grades),
     comment: String(card.comment || "").trim(),
   };
-};
-
-const TeamDropdown = ({
-  id,
-  value,
-  options,
-  placeholder,
-  isOpen,
-  onChange,
-  onToggle,
-}) => {
-  const selectedOption = options.find((option) => String(option.id) === String(value));
-
-  return (
-    <div className={`team-select ${isOpen ? "is-open" : ""}`}>
-      <button
-        className="team-select__button"
-        type="button"
-        onClick={onToggle}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span>{selectedOption?.name || placeholder}</span>
-        <span className="team-select__arrow" />
-      </button>
-
-      {isOpen && (
-        <div className="team-select__menu" role="listbox">
-          <button
-            className={`team-select__option ${value ? "" : "is-selected"}`}
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => onChange("")}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className={`team-select__option ${
-                String(option.id) === String(value) ? "is-selected" : ""
-              }`}
-              key={`${id}-${option.id}`}
-              type="button"
-              role="option"
-              aria-selected={String(option.id) === String(value)}
-              onClick={() => onChange(String(option.id))}
-            >
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 };
 
 const TeamPage = () => {
@@ -679,12 +625,13 @@ const TeamPage = () => {
           <form className="team-edit-form" onSubmit={saveDraft}>
             <label className="team-edit-field team-edit-field--wide">
               <span>Название проекта</span>
-              <TeamDropdown
+              <SelectDropdown
                 id="project"
                 value={draftCard.projectId ?? ""}
                 options={projectOptions}
                 placeholder="Выберите проект"
                 isOpen={openDropdown === "project"}
+                classNamePrefix="team-select"
                 onToggle={() =>
                   setOpenDropdown((current) =>
                     current === "project" ? null : "project",
@@ -697,12 +644,13 @@ const TeamPage = () => {
             <div className="team-edit-grid">
               <label className="team-edit-field">
                 <span>День встречи</span>
-                <TeamDropdown
+                <SelectDropdown
                   id="meeting-day"
                   value={draftCard.callDay || getDayValue(draftCard.meetingDay)}
                   options={dayOptions}
                   placeholder="Выберите день"
                   isOpen={openDropdown === "meeting-day"}
+                  classNamePrefix="team-select"
                   onToggle={() =>
                     setOpenDropdown((current) =>
                       current === "meeting-day" ? null : "meeting-day",
@@ -714,12 +662,13 @@ const TeamPage = () => {
 
               <label className="team-edit-field">
                 <span>Время начала встречи</span>
-                <TeamDropdown
+                <SelectDropdown
                   id="meeting-time"
                   value={getTimeValue(draftCard.meetingTime)}
                   options={timeOptions}
                   placeholder="Выберите время"
                   isOpen={openDropdown === "meeting-time"}
+                  classNamePrefix="team-select"
                   onToggle={() =>
                     setOpenDropdown((current) =>
                       current === "meeting-time" ? null : "meeting-time",
@@ -793,7 +742,7 @@ const TeamPage = () => {
                 <h2>Кураторы команды</h2>
                 {draftCard.curators.map((curator, index) => (
                   <div className="team-edit-row" key={`curator-${curator.id ?? index}`}>
-                    <TeamDropdown
+                    <SelectDropdown
                       id={`curator-${index}`}
                       value={curator.id ?? ""}
                       options={getCuratorSelectOptions(
@@ -802,6 +751,7 @@ const TeamPage = () => {
                       )}
                       placeholder="Выберите куратора"
                       isOpen={openDropdown === `curator-${index}`}
+                      classNamePrefix="team-select"
                       onToggle={() =>
                         setOpenDropdown((current) =>
                           current === `curator-${index}` ? null : `curator-${index}`,
