@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { updateMemberCard } from "../api/meetingsApi";
+import { deleteMember, updateMemberCard } from "../api/meetingsApi";
 import "./css/StudentPage.css";
 import UnsavedChangesAlert from "../components/UnsavedChangesAlert";
+import SelectDropdown from "../components/SelectDropdown";
 import editIcon from "../assets/icons/edit.svg";
 
 const emptyValue = "Не указано";
@@ -156,61 +157,6 @@ const createComparableStudentCard = (card) => {
   };
 };
 
-const StudentDropdown = ({
-  id,
-  value,
-  options,
-  placeholder,
-  isOpen,
-  onChange,
-  onToggle,
-}) => {
-  const selectedOption = options.find((option) => String(option.id) === String(value));
-
-  return (
-    <div className={`student-select ${isOpen ? "is-open" : ""}`}>
-      <button
-        className="student-select__button"
-        type="button"
-        onClick={onToggle}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span>{selectedOption?.name || placeholder}</span>
-        <span className="student-select__arrow" />
-      </button>
-
-      {isOpen && (
-        <div className="student-select__menu" role="listbox">
-          <button
-            className={`student-select__option ${value ? "" : "is-selected"}`}
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => onChange("")}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className={`student-select__option ${
-                String(option.id) === String(value) ? "is-selected" : ""
-              }`}
-              key={`${id}-${option.id}`}
-              type="button"
-              role="option"
-              aria-selected={String(option.id) === String(value)}
-              onClick={() => onChange(String(option.id))}
-            >
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const StudentPage = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -230,7 +176,9 @@ const StudentPage = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -599,8 +547,30 @@ const StudentPage = () => {
   };
 
   const closeModal = () => {
+    if (isDeleting) return;
     setActiveModal(null);
     setPendingNavigation(null);
+    setDeleteError("");
+  };
+
+  const confirmDeleteStudent = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      await deleteMember(id);
+      navigate("/finder");
+    } catch (deleteStudentError) {
+      setDeleteError(
+        deleteStudentError.response?.data?.message ||
+          deleteStudentError.message ||
+          "Не удалось удалить студента",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -646,7 +616,7 @@ const StudentPage = () => {
 
                 <label className="student-edit-field">
                   <span>Участник команды</span>
-                  <StudentDropdown
+                  <SelectDropdown
                     id={`team-${index}`}
                     value={record.teamId ?? ""}
                     options={getSelectOptions(
@@ -657,6 +627,7 @@ const StudentPage = () => {
                     )}
                     placeholder="Выберите команду"
                     isOpen={openDropdown === `team-${index}`}
+                    classNamePrefix="student-select"
                     onToggle={() =>
                       setOpenDropdown((current) =>
                         current === `team-${index}` ? null : `team-${index}`,
@@ -676,7 +647,7 @@ const StudentPage = () => {
 
                 <label className="student-edit-field">
                   <span>Проект</span>
-                  <StudentDropdown
+                  <SelectDropdown
                     id={`project-${index}`}
                     value={record.projectId ?? ""}
                     options={getSelectOptions(
@@ -687,6 +658,7 @@ const StudentPage = () => {
                     )}
                     placeholder="Выберите проект"
                     isOpen={openDropdown === `project-${index}`}
+                    classNamePrefix="student-select"
                     onToggle={() =>
                       setOpenDropdown((current) =>
                         current === `project-${index}` ? null : `project-${index}`,
@@ -729,6 +701,14 @@ const StudentPage = () => {
             {saveError && <p className="student-save-error">{saveError}</p>}
 
             <div className="student-edit-actions">
+              <button
+                className="student-delete-button"
+                type="button"
+                onClick={() => setActiveModal("delete")}
+                disabled={isSaving}
+              >
+                Удалить студента
+              </button>
               <button
                 className="student-cancel-button"
                 type="button"
@@ -818,6 +798,21 @@ const StudentPage = () => {
               Сохранить
             </button>
           </div>
+        </UnsavedChangesAlert>
+      )}
+
+      {activeModal === "delete" && (
+        <UnsavedChangesAlert onClose={closeModal} className="project-alert--delete">
+          {deleteError && <p className="student-save-error">{deleteError}</p>}
+          <h2>Вы уверены, что хотите безвозвратно удалить студента?</h2>
+          <button
+            className="project-alert-red-button project-alert-red-button--confirm"
+            type="button"
+            onClick={confirmDeleteStudent}
+            disabled={isDeleting}
+          >
+            Подтвердить
+          </button>
         </UnsavedChangesAlert>
       )}
     </div>

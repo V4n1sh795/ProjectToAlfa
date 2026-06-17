@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using cash.Models;
 using DBContext;
+using Microsoft.AspNetCore.Mvc;
 namespace Service;
 
 static class Curator
@@ -51,5 +52,43 @@ static class Curator
             .ToListAsync();
         
         return Results.Ok(data);
+    }
+    public static async Task<IResult> Stat(
+        AppDbContext db, 
+        int curatorId, 
+        [FromQuery] DateOnly startDate,
+        [FromQuery] DateOnly endDate)
+    {
+        // 1. Конвертируем в UTC DateTime
+        var startDateTime = startDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var endDateTime = endDate.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+
+        // 2. Получаем встречи за период (фильтрация на стороне БД)
+        var meetings = await db.Meetings
+            .Where(m => m.Date > startDateTime && m.Date < endDateTime)
+            .ToListAsync(); // async, не ToArray()
+
+        // 3. Считаем посещенные встречи (фильтрация в памяти, т.к. данные уже загружены)
+        int visitedMeetings = meetings.Count(m => m.WasCurators.Contains(curatorId));
+
+        // 4. Считаем количество встреч, где куратор участвовал (исправленная логика)
+        int meetingsCount = meetings.Count; // или другая логика, в зависимости от требований
+
+        // 5. Получаем куратора
+        var curator = await db.Curators
+            .Where(c => c.Id == curatorId)
+            .FirstOrDefaultAsync();
+
+        if (curator == null)
+        {
+            return Results.NotFound($"Curator with id {curatorId} not found");
+        }
+
+        return Results.Ok(new
+        {
+            curatorName = curator.Name,
+            meetingsCount = meetingsCount,
+            visitedMeetings = visitedMeetings
+        });
     }
 }

@@ -226,44 +226,21 @@
   cursor: pointer;
 }
 
-.curator-team-select {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-}
-
 .curator-card .curator-team-select__button[type="button"] {
-  appearance: none;
-  width: 100%;
-  height: 60px;
-  margin: 0;
   padding: 15px 44px 15px 15px;
   border: 2px solid #e7e8eb;
   border-radius: 15px;
   background: #fff;
   color: #212124;
-  font-family: inherit;
   font-size: 24px;
   line-height: 1;
   font-weight: 500;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  cursor: pointer;
-  box-sizing: border-box;
   box-shadow: none;
-  text-align: left;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
     background 0.2s ease;
-}
-
-.curator-card .curator-team-select__button[type="button"] span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .curator-card .curator-team-select__button[type="button"]:hover,
@@ -278,15 +255,9 @@
 }
 
 .curator-team-select__arrow {
-  position: absolute;
-  right: 20px;
-  width: 11px;
-  height: 11px;
   border-right: 2px solid #212124;
   border-bottom: 2px solid #212124;
   transform: rotate(45deg) translateY(-2px);
-  transition: transform 0.2s ease;
-  pointer-events: none;
 }
 
 .curator-team-select.is-open .curator-team-select__arrow {
@@ -294,56 +265,30 @@
 }
 
 .curator-team-select__menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
   z-index: 30;
-  max-height: 320px;
-  padding: 8px;
-  overflow-y: auto;
   border: 2px solid #e7e8eb;
   border-radius: 15px;
   background: #fff;
   box-shadow: 0 18px 40px rgba(33, 33, 36, 0.16);
-  box-sizing: border-box;
-}
-
-.curator-team-select__menu::-webkit-scrollbar {
-  width: 6px;
 }
 
 .curator-team-select__menu::-webkit-scrollbar-track {
-  margin: 8px 0;
   background: #f2f3f5;
-  border-radius: 3px;
 }
 
 .curator-team-select__menu::-webkit-scrollbar-thumb {
   background: #ef3124;
-  border-radius: 3px;
 }
 
 .curator-card .curator-team-select__option[type="button"] {
-  appearance: none;
-  width: 100%;
-  min-height: 44px;
-  margin: 0;
   padding: 10px 14px;
   border: none;
   border-radius: 10px;
   background: transparent;
   color: #212124;
-  font-family: inherit;
   font-size: 20px;
   line-height: 1.15;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  cursor: pointer;
-  text-align: left;
-  box-sizing: border-box;
   transition:
     background 0.15s ease,
     color 0.15s ease;
@@ -447,15 +392,17 @@
 }
 
 .curator-edit-actions {
-  align-self: flex-end;
-  margin: 0 0 0 auto;
+  align-self: stretch;
+  width: 100%;
+  margin: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
 }
 
+.curator-card .curator-delete-button[type="button"],
 .curator-card .curator-cancel-button[type="button"],
 .curator-card .curator-save-button[type="submit"] {
   appearance: none;
@@ -474,6 +421,16 @@
   box-sizing: border-box;
   box-shadow: none;
   transition: background 0.2s ease;
+}
+
+.curator-card .curator-delete-button[type="button"] {
+  width: max-content;
+  min-width: 160px;
+  margin-right: auto;
+  border: none;
+  background: #ef3124;
+  color: #fff;
+  white-space: nowrap;
 }
 
 .curator-card .curator-cancel-button[type="button"] {
@@ -497,10 +454,23 @@
   font-weight: 500;
 }
 
+.curator-card .curator-delete-button[type="button"]:disabled,
 .curator-card .curator-cancel-button[type="button"]:disabled,
 .curator-card .curator-save-button[type="submit"]:disabled {
   cursor: default;
   opacity: 0.7;
+}
+
+.curator-card .curator-delete-button[type="button"]:hover,
+.curator-card .curator-delete-button[type="button"]:focus,
+.curator-card .curator-delete-button[type="button"]:focus-visible,
+.curator-card .curator-delete-button[type="button"]:active {
+  background: #d6281f;
+  color: #fff;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  transform: none;
 }
 
 .curator-card .curator-cancel-button[type="button"]:hover,

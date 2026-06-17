@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import closeAlertIcon from "../assets/icons/close_alert.svg";
+import SelectDropdown from "../components/SelectDropdown";
 import "./css/CreateTeam.css";
 
 const api = axios.create({
@@ -58,12 +59,18 @@ const normalizeDay = (value) => {
   return dayValuesByLabel[normalized.toLowerCase()] || normalized;
 };
 
-const normalizeTime = (value) => String(value || "").trim().slice(0, 5);
+const normalizeTime = (value) =>
+  String(value || "")
+    .trim()
+    .slice(0, 5);
 
 const getDayLabel = (value) =>
   dayOptions.find((day) => String(day.id) === String(value))?.name || value;
 
-const hasFullName = (value) => String(value || "").trim().split(/\s+/).length >= 3;
+const hasFullName = (value) =>
+  String(value || "")
+    .trim()
+    .split(/\s+/).length >= 3;
 
 const createEmptyMember = () => ({
   name: "",
@@ -73,61 +80,6 @@ const createEmptyMember = () => ({
   contact: "",
   exists: true,
 });
-
-const TeamSelect = ({
-  id,
-  value,
-  placeholder,
-  options,
-  isOpen,
-  onChange,
-  onToggle,
-}) => {
-  const selectedOption = options.find((option) => String(option.id) === String(value));
-
-  return (
-    <div className={`create-team-select ${isOpen ? "is-open" : ""} ${value ? "has-value" : ""}`}>
-      <button
-        className="create-team-select__button"
-        type="button"
-        onClick={onToggle}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span>{selectedOption?.name || placeholder}</span>
-        <span className="create-team-select__arrow" />
-      </button>
-
-      {isOpen && (
-        <div className="create-team-select__menu" role="listbox">
-          <button
-            className={`create-team-select__option ${value ? "" : "is-selected"}`}
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => onChange("")}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className={`create-team-select__option ${
-                String(option.id) === String(value) ? "is-selected" : ""
-              }`}
-              key={`${id}-${option.id}`}
-              type="button"
-              role="option"
-              aria-selected={String(option.id) === String(value)}
-              onClick={() => onChange(String(option.id))}
-            >
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const TeamAlert = ({ type, title, message, onClose }) => (
   <div className="create-team-alert-backdrop">
@@ -170,7 +122,9 @@ function CreateTeam() {
   useEffect(() => {
     api
       .get("/project")
-      .then((response) => setAvailableProjects(Array.isArray(response.data) ? response.data : []))
+      .then((response) =>
+        setAvailableProjects(Array.isArray(response.data) ? response.data : []),
+      )
       .catch((error) => console.error("Error fetching projects:", error));
   }, []);
 
@@ -181,7 +135,8 @@ function CreateTeam() {
     };
 
     document.addEventListener("mousedown", handleDocumentMouseDown);
-    return () => document.removeEventListener("mousedown", handleDocumentMouseDown);
+    return () =>
+      document.removeEventListener("mousedown", handleDocumentMouseDown);
   }, []);
 
   const resetForm = () => {
@@ -259,7 +214,9 @@ function CreateTeam() {
         !member.role.trim() ||
         !member.stack.trim(),
     );
-    const hasInvalidMemberName = members.some((member) => !hasFullName(member.name));
+    const hasInvalidMemberName = members.some(
+      (member) => !hasFullName(member.name),
+    );
 
     const newErrors = {};
 
@@ -342,26 +299,36 @@ function CreateTeam() {
                 onChange={(event) => setTeamName(event.target.value)}
                 placeholder="Введите название команды"
               />
-              {errors.teamName && <p className="create-team-error">{errors.teamName}</p>}
+              {errors.teamName && (
+                <p className="create-team-error">{errors.teamName}</p>
+              )}
             </div>
 
             <div className="create-team-field create-team-field--project">
               <label>
                 Проект <span>*</span>
               </label>
-              <TeamSelect
+              <SelectDropdown
                 id="project"
                 value={projectId}
                 placeholder="Выберите проект"
                 options={projectOptions}
                 isOpen={openSelect === "project"}
-                onToggle={() => setOpenSelect((current) => (current === "project" ? null : "project"))}
+                classNamePrefix="create-team-select"
+                showHasValueClass
+                onToggle={() =>
+                  setOpenSelect((current) =>
+                    current === "project" ? null : "project",
+                  )
+                }
                 onChange={(value) => {
                   setProjectId(value);
                   setOpenSelect(null);
                 }}
               />
-              {errors.project && <p className="create-team-error">{errors.project}</p>}
+              {errors.project && (
+                <p className="create-team-error">{errors.project}</p>
+              )}
             </div>
 
             <div className="create-team-field create-team-field--schedule">
@@ -370,41 +337,55 @@ function CreateTeam() {
               </label>
               <div className="create-team-schedule-row">
                 <div>
-                  <TeamSelect
+                  <SelectDropdown
                     id="call-day"
                     value={callDay}
                     placeholder="Выберите день недели"
                     options={dayOptions}
                     isOpen={openSelect === "call-day"}
+                    classNamePrefix="create-team-select"
+                    showHasValueClass
                     onToggle={() =>
-                      setOpenSelect((current) => (current === "call-day" ? null : "call-day"))
+                      setOpenSelect((current) =>
+                        current === "call-day" ? null : "call-day",
+                      )
                     }
                     onChange={(value) => {
                       setCallDay(value);
                       setOpenSelect(null);
                     }}
                   />
-                  {errors.callDay && <p className="create-team-error">{errors.callDay}</p>}
+                  {errors.callDay && (
+                    <p className="create-team-error">{errors.callDay}</p>
+                  )}
                 </div>
                 <div>
-                  <TeamSelect
+                  <SelectDropdown
                     id="call-time"
                     value={callTime}
                     placeholder="Выберите время (доп.)"
                     options={timeOptions}
                     isOpen={openSelect === "call-time"}
+                    classNamePrefix="create-team-select"
+                    showHasValueClass
                     onToggle={() =>
-                      setOpenSelect((current) => (current === "call-time" ? null : "call-time"))
+                      setOpenSelect((current) =>
+                        current === "call-time" ? null : "call-time",
+                      )
                     }
                     onChange={(value) => {
                       setCallTime(value);
                       setOpenSelect(null);
                     }}
                   />
-                  {errors.callTime && <p className="create-team-error">{errors.callTime}</p>}
+                  {errors.callTime && (
+                    <p className="create-team-error">{errors.callTime}</p>
+                  )}
                 </div>
               </div>
-              <small>Выберите день недели и время для регулярных созвонов команды.</small>
+              <small>
+                Выберите день недели и время для регулярных созвонов команды.
+              </small>
             </div>
           </div>
 
@@ -430,53 +411,75 @@ function CreateTeam() {
                     <input
                       type="text"
                       value={member.name}
-                      onChange={(event) => handleMemberChange(index, "name", event.target.value)}
+                      onChange={(event) =>
+                        handleMemberChange(index, "name", event.target.value)
+                      }
                       placeholder="ФИО"
                     />
                     <input
                       type="text"
                       value={member.group}
-                      onChange={(event) => handleMemberChange(index, "group", event.target.value)}
+                      onChange={(event) =>
+                        handleMemberChange(index, "group", event.target.value)
+                      }
                       placeholder="Академическая группа"
                     />
                     <input
                       type="text"
                       value={member.role}
-                      onChange={(event) => handleMemberChange(index, "role", event.target.value)}
+                      onChange={(event) =>
+                        handleMemberChange(index, "role", event.target.value)
+                      }
                       placeholder="Роль в команде"
                     />
                     <input
                       type="text"
                       value={member.stack}
-                      onChange={(event) => handleMemberChange(index, "stack", event.target.value)}
+                      onChange={(event) =>
+                        handleMemberChange(index, "stack", event.target.value)
+                      }
                       placeholder="Стек"
                     />
                     <input
                       type="text"
-                        value={member.contact}
-                        onChange={(event) => handleMemberChange(index, "contact", event.target.value)}
-                        placeholder="Контакты (необ.)"
-                      />
+                      value={member.contact}
+                      onChange={(event) =>
+                        handleMemberChange(index, "contact", event.target.value)
+                      }
+                      placeholder="Контакты (необ.)"
+                    />
                     <label className="create-team-radio create-team-radio--member">
                       <input
                         type="checkbox"
                         checked={member.exists}
                         onChange={(event) =>
-                          handleMemberChange(index, "exists", event.target.checked)
+                          handleMemberChange(
+                            index,
+                            "exists",
+                            event.target.checked,
+                          )
                         }
                       />
-                      <span>Участник есть в базе</span>
+                      <span className="member-in-db">Участник есть в базе</span>
                     </label>
                   </div>
                 ))}
               </div>
-              {errors.members && <p className="create-team-error">{errors.members}</p>}
+              {errors.members && (
+                <p className="create-team-error">{errors.members}</p>
+              )}
             </div>
 
-            <button className="create-team-add" type="button" onClick={addMember}>
+            <button
+              className="create-team-add"
+              type="button"
+              onClick={addMember}
+            >
               + Добавить участника
             </button>
-            <small className="create-team-note">Можно добавить несколько участников.</small>
+            <small className="create-team-note">
+              Можно добавить несколько участников.
+            </small>
 
             <button className="create-team-submit" type="submit">
               Создать команду

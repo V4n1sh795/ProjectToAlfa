@@ -261,42 +261,18 @@
   outline: none;
 }
 
-.team-select {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-}
-
 .team-card .team-select__button[type="button"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 60px;
-  margin: 0;
   padding: 15px 44px 15px 15px;
   border: 2px solid #e7e8eb !important;
   border-radius: 15px !important;
   background: #fff !important;
   color: #212124 !important;
-  font-family: inherit;
   font-size: 24px !important;
   line-height: 1 !important;
   font-weight: 500 !important;
-  display: flex !important;
-  align-items: center;
   justify-content: space-between;
-  cursor: pointer;
-  box-sizing: border-box;
   box-shadow: none !important;
-  text-align: left;
   transform: none !important;
-}
-
-.team-card .team-select__button[type="button"] span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .team-card .team-select__button[type="button"]:hover,
@@ -312,15 +288,9 @@
 }
 
 .team-select__arrow {
-  position: absolute;
-  right: 20px;
-  width: 11px;
-  height: 11px;
   border-right: 2px solid #212124;
   border-bottom: 2px solid #212124;
   transform: rotate(45deg) translateY(-2px);
-  transition: transform 0.2s ease;
-  pointer-events: none;
 }
 
 .team-select.is-open .team-select__arrow {
@@ -328,57 +298,30 @@
 }
 
 .team-select__menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
   z-index: 40;
-  max-height: 320px;
-  padding: 8px;
-  overflow-y: auto;
   border: 2px solid #e7e8eb;
   border-radius: 15px;
   background: #fff;
   box-shadow: 0 18px 40px rgba(33, 33, 36, 0.16);
-  box-sizing: border-box;
-}
-
-.team-select__menu::-webkit-scrollbar {
-  width: 6px;
 }
 
 .team-select__menu::-webkit-scrollbar-track {
-  margin: 8px 0;
   background: #f2f3f5;
-  border-radius: 3px;
 }
 
 .team-select__menu::-webkit-scrollbar-thumb {
   background: #ef3124;
-  border-radius: 3px;
 }
 
 .team-card .team-select__option[type="button"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  min-height: 44px;
-  margin: 0;
   padding: 10px 14px;
   border: 0 !important;
   border-radius: 10px !important;
   background: transparent !important;
   color: #212124 !important;
-  font-family: inherit;
   font-size: 20px !important;
   line-height: 1.15 !important;
   font-weight: 500 !important;
-  display: flex !important;
-  align-items: center;
-  justify-content: flex-start;
-  cursor: pointer;
-  text-align: left;
-  box-sizing: border-box;
   box-shadow: none !important;
   transform: none !important;
 }
@@ -509,15 +452,17 @@
 }
 
 .team-edit-actions {
-  align-self: flex-end;
-  margin: 20px 0 0 auto;
+  align-self: stretch;
+  width: 100%;
+  margin: 20px 0 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
 }
 
+.team-card .team-delete-button[type="button"],
 .team-card .team-cancel-button[type="button"],
 .team-card .team-save-button[type="submit"] {
   appearance: none;
@@ -536,6 +481,16 @@
   box-sizing: border-box;
   box-shadow: none;
   transition: background 0.2s ease;
+}
+
+.team-card .team-delete-button[type="button"] {
+  width: max-content;
+  min-width: 160px;
+  margin-right: auto;
+  border: none;
+  background: #ef3124;
+  color: #fff;
+  white-space: nowrap;
 }
 
 .team-card .team-cancel-button[type="button"] {
@@ -559,10 +514,23 @@
   font-weight: 500;
 }
 
+.team-card .team-delete-button[type="button"]:disabled,
 .team-card .team-cancel-button[type="button"]:disabled,
 .team-card .team-save-button[type="submit"]:disabled {
   cursor: default;
   opacity: 0.7;
+}
+
+.team-card .team-delete-button[type="button"]:hover,
+.team-card .team-delete-button[type="button"]:focus,
+.team-card .team-delete-button[type="button"]:focus-visible,
+.team-card .team-delete-button[type="button"]:active {
+  background: #d6281f;
+  color: #fff;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  transform: none;
 }
 
 .team-card .team-cancel-button[type="button"]:hover,

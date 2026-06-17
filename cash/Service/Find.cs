@@ -397,4 +397,69 @@ static class Find
         
         await db.SaveChangesAsync();
     }
+    public static async Task<IResult> DeleteCurator(AppDbContext db, int id)
+    {
+        var curator = await db.Curators.FindAsync(id);
+        if (curator != null)
+        {
+            db.Curators.Remove(curator);
+            await db.SaveChangesAsync();
+            return Results.Ok("deleted");
+        }
+        else
+            return Results.BadRequest("Wrong Id");
+    }
+    public static async Task<IResult> DeleteProject(AppDbContext db, int id)
+    {
+        var project = await db.Projects.FindAsync(id);
+        if (project != null)
+        {
+            db.Projects.Remove(project);
+            await db.SaveChangesAsync();
+            return Results.Ok("deleted");
+        }
+        else
+            return Results.BadRequest("Wrong Id");
+    }
+    public static async Task<IResult> DeleteTeam(AppDbContext db, int id)
+    {
+        var team = await db.Teams.FindAsync(id);
+        if (team != null)
+        {
+            await db.Members
+            .Where(m => m.TeamId == id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(m => m.TeamId, (int?)null));
+            await db.Meetings.Where(m => m.TeamId == id).ExecuteDeleteAsync();
+            db.Teams.Remove(team);
+            await db.SaveChangesAsync();
+            return Results.Ok("deleted");
+        }
+        else
+            return Results.BadRequest("Wrong Id");
+    }
+    public static async Task<IResult> DeleteMember(AppDbContext db, int id)
+    {
+        // Загружаем Member с Profiles
+        var member = await db.Members
+            .Include(m => m.Profiles)
+            .FirstOrDefaultAsync(m => m.Id == id);
+        
+        if (member == null)
+            return Results.BadRequest("Member not found");
+        
+        // Удаляем все Profile (через контекст)
+        if (member.Profiles.Any())
+        {
+            db.Profiles.RemoveRange(member.Profiles);
+        }
+        
+        // Удаляем Member
+        db.Members.Remove(member);
+        
+        // Сохраняем все изменения одной транзакцией
+        await db.SaveChangesAsync();
+        
+        return Results.Ok("Member deleted successfully");
+    }
 }

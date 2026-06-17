@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
+  deleteProject,
   getCurators,
   getProject,
   getTeams,
@@ -8,6 +9,7 @@ import {
 } from "../api/meetingsApi";
 import "./css/ProjectPage.css";
 import closeAlertIcon from "../assets/icons/close_alert.svg";
+import SelectDropdown from "../components/SelectDropdown";
 import editIcon from "../assets/icons/edit.svg";
 
 const statusOptions = [
@@ -236,61 +238,6 @@ const ProjectAlert = ({ children, onClose, className = "" }) => (
   </div>
 );
 
-const ProjectDropdown = ({
-  id,
-  value,
-  options,
-  placeholder,
-  isOpen,
-  onChange,
-  onToggle,
-}) => {
-  const selectedOption = options.find((option) => String(option.id) === String(value));
-
-  return (
-    <div className={`project-select ${isOpen ? "is-open" : ""}`}>
-      <button
-        className="project-select__button"
-        type="button"
-        onClick={onToggle}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-      >
-        <span>{selectedOption?.name || placeholder}</span>
-        <span className="project-select__arrow" />
-      </button>
-
-      {isOpen && (
-        <div className="project-select__menu" role="listbox">
-          <button
-            className={`project-select__option ${value ? "" : "is-selected"}`}
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => onChange("")}
-          >
-            {placeholder}
-          </button>
-          {options.map((option) => (
-            <button
-              className={`project-select__option ${
-                String(option.id) === String(value) ? "is-selected" : ""
-              }`}
-              key={`${id}-${option.id}`}
-              type="button"
-              role="option"
-              aria-selected={String(option.id) === String(value)}
-              onClick={() => onChange(String(option.id))}
-            >
-              {option.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const ProjectPage = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -311,7 +258,9 @@ const ProjectPage = () => {
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [statusReason, setStatusReason] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -611,10 +560,32 @@ const ProjectPage = () => {
   };
 
   const closeModal = () => {
+    if (isDeleting) return;
     setActiveModal(null);
     setPendingStatus(null);
     setPendingNavigation(null);
     setStatusReason("");
+    setDeleteError("");
+  };
+
+  const confirmDeleteProject = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    setDeleteError("");
+
+    try {
+      await deleteProject(id);
+      navigate("/finder");
+    } catch (deleteProjectError) {
+      setDeleteError(
+        deleteProjectError.response?.data?.message ||
+          deleteProjectError.message ||
+          "Не удалось удалить проект",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -705,12 +676,13 @@ const ProjectPage = () => {
                 <h2>Записанные команды</h2>
                 {draftCard.teams.map((team, index) => (
                   <div className="project-edit-row" key={`team-${team.id ?? index}`}>
-                    <ProjectDropdown
+                    <SelectDropdown
                       id={`team-${index}`}
                       value={team.id ?? ""}
                       options={getSelectOptions(draftCard.teams, team.id, teamOptions)}
                       placeholder="Выберите команду"
                       isOpen={openDropdown === `team-${index}`}
+                      classNamePrefix="project-select"
                       onToggle={() =>
                         setOpenDropdown((current) =>
                           current === `team-${index}` ? null : `team-${index}`,
@@ -744,7 +716,7 @@ const ProjectPage = () => {
                     className="project-edit-row"
                     key={`curator-${curator.id ?? index}`}
                   >
-                    <ProjectDropdown
+                    <SelectDropdown
                       id={`curator-${index}`}
                       value={curator.id ?? ""}
                       options={getSelectOptions(
@@ -754,6 +726,7 @@ const ProjectPage = () => {
                       )}
                       placeholder="Выберите куратора"
                       isOpen={openDropdown === `curator-${index}`}
+                      classNamePrefix="project-select"
                       onToggle={() =>
                         setOpenDropdown((current) =>
                           current === `curator-${index}`
@@ -935,11 +908,13 @@ const ProjectPage = () => {
 
       {activeModal === "delete" && (
         <ProjectAlert onClose={closeModal} className="project-alert--delete">
+          {deleteError && <p className="project-save-error">{deleteError}</p>}
           <h2>Вы уверены, что хотите безвозвратно удалить проект?</h2>
           <button
             className="project-alert-red-button project-alert-red-button--confirm"
             type="button"
-            onClick={closeModal}
+            onClick={confirmDeleteProject}
+            disabled={isDeleting}
           >
             Подтвердить
           </button>

@@ -127,7 +127,7 @@
   margin: 0 6px 0 0;
   padding: 0;
   border: 1px solid #ef3124;
-  border-radius: 50%;
+  border-radius: 0;
   background: #fff;
   box-sizing: border-box;
   cursor: pointer;
@@ -137,8 +137,8 @@
 
 .create-team-radio input:checked,
 .create-team-member .create-team-radio input[type="checkbox"]:checked {
-  background:
-    radial-gradient(circle, #ef3124 0 9px, transparent 10px);
+  background: #ef3124;
+  box-shadow: inset 0 0 0 3px #fff;
 }
 
 .create-team-radio input:focus-visible,
@@ -249,6 +249,10 @@
   outline: none;
 }
 
+.create-team-field .member-in-db {
+  color: #212124;
+}
+
 .create-team-submit[type="submit"] {
   align-self: flex-end;
   width: 500px;
@@ -285,43 +289,18 @@
   line-height: 1.2;
 }
 
-.create-team-select {
-  position: relative;
-  width: 100%;
-  min-width: 0;
-}
-
 .create-team-select__button[type="button"] {
-  appearance: none;
-  -webkit-appearance: none;
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 60px;
-  margin: 0;
   padding: 0 44px 0 14px;
   border: 2px solid #e1e2e5;
   border-radius: 15px;
   background: #fff;
   color: #d9d9d9;
-  cursor: pointer;
-  font-family: inherit;
   font-size: 24px;
   font-weight: 400;
   line-height: 1.2;
-  text-align: left;
-  box-sizing: border-box;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
-}
-
-.create-team-select__button[type="button"] span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .create-team-select.has-value .create-team-select__button[type="button"] {
@@ -337,15 +316,9 @@
 }
 
 .create-team-select__arrow {
-  position: absolute;
-  right: 20px;
-  width: 11px;
-  height: 11px;
   border-right: 2px solid #d9d9d9;
   border-bottom: 2px solid #d9d9d9;
   transform: rotate(45deg) translateY(-3px);
-  transition: transform 0.2s ease;
-  pointer-events: none;
 }
 
 .create-team-select.is-open .create-team-select__arrow {
@@ -353,54 +326,30 @@
 }
 
 .create-team-select__menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
   z-index: 20;
-  max-height: 320px;
-  padding: 8px;
-  overflow-y: auto;
   border: 2px solid #e7e8eb;
   border-radius: 15px;
   background: #fff;
   box-shadow: 0 18px 40px rgba(33, 33, 36, 0.16);
-  box-sizing: border-box;
-}
-
-.create-team-select__menu::-webkit-scrollbar {
-  width: 6px;
 }
 
 .create-team-select__menu::-webkit-scrollbar-track {
-  margin: 8px 0;
   background: #f2f3f5;
-  border-radius: 3px;
 }
 
 .create-team-select__menu::-webkit-scrollbar-thumb {
   background: #ef3124;
-  border-radius: 3px;
 }
 
 .create-team-select__option[type="button"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  min-height: 44px;
-  margin: 0;
   padding: 10px 14px;
   border: 0;
   border-radius: 10px;
   background: transparent;
   color: #212124;
-  cursor: pointer;
-  font-family: inherit;
   font-size: 20px;
   font-weight: 500;
   line-height: 1.15;
-  text-align: left;
-  box-sizing: border-box;
 }
 
 .create-team-select__option[type="button"]:hover,
@@ -555,12 +504,6 @@
     flex-basis: 25px;
   }
 
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 9px, transparent 10px);
-  }
-
   .create-team-members {
     gap: 28px;
   }
@@ -656,12 +599,6 @@
     max-width: 25px;
     max-height: 25px;
     flex-basis: 25px;
-  }
-
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 9px, transparent 10px);
   }
 
   .create-team-members {
@@ -775,12 +712,6 @@
     flex-basis: 24px;
   }
 
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 8px, transparent 9px);
-  }
-
   .create-team-members {
     gap: 24px;
   }
@@ -885,12 +816,6 @@
     max-width: 22px;
     max-height: 22px;
     flex-basis: 22px;
-  }
-
-  .create-team-radio input:checked,
-  .create-team-member .create-team-radio input[type="checkbox"]:checked {
-    background:
-      radial-gradient(circle, #ef3124 0 7px, transparent 8px);
   }
 
   .create-team-members {
