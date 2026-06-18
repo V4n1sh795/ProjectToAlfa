@@ -424,19 +424,32 @@ static class Find
     public static async Task<IResult> DeleteTeam(AppDbContext db, int id)
     {
         var team = await db.Teams.FindAsync(id);
-        if (team != null)
+        if (team == null)
+            return Results.BadRequest("Wrong Id");
+
+        using var transaction = await db.Database.BeginTransactionAsync();
+        try
         {
             await db.Members
-            .Where(m => m.TeamId == id)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(m => m.TeamId, (int?)null));
-            await db.Meetings.Where(m => m.TeamId == id).ExecuteDeleteAsync();
+                .Where(m => m.TeamId == id)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(m => m.TeamId, (int?)null));
+            
+            await db.Meetings
+                .Where(m => m.TeamId == id)
+                .ExecuteDeleteAsync();
+            
             db.Teams.Remove(team);
             await db.SaveChangesAsync();
+            
+            await transaction.CommitAsync();
             return Results.Ok("deleted");
         }
-        else
-            return Results.BadRequest("Wrong Id");
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
     public static async Task<IResult> DeleteMember(AppDbContext db, int id)
     {
