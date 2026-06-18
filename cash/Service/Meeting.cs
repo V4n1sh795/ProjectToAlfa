@@ -143,6 +143,13 @@ class Meeting
                 List<string> pepes = new List<string>();
                 cash.Models.Team? team = db.Teams.Include(t => t.Members).FirstOrDefault(t => t.Id == meet.TeamId);
                 cash.Models.Project? proj = await db.Projects.FindAsync(team.ProjectId);
+                string proj_name;
+                if (proj != null)
+                {
+                    proj_name = proj.Name;
+                }
+                else
+                    proj_name = "null";
                 foreach (var pepe in team.Members)
                 {
                     pepes.Add($"{pepe.Surname} {pepe.Name} {pepe.SecondName}");
@@ -150,7 +157,7 @@ class Meeting
                 OMeet omeet = new OMeet
                 {
                     TeamName = team.Name,
-                    CaseName = proj.Name,
+                    CaseName = proj_name,
                     date = meet.Date,
                     startAt = meet.Time,
                     status = meet.Status,
