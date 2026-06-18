@@ -24,7 +24,7 @@ ProjectToAlfa — это веб-приложение для администри
 ```
 ProjectToAlfa/
 ├── cash/              # Backend (ASP.NET Core)
-├── frontend/          # Frontend (React + TypeScript)
+├── frontend/          # Frontend (React)
 ├── nginx/             # Конфигурация Nginx
 ├── docs/              # OpenAPI спецификации
 └── docker-compose.yml # Оркестрация контейнеров
