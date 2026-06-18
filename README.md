@@ -5,8 +5,8 @@
 ## 📋 Описание
 
 ProjectToAlfa — это веб-приложение для администрирования проектов, включающее:
-- **Backend** на ASP.NET Core (Web API)
-- **Frontend** на React + TypeScript
+- **Backend** на ASP.NET Core (Minimal Api)
+- **Frontend** на React
 - **Базу данных** PostgreSQL
 - **Nginx** в качестве reverse proxy
 
