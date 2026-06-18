@@ -427,30 +427,38 @@ static class Find
         if (team == null)
             return Results.BadRequest("Wrong Id");
 
-        using var transaction = await db.Database.BeginTransactionAsync();
         try
         {
-            await db.Members
+            // 1. Отвязываем Members через Change Tracker
+            var members = await db.Members
                 .Where(m => m.TeamId == id)
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(m => m.TeamId, (int?)null));
+                .ToListAsync();
             
-            await db.Meetings
+            foreach (var member in members)
+            {
+                member.TeamId = null;
+            }
+            
+            // 2. Удаляем Meetings через Change Tracker
+            var meetings = await db.Meetings
                 .Where(m => m.TeamId == id)
-                .ExecuteDeleteAsync();
+                .ToListAsync();
             
+            db.Meetings.RemoveRange(meetings);
+            
+            // 3. Удаляем Team
             db.Teams.Remove(team);
+            
+            // 4. Один коммит — все операции в одной транзакции
             await db.SaveChangesAsync();
             
-            await transaction.CommitAsync();
             return Results.Ok("deleted");
         }
-        catch
+        catch (Exception ex)
         {
-            await transaction.RollbackAsync();
-            throw;
+            return Results.Problem($"Error deleting team: {ex.Message}");
         }
-    }
+}
     public static async Task<IResult> DeleteMember(AppDbContext db, int id)
     {
         // Загружаем Member с Profiles
