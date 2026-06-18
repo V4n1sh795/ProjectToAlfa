@@ -23,7 +23,7 @@ ProjectToAlfa — это веб-приложение для администри
 
 ```
 ProjectToAlfa/
-├── cash/              # Backend (ASP.NET Core)
+├── cash/              # Backend (ASP.NET Core MinimalApi)
 ├── frontend/          # Frontend (React)
 ├── nginx/             # Конфигурация Nginx
 ├── docs/              # OpenAPI спецификации
