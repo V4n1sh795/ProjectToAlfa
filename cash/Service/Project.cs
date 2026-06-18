@@ -66,7 +66,7 @@ static class Project
 
             foreach (int Cid in project.CuratorIds)
             {
-                cash.Models.Curator c = await db.Curators.FirstOrDefaultAsync(c => c.Id == Cid);
+                cash.Models.Curator? c = await db.Curators.FirstOrDefaultAsync(c => c.Id == Cid);
                 CuratorsL.Add(new KeyValuePair<int, string> (Cid, c.Name));
             }
 

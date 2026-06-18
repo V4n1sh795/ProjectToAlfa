@@ -101,7 +101,7 @@ static class Find
 
     private static async Task<IResult> FindProjects(AppDbContext db, string? query)
     {
-        IQueryable<cash.Models.Project> queryset = db.Projects;
+        IQueryable<cash.Models.Project> queryset = db.Projects.AsNoTracking();;
 
         if (!string.IsNullOrEmpty(query.ToLower()))
         {
@@ -117,7 +117,7 @@ static class Find
 
     private static async Task<IResult> FindTeams(AppDbContext db, string? query)
     {
-        IQueryable<cash.Models.Team> queryset = db.Teams;
+        IQueryable<cash.Models.Team> queryset = db.Teams.AsNoTracking();;
 
         if (!string.IsNullOrEmpty(query.ToLower()))
         {
@@ -130,7 +130,7 @@ static class Find
 
     private static async Task<IResult> FindMembers(AppDbContext db, string? query)
     {
-        IQueryable<Member> queryset = db.Members;
+        IQueryable<Member> queryset = db.Members.AsNoTracking();;
 
         if (!string.IsNullOrEmpty(query.ToLower()))
         {
@@ -146,7 +146,7 @@ static class Find
 
     private static async Task<IResult> FindCurators(AppDbContext db, string? query)
     {
-        IQueryable<cash.Models.Curator> queryset = db.Curators;
+        IQueryable<cash.Models.Curator> queryset = db.Curators.AsNoTracking();;
 
         if (!string.IsNullOrEmpty(query.ToLower()))
         {
