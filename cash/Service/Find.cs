@@ -241,7 +241,7 @@ static class Find
                 existingMember.SecondName = fio.Length > 2 ? fio[2] : "";
 
                 var profile = existingMember.Profiles
-                    .FirstOrDefault(p => p.ProjectId == team.ProjectId);
+                    .FirstOrDefault(p => p.ProjectId == team.ProjectId) ?? existingMember.Profiles.FirstOrDefault();
 
                 if (profile == null)
                     return Results.BadRequest($"Profile not found for member {member.Id} in project {team.ProjectId}");
