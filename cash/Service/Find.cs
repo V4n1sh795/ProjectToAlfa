@@ -188,6 +188,8 @@ static class Find
             Team.Curators.Clear();
             Team.CallDay = team.CallDay;
             Team.CallTime = team.CallTime;
+            Team.ProjectId = team.Project.Id;
+
             if (team.Grades != null)
             {
                 Team.grades[0] = float.TryParse(team.Grades.Checkpoint1, out var cp1) ? cp1 : 0;
@@ -208,7 +210,6 @@ static class Find
             // if (membersResult != null)
             //     return membersResult;
 
-            Team.ProjectId = team.Project.Id;
             await db.SaveChangesAsync();
             return Results.Ok(team);
         }

@@ -14,7 +14,7 @@ static class Team
     record OTeam
     {
         public string Name { get; set; } = string.Empty;
-        public KeyValuePair<int, string> Project = new KeyValuePair<int, string>();
+        public KeyValuePair<int, string> Project { get; set; } = new KeyValuePair<int, string>();
         public List<KeyValuePair<int, string>> Members { get; set; } = new List<KeyValuePair<int, string>>();
         public List<KeyValuePair<int, string>> Curators { get; set; } = new List<KeyValuePair<int, string>>();
         public GradesDto grades {get; set;}
