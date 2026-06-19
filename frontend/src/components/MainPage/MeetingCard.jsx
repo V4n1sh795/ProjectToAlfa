@@ -206,9 +206,27 @@ const filterTasksForMeetingDate = (tasks, meetingDate) => {
   );
 };
 
-const getMemberRole = (memberDetails, index) => {
+const getProfileRoleText = (profile) => {
+  if (!profile) {
+    return "";
+  }
+
+  if (typeof profile === "string") {
+    return profile;
+  }
+
+  const explicitRole = readField(profile, "role", "Role");
+
+  if (explicitRole) {
+    return explicitRole;
+  }
+
+  return readField(profile, "metaData", "MetaData", "metadata", "Metadata") || "";
+};
+
+const getMemberRole = (memberDetails) => {
   const profiles = readField(memberDetails, "profiles", "Profiles") || [];
-  const firstProfile = String(profiles[0] || "").trim();
+  const firstProfile = String(getProfileRoleText(profiles[0])).trim();
 
   if (!firstProfile) {
     return missingRoleLabel;
@@ -521,7 +539,7 @@ function MeetingCard({ meeting }) {
           rawParticipants.length > 0
             ? rawParticipants.map((participant, index) => ({
                 ...participant,
-                role: getMemberRole(memberDetails[index], index),
+                role: getMemberRole(memberDetails[index]),
               }))
             : getParticipantFallbacks(meeting.participants);
         const mentors = getTeamPairs(team, "curators");
