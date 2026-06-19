@@ -205,8 +205,8 @@ static class Find
             }
 
             var membersResult = await UpdateTeamMembersAsync(db, Team, team.Members, team.Project.Id);
-            if (membersResult != null)
-                return membersResult;
+            // if (membersResult != null)
+            //     return membersResult;
 
             Team.ProjectId = team.Project.Id;
             await db.SaveChangesAsync();
