@@ -40,29 +40,6 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
-          # Замена docker healthcheck → k8s probes
-          readinessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-
-          # ✅ ИСПРАВЛЕННЫЙ livenessProbe
-          livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
-            initialDelaySeconds: 30
-            periodSeconds: 30
-            timeoutSeconds: 5
-            failureThreshold: 5
           resources:
             requests:
               memory: "256Mi"
