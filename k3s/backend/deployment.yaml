@@ -27,24 +27,12 @@ spec:
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: "Production"
-            # Connection string собираем из Secret
+            # Передаем готовую строку подключения целиком!
             - name: ConnectionStrings__DefaultConnection
-              value: "Host=postgres-svc;Database=$(POSTGRES_DB);Username=$(POSTGRES_USER);Password=$(POSTGRES_PASSWORD)"
-            - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: postgres-credentials
-                  key: POSTGRES_USER
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-credentials
-                  key: POSTGRES_PASSWORD
-            - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-credentials
-                  key: POSTGRES_DB
+                  name: app-secrets
+                  key: ConnectionStrings__DefaultConnection
           # ASP.NET health check (если у вас есть HealthChecks endpoint)
           readinessProbe:
             httpGet:
