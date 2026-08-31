@@ -62,6 +62,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         npgsqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(30), null);
     }));
 
+Console.WriteLine($"!!! DEBUG: ACTUAL CONNECTION STRING IS: {postgresConnectionString} !!!");
+
+
 // === Создание приложения ===
 var app = builder.Build();
 app.UseCors(builder => builder.AllowAnyOrigin());
