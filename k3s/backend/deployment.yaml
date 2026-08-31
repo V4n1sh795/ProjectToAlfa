@@ -40,8 +40,3 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-      dnsPolicy: Default
-      dnsConfig:
-        nameservers:
-          - 8.8.8.8
-          - 8.8.4.4
