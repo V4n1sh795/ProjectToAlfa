@@ -9,3 +9,4 @@ spec:
   ports:
     - port: 88
       targetPort: 88
+      NodePort: 88

@@ -6,6 +6,7 @@ on:
 
 env:
   REGISTRY: mesuitc.duckdns.org:5000
+  REGISTRY_LOCAL: 192.168.0.159:30500
   BACKEND_IMAGE: alfa-backend
   FRONTEND_IMAGE: alfa-frontend
 
@@ -68,13 +69,13 @@ jobs:
       - name: Update Backend image
         run: |
           k3s kubectl set image deployment/backend \
-            backend=${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
+            backend=${{ env.REGISTRY_LOCAL }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
             -n alfa
 
       - name: Update Frontend image
         run: |
           k3s kubectl set image deployment/frontend \
-            frontend=${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
+            frontend=${{ env.REGISTRY_LOCAL }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
             -n alfa
 
       - name: Wait for rollout
