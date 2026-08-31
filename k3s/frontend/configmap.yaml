@@ -9,15 +9,13 @@ data:
       listen 88;
       server_name _;
 
+      # Раздача статики React (SPA)
       location / {
           root /usr/share/nginx/html;
           index index.html;
           
-          # Критически важно для React Router (SPA):
-          # если файл не найден — отдаём index.html, чтобы роутинг отработал на клиенте
           try_files $uri $uri/ /index.html;
           
-          # Кэширование статики (опционально, но рекомендуется)
           location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?)$ {
               expires 1y;
               add_header Cache-Control "public, immutable";
@@ -25,21 +23,29 @@ data:
           }
       }
       
+      # Проксирование на бэкенд
       location /api/ {
+          # 1. Динамический резолвер DNS (обязательно для K8s)
           resolver kube-dns.kube-system.svc.cluster.local valid=10s;
 
-          proxy_pass http://backend-svc:8080/;
+          # 2. Объявляем переменную. Это заставляет Nginx обновлять IP при каждом запросе!
+          set $backend_upstream http://backend-svc:8080;
+          
+          # 3. Используем переменную в proxy_pass (БЕЗ слэша на конце!)
+          # Теперь /api/users уйдет на бэкенд как /api/users
+          proxy_pass $backend_upstream;
+          
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
           proxy_set_header X-Forwarded-Proto $scheme;
           
-          # Таймауты для долгих запросов (опционально)
           proxy_connect_timeout 60s;
           proxy_send_timeout 60s;
           proxy_read_timeout 60s;
       }
       
+      # Запрет доступа к скрытым файлам
       location ~ /\. {
           deny all;
       }
