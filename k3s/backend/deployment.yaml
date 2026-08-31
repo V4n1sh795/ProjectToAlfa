@@ -22,6 +22,7 @@ spec:
         - name: backend
           # ← Замените на ваш registry
           image: 192.168.0.159:30500/alfa-backend:latest
+          imagePullPolicy: Always 
           ports:
             - containerPort: 8080   # Стандартный порт ASP.NET Core 8+
           env:
@@ -32,18 +33,6 @@ spec:
                   name: app-secrets
                   key: ConnectionStrings__DefaultConnection
           # ASP.NET health check (если у вас есть HealthChecks endpoint)
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            initialDelaySeconds: 15
-            periodSeconds: 20
           resources:
             requests:
               memory: "128Mi"
