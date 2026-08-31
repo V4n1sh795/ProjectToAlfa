@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup k3s kubectl
-        uses: azure/setup-k3s kubectl@v4
+        uses: azure/setup-kubectl@v4
 
       - name: Configure kubeconfig
         run: |
