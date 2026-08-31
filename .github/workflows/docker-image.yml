@@ -15,13 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Login to Self-Hosted Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ env.REGISTRY_USERNAME }}
-          password: ${{ env.REGISTRY_PASSWORD }}
-
       - name: Build & Push Backend
         uses: docker/build-push-action@v6
         with:
