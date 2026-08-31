@@ -5,7 +5,7 @@ metadata:
   namespace: alfa
 spec:
   selector:
-    app: afla-backend
+    app: backend
   ports:
     - port: 8080
       targetPort: 8080
