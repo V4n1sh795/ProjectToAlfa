@@ -74,11 +74,11 @@ app.Urls.Add("http://0.0.0.0:8080");
 
 
 // Применеие миграций
-// await using (var scope = app.Services.CreateAsyncScope())
-// {
-//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     await context.Database.MigrateAsync();
-// }
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await context.Database.MigrateAsync();
+}
 
 
 // app.UseHttpsRedirection();
