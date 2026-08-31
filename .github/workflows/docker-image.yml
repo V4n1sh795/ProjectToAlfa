@@ -5,7 +5,7 @@ on:
     branches: ["main"]
 
 env:
-  REGISTRY: mesuitc.duckdns.org:5000
+  REGISTRY: http://mesuitc.duckdns.org:5000
   BACKEND_IMAGE: alfa-backend
   FRONTEND_IMAGE: alfa-frontend
 
