@@ -6,8 +6,8 @@ on:
 
 env:
   REGISTRY: mesuitc.duckdns.org:5000
-  BACKEND_IMAGE: ${{ github.repository }}-backend
-  FRONTEND_IMAGE: ${{ github.repository }}-frontend
+  BACKEND_IMAGE: alfa-backend
+  FRONTEND_IMAGE: alfa-frontend
 
 jobs:
   build:
