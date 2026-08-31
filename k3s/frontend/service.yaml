@@ -4,9 +4,10 @@ metadata:
   name: frontend-svc
   namespace: alfa
 spec:
+  type: NodePort           # ← Тип сервиса
   selector:
     app: frontend
   ports:
-    - port: 88
-      targetPort: 88
-      NodePort: 88
+    - port: 88             # Порт внутри кластера
+      targetPort: 88       # Порт внутри контейнера
+      nodePort: 30088  
