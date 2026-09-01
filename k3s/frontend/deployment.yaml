@@ -16,6 +16,7 @@ spec:
       containers:
         - name: frontend
           image: 192.168.0.159:30500/alfa-frontend:latest
+          imagePullPolicy: Always 
           ports:
             - containerPort: 88
           volumeMounts:
