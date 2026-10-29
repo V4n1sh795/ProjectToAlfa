@@ -88,6 +88,16 @@ services:
       - backend
     networks:
       - front
+  gigachat-service:
+    build: ai/
+    image: gigachat-service
+    container_name: gigachat-service
+    restart: unless-stopped
+    env_file:
+      - ai/.env
+    networks:
+      - front
+
 networks:
   database-net:
     driver: bridge

@@ -62,6 +62,6 @@ coverage.xml
 ehthumbs.db
 Thumbs.db
 # Icon?
-
+ai/.env
 # PostgreSQL data
 datapostgre/
