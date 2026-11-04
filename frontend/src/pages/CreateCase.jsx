@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import closeAlertIcon from "../assets/icons/close_alert.svg";
+import AiProjectFill from '../components/ai/AiProjectFill';
+import ProjectCaseFields from '../components/ai/ProjectCaseFields';
 import './css/CreateCase.css';
 
 const CreateCase = () => {
@@ -47,6 +49,25 @@ const CreateCase = () => {
   const [endDate, setEndDate] = useState(initialData.endDate);
   const [semester, setSemester] = useState(initialData.semester);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showAiFill, setShowAiFill] = useState(false);
+
+  const applyAiCase = (projectCase) => {
+    setProjectName(projectCase.title);
+    setDescription(projectCase.description);
+    setProjectGoal(projectCase.goal);
+    setProjectResult(projectCase.result);
+    setShowAiFill(false);
+    requestAnimationFrame(() => {
+      const title = document.getElementById('create-project-heading');
+      title?.focus({ preventScroll: true });
+      title?.closest('.main-content')?.scrollTo?.(0, 0);
+    });
+  };
+
+  const updateCaseField = (key, value) => {
+    const setters = { title: setProjectName, description: setDescription, goal: setProjectGoal, result: setProjectResult };
+    setters[key](value);
+  };
   
   const api = axios.create({
     baseURL: '/api',
@@ -119,7 +140,7 @@ const CreateCase = () => {
 
   return (
     <div className="create-project-container">
-      <h2>Создание нового проекта</h2>
+      <h2 id="create-project-heading" tabIndex={-1}>Создание нового проекта</h2>
       
       {showSuccess && (
         <div className="create-alert-backdrop">
@@ -142,62 +163,16 @@ const CreateCase = () => {
         </div>
       )}
       
-      <form onSubmit={handleSubmit}>
+      {showAiFill ? (
+        <AiProjectFill onApply={applyAiCase} onClose={() => setShowAiFill(false)} />
+      ) : (
+      <form className="create-project-form" onSubmit={handleSubmit}>
         <div className="form-grid">
           {/* Левая колонка */}
-          <div className="form-column">
-            {/* Название проекта */}
-            <div className="form-group">
-              <label htmlFor="projectName">Название проекта <span>*</span></label>
-              <input
-                type="text"
-                id="projectName"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                required
-                placeholder="Введите название проекта"
-              />
-            </div>
-
-            {/* Описание проекта */}
-            <div className="form-group">
-              <label htmlFor="description">Описание проекта <span>*</span></label>
-              <textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                rows="4"
-                placeholder="Опишите проект"
-              />
-            </div>
-
-            {/* Цель проекта */}
-            <div className="form-group">
-              <label htmlFor="projectGoal">Цель проекта <span>*</span></label>
-              <textarea
-                id="projectGoal"
-                value={projectGoal}
-                onChange={(e) => setProjectGoal(e.target.value)}
-                required
-                rows="3"
-                placeholder="Напишите цель проекта"
-              />
-            </div>
-
-            {/* Результат проекта */}
-            <div className="form-group">
-              <label htmlFor="projectResult">Результат проекта <span>*</span></label>
-              <textarea
-                id="projectResult"
-                value={projectResult}
-                onChange={(e) => setProjectResult(e.target.value)}
-                required
-                rows="3"
-                placeholder="Напишите, какой результат должен быть достигнут"
-              />
-            </div>
-          </div>
+          <ProjectCaseFields
+            value={{ title: projectName, description, goal: projectGoal, result: projectResult }}
+            onChange={updateCaseField}
+          />
 
           {/* Правая колонка */}
           <div className="form-column">
@@ -267,12 +242,17 @@ const CreateCase = () => {
             </div>
 
             {/* Кнопка отправки */}
-            <button type="submit" className="submit-btn">
-              Создать проект
-            </button>
+            <div className="create-project-actions">
+              <button type="button" className="ai-fill__button create-project-ai-button" onClick={() => setShowAiFill(true)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 20 13-13 3 3L7 23M14 10l3 3M5 2v4M3 4h4M19 17v4M17 19h4M19 1v4M17 3h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                ИИ-заполнение
+              </button>
+              <button type="submit" className="submit-btn">Создать проект</button>
+            </div>
           </div>
         </div>
       </form>
+      )}
     </div>
   );
 };

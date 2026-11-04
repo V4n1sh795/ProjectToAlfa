@@ -2,8 +2,12 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+jest.mock('./pages/js/LogIn', () => ({
+  authAPI: { verify: jest.fn().mockResolvedValue(false) },
+}));
+
+test('shows the sign-in page for an unauthenticated visitor', async () => {
+  window.history.replaceState({}, '', '/');
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: 'Войти' })).toBeInTheDocument();
 });

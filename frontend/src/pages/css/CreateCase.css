@@ -1,3 +1,5 @@
+@import url('../../assets/ai/fonts/fonts.css');
+
 .create-project-container {
   position: relative;
   width: 100%;
@@ -5,6 +7,57 @@
   padding: 31px 108px 0 81px;
   box-sizing: border-box;
   color: #212124;
+  font-family: 'Alexandria', 'Inter', sans-serif;
+}
+
+/* Keep the supplied screen's shell local to project creation. */
+.app-container:has(.create-project-container)::before {
+  background-color: #fff;
+}
+
+.app-container:has(.create-project-container) .top-bar {
+  padding-left: 50px;
+}
+
+.app-container:has(.create-project-container) .top-bar-title {
+  font-family: 'Alexandria', 'Inter', sans-serif;
+  line-height: 39px;
+}
+
+@media (min-width: 769px) {
+  .app-container:has(.create-project-container) .sidebar {
+    width: 75px;
+    border: 0;
+    background: #f2f3f5;
+  }
+
+  .app-container:has(.create-project-container) .sidebar-nav {
+    gap: 0;
+    padding-top: 72px;
+    padding-left: 3px;
+    box-sizing: border-box;
+  }
+
+  .app-container:has(.create-project-container) .nav-item:nth-child(2) { margin-top: 29px; }
+  .app-container:has(.create-project-container) .nav-item:nth-child(3) { margin-top: 26px; }
+  .app-container:has(.create-project-container) .nav-item:nth-child(4) { margin-top: 24px; }
+  .app-container:has(.create-project-container) .nav-item:nth-child(5) { margin-top: 39px; }
+  .app-container:has(.create-project-container) .nav-item:nth-child(6) { margin-top: 34px; }
+
+  .app-container:has(.create-project-container) .nav-item.active {
+    border-radius: 3px;
+  }
+
+  .app-container:has(.create-project-container) .nav-item.active::before {
+    top: -5px;
+    left: -14.5px;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .app-container:has(.create-project-container) .logout-button {
+    margin-bottom: 40px;
+    margin-left: 3px;
+  }
 }
 
 .create-project-container h2 {
@@ -15,7 +68,7 @@
   line-height: 1.2;
 }
 
-.create-project-container form {
+.create-project-container .create-project-form {
   width: 100%;
   min-height: calc(100vh - 186px);
   padding: 30px 59px 60px 70px;
@@ -321,7 +374,7 @@
     font-size: 36px;
   }
 
-  .create-project-container form {
+  .create-project-container .create-project-form {
     min-height: calc(100vh - 186px);
     padding: 30px 59px 60px 70px;
   }
@@ -408,7 +461,7 @@
     font-size: 36px;
   }
 
-  .create-project-container form {
+  .create-project-container .create-project-form {
     min-height: calc(100vh - 186px);
     padding: 30px 53px 54px 63px;
   }
@@ -478,7 +531,7 @@
     font-size: 32px;
   }
 
-  .create-project-container form {
+  .create-project-container .create-project-form {
     min-height: calc(100vh - 174px);
     padding: 28px 46px 48px 54px;
   }
@@ -565,7 +618,7 @@
     font-size: 28px;
   }
 
-  .create-project-container form {
+  .create-project-container .create-project-form {
     min-height: calc(100vh - 164px);
     padding: 26px 38px 42px 45px;
   }
@@ -647,7 +700,7 @@
     padding: 28px 42px 0 46px;
   }
 
-  .create-project-container form {
+  .create-project-container .create-project-form {
     padding: 28px 34px 50px;
   }
 
@@ -675,7 +728,7 @@
     font-size: 30px;
   }
 
-  .create-project-container form {
+  .create-project-container .create-project-form {
     min-height: auto;
     padding: 24px 18px 36px;
   }
@@ -705,4 +758,125 @@
   .create-success-alert {
     width: 100%;
   }
+}
+
+/* Shared geometry of the creation form and the AI preview from Figma. */
+.create-project-container .form-group label,
+.create-project-container .date-field label,
+.create-project-container .radio-label {
+  font-weight: 500;
+}
+
+.create-project-container .project-case-field--description textarea,
+.create-project-container .project-case-field--goal textarea {
+  height: 147px;
+  min-height: 147px;
+}
+
+.create-project-container .project-case-field--result textarea {
+  height: 175px;
+  min-height: 175px;
+}
+
+.create-project-container .form-group textarea {
+  background-image: url('../../assets/ai/textarea-resize.svg');
+  background-position: right bottom;
+  background-size: 26px 26px;
+}
+
+.create-project-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 30px;
+  margin-top: 31px;
+}
+
+.create-project-actions .create-project-ai-button,
+.create-project-actions .submit-btn[type='submit'] {
+  width: min(500px, 100%);
+  min-height: 38px;
+  height: 38px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+@media (min-width: 1680px) {
+  .create-project-container {
+    padding: 30px 108px 0 81px;
+  }
+
+  .create-project-container h2 {
+    margin-bottom: 30px;
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 44px;
+  }
+
+  .create-project-container .create-project-form {
+    min-height: calc(100vh - 174px);
+    padding: 30px 59px 21px 70px;
+  }
+
+  .create-project-container .form-grid {
+    column-gap: 30px;
+  }
+
+  .create-project-container .form-column {
+    gap: 30px;
+  }
+
+  .create-project-container .form-group {
+    gap: 30px;
+  }
+
+  .create-project-container .form-group label,
+  .create-project-container .date-field label,
+  .create-project-container .radio-label,
+  .create-project-container .date-display,
+  .create-project-container .form-group input,
+  .create-project-container .form-group input[type='text'],
+  .create-project-container .form-group textarea {
+    font-size: 24px;
+    line-height: 29px;
+    font-weight: 500;
+  }
+
+  .create-project-container .form-group input,
+  .create-project-container .form-group input[type='text'] {
+    height: 60px;
+    padding: 0 13px;
+    border-color: #e7e8eb;
+  }
+
+  .create-project-container .form-group textarea {
+    padding: 13px;
+    border-color: #e7e8eb;
+  }
+
+  .create-project-container .form-row-dates {
+    grid-template-columns: 316px minmax(0, 1fr);
+    column-gap: 30px;
+  }
+
+  .create-project-container .semester-group {
+    gap: 30px;
+  }
+
+  .create-project-container .radio-label { gap: 5px; }
+
+  .create-project-container .date-field {
+    grid-template-columns: 195px max-content;
+    column-gap: 15px;
+  }
+}
+
+@media (max-width: 900px) {
+  .create-project-container .form-row-dates {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .create-project-actions { margin-top: 10px; }
 }

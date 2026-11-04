@@ -65,3 +65,6 @@ Thumbs.db
 ai/.env
 # PostgreSQL data
 datapostgre/
+
+AGENTS.md
+.ai
