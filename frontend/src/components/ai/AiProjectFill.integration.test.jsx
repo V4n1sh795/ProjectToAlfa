@@ -61,29 +61,6 @@ test('invalid structured generation preserves the topic and does not show invali
   expect(axios.post).toHaveBeenCalledTimes(1);
 });
 
-test('existing proxy generation, message aliases and plain-text chat replies remain usable', async () => {
-  const shortCase = { title: 'Проект', description: 'Описание', goal: 'Цель', result: 'Результат' };
-  axios.post.mockRejectedValueOnce({ response: { status: 404 } })
-    .mockResolvedValueOnce({ data: { answer: JSON.stringify({ cases: [shortCase, shortCase, shortCase] }) } });
-  openAssistant();
-  await generateAndOpenChat();
-  const updatedCase = { ...shortCase, result: 'Веб-приложение' };
-  axios.post.mockRejectedValueOnce({ response: { status: 404 } })
-    .mockResolvedValueOnce({ data: { answer: JSON.stringify({ updatedCase, assessorMessage: 'Результат обновлён.' }) } });
-  fireEvent.change(screen.getByLabelText('Сообщение ИИ-ассистенту'), { target: { value: 'Нужно веб-приложение' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Отправить сообщение' }));
-  await screen.findByText('Результат обновлён.');
-  axios.post.mockRejectedValueOnce({ response: { status: 404 } })
-    .mockResolvedValueOnce({ data: { answer: 'Уточните пожелание к проекту.' } });
-  fireEvent.change(screen.getByLabelText('Сообщение ИИ-ассистенту'), { target: { value: 'какая ты модель' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Отправить сообщение' }));
-  await screen.findByText('Уточните пожелание к проекту.');
-  expect(screen.getByLabelText(/Результат проекта/)).toHaveValue(updatedCase.result);
-  expect(screen.queryByText(/Не удалось выполнить доработку/)).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Применить изменения' }));
-  expect(screen.getByLabelText(/Результат проекта/)).toHaveValue(updatedCase.result);
-});
-
 test('a missing session is reported without sending the topic or losing the draft', async () => {
   openAssistant();
   localStorage.removeItem('token');

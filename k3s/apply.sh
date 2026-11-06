@@ -16,10 +16,14 @@ k3s kubectl -n alfa wait --for=condition=ready pod -l app=postgres --timeout=120
 k3s kubectl apply -f k3s/backend/deployment.yaml
 k3s kubectl apply -f k3s/backend/service.yaml
 
-# 6. Frontend
+# 6. AI-сервис
+k3s kubectl apply -f k3s/ai/deployment.yaml
+k3s kubectl apply -f k3s/ai/service.yaml
+
+# 7. Frontend
 k3s kubectl apply -f k3s/frontend/configmap.yaml
 k3s kubectl apply -f k3s/frontend/deployment.yaml
 k3s kubectl apply -f k3s/frontend/service.yaml
 
-# 7. Ingress
+# 8. Ingress
 k3s kubectl apply -f k3s/ingress.yaml

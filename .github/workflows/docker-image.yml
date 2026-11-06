@@ -9,6 +9,7 @@ env:
   REGISTRY_LOCAL: 192.168.0.159:30500
   BACKEND_IMAGE: alfa-backend
   FRONTEND_IMAGE: alfa-frontend
+  AI_IMAGE: alfa-ai
 
 jobs:
   build:
@@ -51,6 +52,16 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest
 
+      - name: Build & Push AI service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./ai
+          file: ./ai/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.AI_IMAGE }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.AI_IMAGE }}:latest
+
   deploy:
     needs: build
     runs-on: self-hosted
@@ -78,7 +89,14 @@ jobs:
             frontend=${{ env.REGISTRY_LOCAL }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
             -n alfa
 
+      - name: Update AI image
+        run: |
+          k3s kubectl set image deployment/ai \
+            ai=${{ env.REGISTRY_LOCAL }}/${{ env.AI_IMAGE }}:${{ github.sha }} \
+            -n alfa
+
       - name: Wait for rollout
         run: |
           k3s kubectl rollout status deployment/backend -n alfa --timeout=180s
           k3s kubectl rollout status deployment/frontend -n alfa --timeout=180s
+          k3s kubectl rollout status deployment/ai -n alfa --timeout=180s

@@ -94,7 +94,7 @@ services:
     container_name: gigachat-service
     restart: unless-stopped
     env_file:
-      - ai/.env
+      - ai/.env   # JWT_KEY, GIGACHAT_CREDENTIALS (или LLM_PROVIDER=openai + LLM_*)
     networks:
       - front
 
