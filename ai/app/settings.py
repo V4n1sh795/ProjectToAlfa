@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # Провайдер LLM выбирается конфигурацией, код менять не нужно.
     llm_provider: Literal["gigachat", "openai"] = "gigachat"
     llm_timeout_seconds: float = 30.0
-    llm_model: str = ""
+    llm_model: str = Field(default="", validation_alias=AliasChoices("LLM_MODEL", "GIGACHAT_MODEL"))
 
     # GigaChat
     gigachat_credentials: str = ""

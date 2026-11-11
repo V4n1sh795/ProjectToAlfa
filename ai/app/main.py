@@ -58,6 +58,15 @@ def create_app(settings: Settings | None = None, client: LLMClient | None = None
     return app
 
 
+def _brief(exc: Exception) -> str:
+    if isinstance(exc, ValidationError):
+        return "\n".join(
+            f"- {'.'.join(map(str, e['loc']))}: {e['msg'].removeprefix('Value error, ')}"
+            for e in exc.errors()
+        )
+    return "ответ не является валидным JSON"
+
+
 def parse_answer(text: str, model: type[T]) -> T:
     text = re.sub(r"^\s*```(?:json)?\s*|\s*```\s*$", "", text.strip(), flags=re.I)
     return model.model_validate(json.loads(text))
@@ -79,6 +88,6 @@ async def ask(client: LLMClient, system: str, user: str, model: type[T]) -> T:
             return parse_answer(answer, model)
         except (ValueError, ValidationError) as exc:
             log.warning("Invalid model response (attempt %d): %s", attempt, exc)
-            message = f"{user}\n\n{prompts.RETRY_HINT}"
+            message = f"{user}\n\n{prompts.RETRY_HINT}{_brief(exc)}"
     raise HTTPException(status_code=502, detail="Модель вернула некорректный ответ")
 

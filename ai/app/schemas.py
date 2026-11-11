@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # Допустимая длина полей ответа модели (Requirements.md 3.4).
 LIMITS = {
@@ -39,6 +39,15 @@ class GenerateCasesResult(StrictModel):
 class RefineCaseResult(StrictModel):
     updatedCase: ProjectCase
     assistantMessage: str = Field(min_length=1, max_length=400)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _fix_key_typo(cls, data):
+        # GigaChat иногда пишет "assistanceMessage" вместо "assistantMessage".
+        if isinstance(data, dict) and "assistantMessage" not in data and "assistanceMessage" in data:
+            data = {**data, "assistantMessage": data["assistanceMessage"]}
+            del data["assistanceMessage"]
+        return data
 
     @field_validator("assistantMessage")
     @classmethod

@@ -115,3 +115,11 @@ def test_provider_error_is_502():
 
 def test_no_generic_chat_endpoint():
     assert TestClient(create_app(S, Fake())).post("/chat", json={"prompt": "hi"}).status_code == 404
+
+
+def test_assistant_message_key_typo_is_tolerated():
+    from app.schemas import RefineCaseResult
+
+    case = {"title": "T", "description": "d" * 200, "goal": "g" * 100, "result": "r" * 100}
+    r = RefineCaseResult.model_validate({"updatedCase": case, "assistanceMessage": "Готово!"})
+    assert r.assistantMessage == "Готово!"
