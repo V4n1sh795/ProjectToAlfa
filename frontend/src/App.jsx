@@ -7,7 +7,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Calender from "./pages/Calender";
 import Finder from "./pages/Finder";
 import StudentPage from "./pages/StudentPage";
@@ -17,11 +17,14 @@ import ProjectPage from "./pages/ProjectPage";
 import Messenger from "./pages/Messenger";
 import CreateCase from "./pages/CreateCase";
 import CreateTeam from "./pages/CreateTeam";
+import TelegramBotPage from "./pages/TelegramBotPage";
+import TeamWorkspaceScrollbar from "./components/TeamWorkspaceScrollbar";
 import StatisticsPage from "./pages/StatisticsPage";
 import LogOut from "./pages/LogOut";
 import LogIn from "./pages/LogIn";
 import { authAPI } from "./pages/js/LogIn";
 import "./App.css";
+import "./pages/css/TeamWorkspace.css";
 
 import calendarIcon from "./assets/icons/calendar.svg";
 import searchIcon from "./assets/icons/finder.svg";
@@ -30,6 +33,40 @@ import createCaseIcon from "./assets/icons/create_case.svg";
 import createTeamIcon from "./assets/icons/create_team.svg";
 import statisticsIcon from "./assets/icons/statistics.svg";
 import logoutIcon from "./assets/icons/logout.svg";
+import botIcon from "./assets/telegram-bot/bot.svg";
+import workspaceCalendarIcon from "./assets/telegram-bot/calendar.svg";
+import workspaceDataIcon from "./assets/telegram-bot/data.svg";
+import workspaceMessagesIcon from "./assets/telegram-bot/messages.svg";
+import workspaceCreateIcon from "./assets/telegram-bot/create.svg";
+import workspaceAddTeamIcon from "./assets/telegram-bot/add-team.svg";
+import workspaceStatisticsIcon from "./assets/telegram-bot/statistics.svg";
+import workspaceLogoutIcon from "./assets/telegram-bot/logout.svg";
+import activeBotIcon from "./assets/telegram-bot/active-bot.svg";
+import activeAddTeamIcon from "./assets/telegram-bot/active-add-team.svg";
+import activeDataIcon from "./assets/telegram-bot/active-data.svg";
+
+const menuItems = [
+  { path: "/calender", label: "Календарь", icon: calendarIcon, workspaceIcon: workspaceCalendarIcon },
+  { path: "/finder", label: "Данные", icon: searchIcon, workspaceIcon: workspaceDataIcon, activeIcon: activeDataIcon },
+  { path: "/messenger", label: "Сообщения", icon: chatsIcon, workspaceIcon: workspaceMessagesIcon },
+  { path: "/createcase", label: "Создать проект", icon: createCaseIcon, workspaceIcon: workspaceCreateIcon },
+  { path: "/createteam", label: "Создать команду", icon: createTeamIcon, workspaceIcon: workspaceAddTeamIcon, activeIcon: activeAddTeamIcon },
+  { path: "/statistics", label: "Статистика", icon: statisticsIcon, workspaceIcon: workspaceStatisticsIcon },
+  { path: "/telegram-bot", label: "Управление Telegram-ботом", icon: botIcon, workspaceIcon: botIcon, activeIcon: activeBotIcon },
+];
+
+function getTeamWorkspace(pathname) {
+  if (pathname === "/createteam" || /^\/telegram-bot\/team\/[^/]+\/(schedule|edit)\/?$/.test(pathname)) {
+    return { page: "create", activePath: "/createteam" };
+  }
+  if (pathname.startsWith("/finder/team/") || /^\/telegram-bot\/team\/[^/]+\/?$/.test(pathname)) {
+    return { page: "details", activePath: "/finder" };
+  }
+  if (pathname.startsWith("/telegram-bot")) {
+    return { page: "management", activePath: "/telegram-bot" };
+  }
+  return null;
+}
 
 // Компонент защищенного маршрута
 const ProtectedRoute = ({ children, isAuthenticated, loading }) => {
@@ -60,45 +97,56 @@ const RootRedirect = ({ isAuthenticated, loading }) => {
 };
 
 // Компонент бокового меню
-const Sidebar = ({ isAuthenticated, onLogout }) => {
+const Sidebar = ({ isAuthenticated, onLogout, isOpen, workspace }) => {
   const location = useLocation();
 
   if (!isAuthenticated) return null;
 
-  const menuItems = [
-    { path: "/calender", label: "", icon: calendarIcon },
-    { path: "/finder", label: "", icon: searchIcon },
-    { path: "/messenger", label: "", icon: chatsIcon },
-    { path: "/createcase", label: "", icon: createCaseIcon },
-    { path: "/createteam", label: "", icon: createTeamIcon },
-    { path: "/statistics", label: "", icon: statisticsIcon },
-  ];
-
   return (
-    <aside className="sidebar">
-      <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`nav-item ${location.pathname.startsWith(item.path) ? "active" : ""}`}
-          >
-            <img src={item.icon} alt="" className="nav-icon" />
-          </Link>
-        ))}
+    <aside id="sidebar" className={`sidebar${isOpen ? " open" : ""}`}>
+      <nav className="sidebar-nav" aria-label="Разделы">
+        {menuItems.map((item) => {
+          const active = workspace
+            ? workspace.activePath === item.path
+            : location.pathname.startsWith(item.path);
+          const activeIcon = workspace && active ? item.activeIcon : undefined;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              aria-label={item.label}
+              aria-current={active ? "page" : undefined}
+              className={`nav-item${active ? " active" : ""}${activeIcon ? " nav-item--active-art" : ""}`}
+            >
+              <img
+                src={activeIcon || (workspace ? item.workspaceIcon : item.icon)}
+                alt=""
+                className="nav-icon"
+              />
+            </Link>
+          );
+        })}
       </nav>
 
-      <button onClick={onLogout} className="logout-button">
-        <img src={logoutIcon} alt="" className="nav-icon" />
+      <button type="button" onClick={onLogout} className="logout-button" aria-label="Выйти">
+        <img src={workspace ? workspaceLogoutIcon : logoutIcon} alt="" className="nav-icon" />
       </button>
     </aside>
   );
 };
 
-function App() {
+function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { pathname } = useLocation();
+  const workspace = isAuthenticated ? getTeamWorkspace(pathname) : null;
+  const mainRef = useRef(null);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    if (getTeamWorkspace(pathname)) mainRef.current?.scrollTo?.(0, 0);
+  }, [pathname]);
 
   // Проверка авторизации при загрузке приложения
   useEffect(() => {
@@ -119,8 +167,11 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <div className={`app-container ${!isAuthenticated ? "auth-layout" : ""}`}>
+      <div className={[
+        "app-container",
+        !isAuthenticated && "auth-layout",
+        workspace && `team-workspace team-workspace--${workspace.page}`,
+      ].filter(Boolean).join(" ")}>
         <header className="top-bar">
           <Link to="/calender" className="top-bar-logo">
             <h1 className="top-bar-title">BetaProject</h1>
@@ -128,15 +179,28 @@ function App() {
         </header>
 
         <button
+          type="button"
           className="menu-toggle"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Меню"
+          aria-controls="sidebar"
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((open) => !open)}
         >
           ☰
         </button>
 
-        <Sidebar isAuthenticated={isAuthenticated} onLogout={handleLogout} />
+        <Sidebar
+          isAuthenticated={isAuthenticated}
+          onLogout={handleLogout}
+          isOpen={mobileMenuOpen}
+          workspace={workspace}
+        />
 
-        <main className={`main-content ${mobileMenuOpen ? "shifted" : ""}`}>
+        <main
+          ref={mainRef}
+          tabIndex={workspace ? 0 : undefined}
+          className={`main-content ${mobileMenuOpen ? "shifted" : ""}`}
+        >
           <Routes>
             <Route
               path="/login"
@@ -264,6 +328,15 @@ function App() {
             />
 
             <Route
+              path="/telegram-bot/*"
+              element={
+                <ProtectedRoute isAuthenticated={isAuthenticated} loading={loading}>
+                  <TelegramBotPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/logout"
               element={
                 <ProtectedRoute
@@ -287,9 +360,11 @@ function App() {
             />
           </Routes>
         </main>
+        {workspace && <TeamWorkspaceScrollbar scrollContainer={mainRef} pathname={pathname} />}
       </div>
-    </BrowserRouter>
   );
 }
 
-export default App;
+export default function App() {
+  return <BrowserRouter><AppContent /></BrowserRouter>;
+}

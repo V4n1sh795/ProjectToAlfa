@@ -1,0 +1,18 @@
+<svg width="25" height="47" viewBox="0 0 25 47" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="stroke0_3011_380" fill="white">
+<path d="M6 13H18V44C18 45.6568 16.6568 47 15 47H9C7.34314 47 6 45.6568 6 44V13Z"/>
+</mask>
+<path d="M6 13H18V44C18 45.6568 16.6568 47 15 47H9C7.34314 47 6 45.6568 6 44V13Z" stroke-width="4" stroke="#212124" mask="url(#stroke0_3011_380)"/>
+<mask id="stroke1_3011_380" fill="white">
+<path d="M0 13H6V31H3C1.34314 31 0 29.6568 0 28V13Z"/>
+</mask>
+<path d="M0 13H6V31H3C1.34314 31 0 29.6568 0 28V13Z" stroke-width="4" stroke="#212124" mask="url(#stroke1_3011_380)"/>
+<mask id="stroke2_3011_380" fill="white">
+<path d="M18 13H24V28C24 29.6568 22.6569 31 21 31H18V13Z"/>
+</mask>
+<path d="M18 13H24V28C24 29.6568 22.6569 31 21 31H18V13Z" stroke-width="4" stroke="#212124" mask="url(#stroke2_3011_380)"/>
+<circle cx="12" cy="6" r="5" stroke-width="2" stroke="#212124"/>
+<circle cx="18" cy="40" r="7" fill="#212124"/>
+<line x1="13" y1="40" x2="23" y2="40" stroke-width="2" stroke="#F2F3F5"/>
+<path d="M18 45V35" stroke-width="2" stroke="#F2F3F5"/>
+</svg>

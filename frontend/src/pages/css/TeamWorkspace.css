@@ -1,0 +1,400 @@
+.team-workspace {
+  --team-font: "Alexandria", "Inter", sans-serif;
+  --team-accent: #ef3124;
+  --team-panel: #f2f3f5;
+  --team-border: #e7e8eb;
+  --team-text: #212124;
+  --team-radius: 15px;
+  --team-gutter: clamp(24px, 3.65vw, 70px);
+  --team-end-gutter: clamp(24px, 5.21vw, 100px);
+  --team-background: url("../../assets/telegram-bot/management-background.svg");
+  background: #fff;
+  font-family: var(--team-font);
+}
+
+.team-workspace--create {
+  --team-background: url("../../assets/telegram-bot/team-create-background.svg");
+  --team-below-background: #a6b2c3;
+}
+
+.team-workspace--details {
+  --team-background: url("../../assets/telegram-bot/team-details-background.svg");
+  --team-below-background: #d8d8d8;
+}
+
+.team-workspace.app-container::before {
+  left: 75px;
+  background: #fff var(--team-background) right top / auto 100% no-repeat;
+}
+
+.team-workspace .main-content {
+  left: 75px;
+  right: 18px;
+  scrollbar-width: none;
+  background: linear-gradient(
+    to bottom,
+    transparent calc(100dvh - 70px),
+    var(--team-below-background, transparent) calc(100dvh - 70px)
+  ) local;
+}
+
+.team-workspace .main-content::-webkit-scrollbar {
+  display: none;
+}
+
+.team-workspace .main-content:focus-visible {
+  outline: 2px solid var(--team-text);
+  outline-offset: -2px;
+}
+
+.team-scrollbar {
+  position: fixed;
+  inset: 80px 10px 10px auto;
+  z-index: 2;
+  width: 8px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--team-border);
+  touch-action: none;
+}
+
+.team-scrollbar--scrollable {
+  cursor: pointer;
+}
+
+.team-scrollbar span {
+  display: block;
+  height: 60px;
+  border-radius: 3px;
+  background: var(--team-accent);
+  transform: translateY(20px);
+}
+
+.team-scrollbar--scrollable span {
+  cursor: grab;
+}
+
+.team-scrollbar--scrollable:active span {
+  cursor: grabbing;
+}
+
+.team-workspace .top-bar {
+  padding-inline: 50px;
+}
+
+.team-workspace .top-bar-title {
+  line-height: 39px;
+}
+
+.team-workspace .sidebar {
+  background: var(--team-panel);
+  border: 0;
+}
+
+.team-workspace .sidebar-nav {
+  display: grid;
+  grid-template-rows: 78px 74px 74px 88px 83px 75px 49px;
+  place-items: start center;
+  gap: 0;
+  padding-top: 71px;
+}
+
+.team-workspace .nav-item--active-art {
+  background: transparent;
+}
+
+.team-workspace .nav-item--active-art::before {
+  content: none;
+}
+
+.team-workspace .nav-item--active-art .nav-icon {
+  position: absolute;
+  top: -5px;
+  left: -13px;
+  width: 63px;
+  height: 59px;
+}
+
+.team-workspace .nav-item:not(.nav-item--active-art) .nav-icon,
+.team-workspace .logout-button .nav-icon {
+  transform: translateX(2px);
+}
+
+.team-workspace .nav-item:last-child .nav-icon {
+  translate: 0 1px;
+}
+
+.team-workspace .logout-button {
+  margin-bottom: 40px;
+}
+
+.team-workspace .create-team-page {
+  padding: 30px var(--team-end-gutter) 0 var(--team-gutter);
+}
+
+.create-team-page > h1 {
+  margin: 0 0 31px;
+  font-size: clamp(28px, 1.875vw, 36px);
+  font-weight: 600;
+  line-height: 44px;
+  letter-spacing: 0.4px;
+}
+
+.team-workspace .create-team-field > label,
+.team-workspace .create-team-member input[type="text"],
+.team-workspace .create-team-field > input,
+.team-workspace .create-team-select__button[type="button"] {
+  font-weight: 500;
+}
+
+.team-workspace .create-team-field > input,
+.team-workspace .create-team-member input[type="text"],
+.team-workspace .create-team-select__button[type="button"] {
+  border-color: var(--team-border);
+}
+
+.team-workspace .create-team-field > input:focus,
+.team-workspace .create-team-member input[type="text"]:focus,
+.team-workspace .create-team-select__button[type="button"]:focus-visible {
+  border-color: var(--team-accent);
+}
+
+.team-workspace .create-team-select__arrow {
+  right: 19px;
+  width: 18px;
+  height: 15px;
+  border: 0;
+  background: url("../../assets/telegram-bot/project-dropdown.svg") center / contain no-repeat;
+  transform: none;
+}
+
+.team-workspace .create-team-select.is-open .create-team-select__arrow {
+  transform: rotate(180deg);
+}
+
+.team-workspace .create-team-schedule-row .create-team-select__arrow {
+  display: none;
+}
+
+.team-workspace .create-team-member .create-team-radio input[type="checkbox"]:checked {
+  border: 0;
+  background: url("../../assets/telegram-bot/participant-checkbox.svg") center / contain no-repeat;
+  box-shadow: none;
+}
+
+.team-workspace .create-team-add[type="button"] {
+  background-color: #fff;
+}
+
+.team-workspace .create-team-member .create-team-remove[type="button"] {
+  opacity: 0;
+}
+
+.team-workspace .create-team-member:hover .create-team-remove[type="button"],
+.team-workspace .create-team-member:focus-within .create-team-remove[type="button"],
+.team-workspace .create-team-remove[type="button"]:focus-visible {
+  opacity: 1;
+}
+
+.team-workspace .create-team-submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.team-workspace .team-card {
+  font-family: var(--team-font);
+}
+
+.team-card--details .team-info-block:has(> strong:empty),
+.team-card--details .team-info-block--split {
+  justify-content: flex-start;
+}
+
+.team-workspace .team-card--details .team-info-block--project strong,
+.team-workspace .team-card--details .team-info-block--artifacts :is(span, strong),
+.team-workspace .team-card--details .team-info-block--grades strong {
+  color: #000;
+}
+
+@media (min-width: 1920px) {
+  .team-workspace .create-team-form {
+    padding: 30px 48px 70px 70px;
+  }
+
+  .team-workspace .create-team-grid {
+    column-gap: 41px;
+  }
+
+  .team-workspace .create-team-field {
+    gap: 30px;
+  }
+
+  .team-workspace .create-team-field > label,
+  .team-workspace .create-team-radio,
+  .team-workspace .create-team-field > input,
+  .team-workspace .create-team-select__button[type="button"] {
+    line-height: 29px;
+  }
+
+  .team-workspace .create-team-field--project,
+  .team-workspace .create-team-field--schedule {
+    margin-top: 30px;
+  }
+
+  .team-workspace .create-team-schedule-row {
+    width: calc(100% + 11px);
+  }
+
+  .team-workspace .create-team-schedule-row > :nth-child(2) {
+    transform: translateY(-1px);
+  }
+
+  .team-workspace .create-team-field--schedule small {
+    margin-top: -15px;
+  }
+
+  .team-workspace .create-team-members {
+    gap: 30px;
+  }
+
+  .team-workspace .create-team-radio--member {
+    margin: 15px 0 0 15px;
+  }
+
+  .team-workspace .create-team-radio input[type="checkbox"] {
+    margin-right: 5px;
+  }
+
+  .team-workspace .create-team-add[type="button"] {
+    margin-top: 15px;
+  }
+
+  .team-workspace .create-team-note {
+    margin: 10px 0 30px;
+    line-height: 19px;
+  }
+
+  .team-workspace .create-team-submit[type="submit"] {
+    margin: 0 22px 0 0;
+  }
+
+  .team-workspace .team-page {
+    padding: 70px 5px 0 24px;
+  }
+
+  .team-card--details {
+    padding: 60px 30px 30px;
+  }
+
+  .team-card--details h1 {
+    line-height: 51px;
+  }
+
+  .team-card--details .team-info-block {
+    min-height: 130px;
+    justify-content: flex-start;
+    gap: 15px;
+    padding: 30px 30px 27px;
+  }
+
+  .team-card--details .team-info-block span,
+  .team-card--details .team-info-block strong,
+  .team-card--details .team-info-block a {
+    line-height: 29px;
+  }
+
+  .team-card--details .team-info-block--split {
+    grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .team-card--details .team-info-block--members {
+    padding-bottom: 30px;
+  }
+
+  .team-card--details .team-info-block--members + .team-info-block {
+    min-height: 177px;
+  }
+
+  .team-card--details .team-summary-grid {
+    grid-template-columns: 377px minmax(0, 1fr);
+    gap: 30px;
+    margin-bottom: 60px;
+  }
+
+  .team-card--details .team-summary-grid .team-info-block {
+    min-height: 221px;
+  }
+
+  .team-card--details .team-info-block--comment {
+    padding-left: 24px;
+  }
+
+  .team-card--details .team-edit-button[type="button"] {
+    margin: 0 20px 0 auto;
+  }
+}
+
+@media (max-height: 810px) {
+  .team-workspace .sidebar-nav {
+    grid-template-rows: repeat(7, minmax(49px, 8vh));
+    padding-top: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .team-workspace .create-team-page,
+  .team-workspace .team-page {
+    padding: 24px 18px;
+  }
+
+  .team-workspace .create-team-member .create-team-remove[type="button"] {
+    opacity: 1;
+  }
+
+  .team-card--details .team-info-block {
+    padding: 18px;
+  }
+
+  .team-card--details .team-info-block--split {
+    gap: 16px;
+  }
+
+  .team-card--details .team-summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .team-card--details .team-info-block span,
+  .team-card--details .team-info-block strong,
+  .team-card--details .team-info-block a {
+    font-size: 18px;
+    line-height: 1.35;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 768px) {
+  .team-workspace.app-container::before,
+  .team-workspace .main-content {
+    left: 0;
+  }
+
+  .team-workspace .top-bar {
+    padding-inline: 56px 20px;
+  }
+
+  .team-scrollbar {
+    display: none;
+  }
+
+  .team-workspace .main-content {
+    right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .team-workspace .sidebar {
+    transition: none;
+  }
+}

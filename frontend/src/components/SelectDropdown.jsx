@@ -9,6 +9,7 @@ const SelectDropdown = ({
   onChange,
   onToggle,
   classNamePrefix,
+  ariaLabel,
   showHasValueClass = false,
 }) => {
   const selectedOption = options.find(
@@ -26,10 +27,13 @@ const SelectDropdown = ({
   return (
     <div className={rootClassName}>
       <button
+        id={id}
         className={`select-dropdown__button ${classNamePrefix}__button`}
         type="button"
         onClick={onToggle}
         aria-haspopup="listbox"
+        aria-label={ariaLabel}
+        aria-controls={isOpen ? `${id}-options` : undefined}
         aria-expanded={isOpen}
       >
         <span>{selectedOption?.name || placeholder}</span>
@@ -38,8 +42,10 @@ const SelectDropdown = ({
 
       {isOpen && (
         <div
+          id={`${id}-options`}
           className={`select-dropdown__menu ${classNamePrefix}__menu`}
           role="listbox"
+          aria-labelledby={id}
         >
           <button
             className={`select-dropdown__option ${classNamePrefix}__option ${

@@ -1,15 +1,11 @@
 import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import closeAlertIcon from "../assets/icons/close_alert.svg";
 import SelectDropdown from "../components/SelectDropdown";
 import "./css/CreateTeam.css";
 
 const api = axios.create({
   baseURL: "/api",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
 });
 
 const dayOptions = [
@@ -98,35 +94,36 @@ const TeamAlert = ({ type, title, message, onClose }) => (
   </div>
 );
 
-function CreateTeam() {
-  const [teamName, setTeamName] = useState("");
-  const [availableProjects, setAvailableProjects] = useState([]);
-  const [projectId, setProjectId] = useState("");
-  const [members, setMembers] = useState([createEmptyMember()]);
-  const [callDay, setCallDay] = useState("");
-  const [callTime, setCallTime] = useState("");
+export function CreateTeamForm({
+  projects,
+  onCreate,
+  initialDraft,
+  title = "Создание новой команды",
+  submitLabel = "Создать команду",
+}) {
+  const [teamName, setTeamName] = useState(initialDraft?.name ?? "");
+  const [projectId, setProjectId] = useState(initialDraft?.projectId ?? "");
+  const [members, setMembers] = useState(() =>
+    (initialDraft?.members?.length ? initialDraft.members : [createEmptyMember()])
+      .map((member, key) => ({ ...member, key })),
+  );
+  const nextMemberKey = useRef(members.length);
+  const [callDay, setCallDay] = useState(() => normalizeDay(initialDraft?.callDay));
+  const [callTime, setCallTime] = useState(() => normalizeTime(initialDraft?.callTime));
   const [errors, setErrors] = useState({});
   const [openSelect, setOpenSelect] = useState(null);
   const [alert, setAlert] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const timeOptions = useMemo(() => buildTimeOptions(), []);
   const projectOptions = useMemo(
     () =>
-      availableProjects.map((project) => ({
+      projects.map((project) => ({
         id: getValue(project, ["id", "Id", "key", "Key"]),
         name: getValue(project, ["name", "Name", "value", "Value"], "Проект"),
       })),
-    [availableProjects],
+    [projects],
   );
-
-  useEffect(() => {
-    api
-      .get("/project")
-      .then((response) =>
-        setAvailableProjects(Array.isArray(response.data) ? response.data : []),
-      )
-      .catch((error) => console.error("Error fetching projects:", error));
-  }, []);
 
   useEffect(() => {
     const handleDocumentMouseDown = (event) => {
@@ -142,7 +139,7 @@ function CreateTeam() {
   const resetForm = () => {
     setTeamName("");
     setProjectId("");
-    setMembers([createEmptyMember()]);
+    setMembers([{ ...createEmptyMember(), key: nextMemberKey.current++ }]);
     setCallDay("");
     setCallTime("");
     setErrors({});
@@ -150,7 +147,8 @@ function CreateTeam() {
   };
 
   const addMember = () => {
-    setMembers((currentMembers) => [...currentMembers, createEmptyMember()]);
+    const member = { ...createEmptyMember(), key: nextMemberKey.current++ };
+    setMembers((currentMembers) => [...currentMembers, member]);
   };
 
   const removeMember = (index) => {
@@ -169,43 +167,9 @@ function CreateTeam() {
     );
   };
 
-  const isScheduleBusy = async () => {
-    const response = await api.get("/get_team");
-    const teams = Array.isArray(response.data) ? response.data : [];
-    const selectedDay = normalizeDay(callDay);
-    const selectedTime = normalizeTime(callTime);
-
-    return teams.some((team) => {
-      const teamDay = normalizeDay(getValue(team, ["callDay", "CallDay"]));
-      const teamTime = normalizeTime(getValue(team, ["callTime", "CallTime"]));
-      return teamDay === selectedDay && teamTime === selectedTime;
-    });
-  };
-
-  const createTeam = async (teamData) => {
-    try {
-      const response = await api.post("/team", teamData);
-      console.log(response);
-      setAlert({
-        type: "success",
-        title: "Успешно",
-        message: "Команда создана",
-      });
-      resetForm();
-      return true;
-    } catch (error) {
-      console.error("Error creating team: ", error);
-      setAlert({
-        type: "error",
-        title: "Ошибка",
-        message: error.response?.data?.message || "Не удалось создать команду",
-      });
-      return false;
-    }
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSaving) return;
 
     const hasEmptyMember = members.some(
       (member) =>
@@ -234,47 +198,42 @@ function CreateTeam() {
 
     if (Object.keys(newErrors).length > 0) return;
 
-    try {
-      if (await isScheduleBusy()) {
-        setAlert({
-          type: "error",
-          title: "Ошибка",
-          message: "Такая дата и время уже заняты",
-        });
-        return;
-      }
-    } catch (error) {
-      console.error("Error checking schedule:", error);
-      setAlert({
-        type: "error",
-        title: "Ошибка",
-        message: "Не удалось проверить расписание",
-      });
-      return;
-    }
-
-    const teamData = {
+    const draft = {
       name: teamName.trim(),
-      projectId: Number(projectId),
-      members_l: members.map((member) => ({
-        name: member.name.trim(),
-        group: member.group.trim(),
-        role: member.role.trim(),
-        stack: member.stack.trim(),
-        exists: member.exists,
+      projectId,
+      members: members.map(({ name, group, role, stack, contact, exists }) => ({
+        name: name.trim().replace(/\s+/g, " "),
+        group: group.trim(),
+        role: role.trim(),
+        stack: stack.trim(),
+        contact: contact.trim(),
+        exists,
       })),
-      curators: [],
-      callDay: getDayLabel(callDay),
+      callDay,
       callTime,
     };
 
-    console.log("Данные команды:", teamData);
-    await createTeam(teamData);
+    setIsSaving(true);
+    try {
+      await onCreate(draft);
+      if (!initialDraft) {
+        resetForm();
+        setAlert({ type: "success", title: "Успешно", message: "Команда создана" });
+      }
+    } catch (error) {
+      setAlert({
+        type: "error",
+        title: "Ошибка",
+        message: error.response?.data?.message || error.message || "Не удалось создать команду",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="create-team-page">
-      <h2>Создание новой команды</h2>
+      <h1>{title}</h1>
 
       {alert && (
         <TeamAlert
@@ -305,7 +264,7 @@ function CreateTeam() {
             </div>
 
             <div className="create-team-field create-team-field--project">
-              <label>
+              <label htmlFor="project">
                 Проект <span>*</span>
               </label>
               <SelectDropdown
@@ -339,6 +298,7 @@ function CreateTeam() {
                 <div>
                   <SelectDropdown
                     id="call-day"
+                    ariaLabel="День встречи"
                     value={callDay}
                     placeholder="Выберите день недели"
                     options={dayOptions}
@@ -362,6 +322,7 @@ function CreateTeam() {
                 <div>
                   <SelectDropdown
                     id="call-time"
+                    ariaLabel="Время встречи"
                     value={callTime}
                     placeholder="Выберите время (доп.)"
                     options={timeOptions}
@@ -397,7 +358,7 @@ function CreateTeam() {
 
               <div className="create-team-members">
                 {members.map((member, index) => (
-                  <div className="create-team-member" key={`member-${index}`}>
+                  <div className="create-team-member" key={member.key}>
                     {members.length > 1 && (
                       <button
                         className="create-team-remove"
@@ -415,6 +376,7 @@ function CreateTeam() {
                         handleMemberChange(index, "name", event.target.value)
                       }
                       placeholder="ФИО"
+                      aria-label={`ФИО, участник ${index + 1}`}
                     />
                     <input
                       type="text"
@@ -423,6 +385,7 @@ function CreateTeam() {
                         handleMemberChange(index, "group", event.target.value)
                       }
                       placeholder="Академическая группа"
+                      aria-label={`Академическая группа, участник ${index + 1}`}
                     />
                     <input
                       type="text"
@@ -431,6 +394,7 @@ function CreateTeam() {
                         handleMemberChange(index, "role", event.target.value)
                       }
                       placeholder="Роль в команде"
+                      aria-label={`Роль, участник ${index + 1}`}
                     />
                     <input
                       type="text"
@@ -439,6 +403,7 @@ function CreateTeam() {
                         handleMemberChange(index, "stack", event.target.value)
                       }
                       placeholder="Стек"
+                      aria-label={`Стек, участник ${index + 1}`}
                     />
                     <input
                       type="text"
@@ -447,6 +412,7 @@ function CreateTeam() {
                         handleMemberChange(index, "contact", event.target.value)
                       }
                       placeholder="Контакты (необ.)"
+                      aria-label={`Контакты, участник ${index + 1}`}
                     />
                     <label className="create-team-radio create-team-radio--member">
                       <input
@@ -481,8 +447,8 @@ function CreateTeam() {
               Можно добавить несколько участников.
             </small>
 
-            <button className="create-team-submit" type="submit">
-              Создать команду
+            <button className="create-team-submit" type="submit" disabled={isSaving}>
+              {submitLabel}
             </button>
           </div>
         </div>
@@ -491,4 +457,49 @@ function CreateTeam() {
   );
 }
 
-export default CreateTeam;
+export default function CreateTeam() {
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    api.get("/project", { signal: controller.signal })
+      .then(({ data }) => setProjects(Array.isArray(data) ? data : []))
+      .catch((error) => {
+        if (!controller.signal.aborted) console.error("Error fetching projects:", error);
+      });
+    return () => controller.abort();
+  }, []);
+
+  async function createTeam({ name, projectId, callDay, callTime, members }) {
+    let teams;
+    try {
+      const { data } = await api.get("/get_team");
+      teams = Array.isArray(data) ? data : [];
+    } catch {
+      throw new Error("Не удалось проверить расписание");
+    }
+    if (teams.some((team) =>
+      normalizeDay(getValue(team, ["callDay", "CallDay"])) === normalizeDay(callDay) &&
+      normalizeTime(getValue(team, ["callTime", "CallTime"])) === normalizeTime(callTime)
+    )) {
+      throw new Error("Такая дата и время уже заняты");
+    }
+
+    try {
+      await api.post("/team", {
+        name,
+        projectId: Number(projectId),
+        members_l: members.map(({ name, group, role, stack, exists }) => ({
+          name, group, role, stack, exists,
+        })),
+        curators: [],
+        callDay: getDayLabel(callDay),
+        callTime,
+      }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Не удалось создать команду");
+    }
+  }
+
+  return <CreateTeamForm projects={projects} onCreate={createTeam} />;
+}

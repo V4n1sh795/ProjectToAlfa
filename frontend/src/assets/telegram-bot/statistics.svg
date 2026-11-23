@@ -1,0 +1,14 @@
+<svg width="28" height="25" viewBox="0 0 28 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="stroke0_3011_371" fill="white">
+<path d="M0 13C0 11.3431 1.34315 10 3 10H5C6.65685 10 8 11.3431 8 13V25H0V13Z"/>
+</mask>
+<path d="M8 25V13C8 11.3431 6.65685 10 5 10H3C1.34315 10 0 11.3431 0 13V25H8Z" stroke-width="4" stroke="#212124" mask="url(#stroke0_3011_371)"/>
+<mask id="stroke1_3011_371" fill="white">
+<path d="M10 8C10 6.34315 11.3431 5 13 5H15C16.6569 5 18 6.34315 18 8V25H10V8Z"/>
+</mask>
+<path d="M18 25V8C18 6.34315 16.6569 5 15 5H13C11.3431 5 10 6.34315 10 8V25H18Z" stroke-width="4" stroke="#212124" mask="url(#stroke1_3011_371)"/>
+<mask id="stroke2_3011_371" fill="white">
+<path d="M20 3C20 1.34315 21.3431 0 23 0H25C26.6569 0 28 1.34315 28 3V25H20V3Z"/>
+</mask>
+<path d="M28 25V3C28 1.34315 26.6569 0 25 0H23C21.3431 0 20 1.34315 20 3V25H28Z" stroke-width="4" stroke="#212124" mask="url(#stroke2_3011_371)"/>
+</svg>
