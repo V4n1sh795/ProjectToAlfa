@@ -60,7 +60,7 @@ const normalizeTime = (value) =>
     .trim()
     .slice(0, 5);
 
-const getDayLabel = (value) =>
+export const getDayLabel = (value) =>
   dayOptions.find((day) => String(day.id) === String(value))?.name || value;
 
 const hasFullName = (value) =>
@@ -100,12 +100,22 @@ export function CreateTeamForm({
   initialDraft,
   title = "Создание новой команды",
   submitLabel = "Создать команду",
+  requireSchedule = true,
 }) {
   const [teamName, setTeamName] = useState(initialDraft?.name ?? "");
   const [projectId, setProjectId] = useState(initialDraft?.projectId ?? "");
   const [members, setMembers] = useState(() =>
     (initialDraft?.members?.length ? initialDraft.members : [createEmptyMember()])
-      .map((member, key) => ({ ...member, key })),
+      .map((member, key) => ({
+        id: member.id,
+        name: member.name ?? "",
+        group: member.group ?? "",
+        role: member.role ?? "",
+        stack: member.stack ?? "",
+        contact: member.contact ?? "",
+        exists: member.exists ?? false,
+        key,
+      })),
   );
   const nextMemberKey = useRef(members.length);
   const [callDay, setCallDay] = useState(() => normalizeDay(initialDraft?.callDay));
@@ -171,14 +181,14 @@ export function CreateTeamForm({
     event.preventDefault();
     if (isSaving) return;
 
-    const hasEmptyMember = members.some(
+    const emptyMemberIndex = members.findIndex(
       (member) =>
         !member.name.trim() ||
         !member.group.trim() ||
         !member.role.trim() ||
         !member.stack.trim(),
     );
-    const hasInvalidMemberName = members.some(
+    const invalidNameIndex = members.findIndex(
       (member) => !hasFullName(member.name),
     );
 
@@ -186,22 +196,37 @@ export function CreateTeamForm({
 
     if (!teamName.trim()) newErrors.teamName = "Введите название команды";
     if (!projectId) newErrors.project = "Выберите проект";
-    if (!callDay) newErrors.callDay = "Выберите день недели";
-    if (!callTime) newErrors.callTime = "Выберите время";
-    if (members.length === 0 || hasEmptyMember) {
+    if ((requireSchedule || callTime) && !callDay) newErrors.callDay = "Выберите день недели";
+    if ((requireSchedule || callDay) && !callTime) newErrors.callTime = "Выберите время";
+    if (members.length === 0 || emptyMemberIndex !== -1) {
       newErrors.members = "Заполните все обязательные поля участников";
-    } else if (hasInvalidMemberName) {
+    } else if (invalidNameIndex !== -1) {
       newErrors.members = "Введите ФИО участника полностью";
     }
 
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length > 0) return;
+    const [firstError] = Object.keys(newErrors);
+    if (firstError) {
+      if (initialDraft) {
+        const memberIndex = emptyMemberIndex === -1 ? invalidNameIndex : emptyMemberIndex;
+        const fields = {
+          teamName: "#teamName",
+          project: "#project",
+          callDay: "#call-day",
+          callTime: "#call-time",
+          members: `.create-team-member:nth-child(${memberIndex + 1}) input`,
+        };
+        event.currentTarget.querySelector(fields[firstError])?.focus();
+      }
+      return;
+    }
 
     const draft = {
       name: teamName.trim(),
       projectId,
-      members: members.map(({ name, group, role, stack, contact, exists }) => ({
+      members: members.map(({ id, name, group, role, stack, contact, exists }) => ({
+        ...(id == null ? {} : { id }),
         name: name.trim().replace(/\s+/g, " "),
         group: group.trim(),
         role: role.trim(),
@@ -292,7 +317,7 @@ export function CreateTeamForm({
 
             <div className="create-team-field create-team-field--schedule">
               <label>
-                Расписание встреч (созвонов) <span>*</span>
+                Расписание встреч (созвонов) {requireSchedule && <span>*</span>}
               </label>
               <div className="create-team-schedule-row">
                 <div>

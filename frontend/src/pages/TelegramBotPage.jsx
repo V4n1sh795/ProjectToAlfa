@@ -1,27 +1,19 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link, Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import TeamDetails from "../components/TeamDetails";
-import { CreateTeamForm } from "./CreateTeam";
-import { createExampleCases, exampleProjects } from "./telegramBotExamples";
+import { CreateTeamForm, getDayLabel } from "./CreateTeam";
+import { createTelegramBotPreview, declineExampleId } from "./telegramBotExamples";
 import collapsedIcon from "../assets/telegram-bot/case-collapsed.svg";
 import expandedIcon from "../assets/telegram-bot/case-expanded.svg";
 import closeIcon from "../assets/telegram-bot/decline-close.svg";
 import "./css/TelegramBotPage.css";
 
 const rootPath = "/telegram-bot";
-const teamPath = (id) => `${rootPath}/team/${id}`;
+const teamPath = (id) => `${rootPath}/team/${encodeURIComponent(id)}`;
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", { timeZone: "UTC" });
-const weekdayNames = {
-  Monday: "Понедельник",
-  Tuesday: "Вторник",
-  Wednesday: "Среда",
-  Thursday: "Четверг",
-  Friday: "Пятница",
-  Saturday: "Суббота",
-  Sunday: "Воскресенье",
-};
+const roleLabels = { "Тим-лид": "Тимлидер", Бэкенд: "Разработчик" };
 
-function DeclineForm({ focusOnOpen, onCancel, onDecline }) {
+function DeclineForm({ focusOnOpen, onCancel, onDecline, saving, error }) {
   const [reason, setReason] = useState("");
   const titleId = useId();
   const input = useRef(null);
@@ -32,64 +24,85 @@ function DeclineForm({ focusOnOpen, onCancel, onDecline }) {
 
   function submit(event) {
     event.preventDefault();
-    if (reason.trim()) onDecline(reason.trim());
+    if (!saving && reason.trim()) onDecline(reason.trim());
   }
 
   return (
     <form
       className="telegram-decline"
       aria-labelledby={titleId}
+      aria-busy={saving}
       onSubmit={submit}
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           event.stopPropagation();
-          onCancel();
+          if (!saving) onCancel();
         }
       }}
     >
       <p id={titleId}>Опишите, почему вы хотите отклонить команду.</p>
-      <button className="telegram-decline__close" type="button" onClick={onCancel} aria-label="Закрыть форму отказа">
+      <button className="telegram-decline__close" type="button" onClick={onCancel} disabled={saving} aria-label="Закрыть форму отказа">
         <img src={closeIcon} alt="" />
       </button>
       <input ref={input} aria-labelledby={titleId} placeholder="Введите текст" value={reason}
-        onChange={(event) => setReason(event.target.value)} required />
-      <button className="telegram-button telegram-button--outline" type="submit" aria-disabled={!reason.trim()}>
+        onChange={(event) => setReason(event.target.value)} readOnly={saving} required />
+      {error && <p className="telegram-error" role="alert">{error}</p>}
+      <button className="telegram-button telegram-button--outline" type="submit" disabled={saving} aria-disabled={saving || !reason.trim()}>
         Отклонить команду
       </button>
     </form>
   );
 }
 
-function RequestRow({ request, decline, onOpenDecline, onCloseDecline, onUpdate }) {
+function RequestRow({ request, decline, href, onOpenDecline, onCloseDecline, onAccept, onDecline }) {
   const declineButton = useRef(null);
   const teamLink = useRef(null);
+  const rowRef = useRef(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const date = request.date ? new Date(request.date) : null;
 
   function cancelDecline() {
     onCloseDecline();
+    setError("");
     declineButton.current?.focus();
   }
 
+  async function submitDecision(reason) {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      if (reason) await onDecline(request.id, reason, rowRef.current);
+      else {
+        await onAccept(request.id);
+        teamLink.current?.focus();
+      }
+    } catch {
+      setError(reason ? "Не удалось отклонить команду. Повторите попытку." : "Не удалось принять команду. Повторите попытку.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
-    <li>
+    <li ref={rowRef}>
       <div className="telegram-requests__row">
-        <Link to={teamPath(request.id)} className="telegram-requests__team" ref={teamLink}>{request.team.name}</Link>
-        <time dateTime={request.date}>{dateFormatter.format(new Date(request.date))}</time>
+        <Link to={href(teamPath(request.id))} className="telegram-requests__team" ref={teamLink}>{request.team.name}</Link>
+        {date && !Number.isNaN(date.getTime()) ? <time dateTime={request.date}>{dateFormatter.format(date)}</time> : <span>—</span>}
         {request.status === "accepted" && (
-          <Link className="telegram-button telegram-button--red telegram-requests__meeting" to={`${teamPath(request.id)}/schedule`}>
+          <Link className="telegram-button telegram-button--red telegram-requests__meeting" to={href(`${teamPath(request.id)}/schedule`)}>
             Создать регулярную встречу
           </Link>
         )}
         {request.status === "pending" && (
           <div className="telegram-requests__decision">
             <button className="telegram-button telegram-button--red" type="button" ref={declineButton}
-              onClick={() => onOpenDecline(request.id)} aria-expanded={Boolean(decline)}>
+              onClick={() => { setError(""); onOpenDecline(request.id); }} disabled={saving} aria-expanded={Boolean(decline)}>
               Отклонить
             </button>
             <button className="telegram-button telegram-button--green" type="button"
-              onClick={() => {
-                onUpdate(request.id, { status: "accepted" });
-                teamLink.current?.focus();
-              }}>
+              onClick={() => submitDecision()} disabled={saving}>
               Принять
             </button>
           </div>
@@ -99,17 +112,35 @@ function RequestRow({ request, decline, onOpenDecline, onCloseDecline, onUpdate 
         <DeclineForm
           focusOnOpen={decline.focusOnOpen}
           onCancel={cancelDecline}
-          onDecline={(reason) => onUpdate(request.id, { status: "declined", reason })}
+          onDecline={submitDecision}
+          saving={saving}
+          error={error}
         />
       )}
+      {!decline && error && <p className="telegram-error" role="alert">{error}</p>}
     </li>
   );
 }
 
-function CaseRequests({ project, expanded, decline, onToggle, onRecruiting, onDecline, onUpdate }) {
+function CaseRequests({ project, expanded, decline, href, onToggle, onRecruiting, onOpenDecline, onAccept, onDecline }) {
   const caseId = useId();
   const requests = project.requests.filter(({ status }) => status !== "declined");
   const showDecline = requests.some(({ id }) => id === decline?.id);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function changeRecruiting(recruiting) {
+    if (saving || recruiting === project.recruiting) return;
+    setError("");
+    setSaving(true);
+    try {
+      await onRecruiting(recruiting);
+    } catch {
+      setError("Не удалось изменить режим набора. Повторите попытку.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <section className="telegram-case">
@@ -122,10 +153,11 @@ function CaseRequests({ project, expanded, decline, onToggle, onRecruiting, onDe
           </button>
         </h3>
         <div className="telegram-case__recruiting" role="group" aria-label={`Набор команд: ${project.name}`}>
-          <button type="button" aria-pressed={!project.recruiting} onClick={() => onRecruiting(false)}>Стоп</button>
-          <button type="button" aria-pressed={project.recruiting} onClick={() => onRecruiting(true)}>Набор</button>
+          <button type="button" aria-pressed={!project.recruiting} disabled={saving} onClick={() => changeRecruiting(false)}>Стоп</button>
+          <button type="button" aria-pressed={project.recruiting} disabled={saving} onClick={() => changeRecruiting(true)}>Набор</button>
         </div>
       </div>
+      {error && <p className="telegram-error telegram-case__error" role="alert">{error}</p>}
       <div id={caseId} className="telegram-requests" hidden={!expanded}>
         {requests.length > 0 ? (
           <>
@@ -136,7 +168,8 @@ function CaseRequests({ project, expanded, decline, onToggle, onRecruiting, onDe
             <ul aria-label={`Записанные команды: ${project.name}`}>
               {requests.map((request) => (
                 <RequestRow key={request.id} request={request} decline={request.id === decline?.id ? decline : null}
-                  onOpenDecline={onDecline} onCloseDecline={() => onDecline(null)} onUpdate={onUpdate} />
+                  href={href} onOpenDecline={onOpenDecline} onCloseDecline={() => onOpenDecline(null)}
+                  onAccept={onAccept} onDecline={onDecline} />
               ))}
             </ul>
           </>
@@ -146,116 +179,204 @@ function CaseRequests({ project, expanded, decline, onToggle, onRecruiting, onDe
   );
 }
 
-function ExampleTeam({ cases, mode, onUpdate }) {
+function TelegramTeam({ data, mode, href, preview, onSave }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const request = cases.flatMap((project) => project.requests).find((item) => item.id === id);
+  const routeLifetime = useRef(null);
+  const project = data.cases.find(({ requests }) => requests.some((request) => String(request.id) === id));
+  const request = project?.requests.find((item) => String(item.id) === id);
 
-  if (!request || request.status === "declined") return <Navigate to={rootPath} replace />;
+  useEffect(() => {
+    const controller = new AbortController();
+    routeLifetime.current = controller;
+    return () => controller.abort();
+  }, [id, mode]);
+
+  if (!request || request.status === "declined") return <Navigate to={href(rootPath)} replace />;
   if (mode === "schedule" && request.status !== "accepted") {
-    return <Navigate to={teamPath(id)} replace />;
+    return <Navigate to={href(teamPath(id))} replace />;
   }
 
   const { team } = request;
   if (mode !== "details") {
     const editing = mode === "edit";
     return (
-      <CreateTeamForm
-        key={`${id}-${mode}`}
-        projects={exampleProjects}
-        initialDraft={team}
-        title={editing ? "Редактирование команды" : undefined}
-        submitLabel={editing ? "Сохранить" : undefined}
-        onCreate={(draft) => {
-          onUpdate(id, { team: draft, status: editing ? request.status : "scheduled" });
-          navigate(teamPath(id), { replace: true });
-        }}
-      />
+      <div className="telegram-team-form">
+        <CreateTeamForm
+          key={`${id}-${mode}`}
+          projects={data.projects}
+          initialDraft={team}
+          title={editing ? "Редактирование команды" : undefined}
+          submitLabel={editing ? "Сохранить" : undefined}
+          requireSchedule={!editing || request.status === "scheduled"}
+          onCreate={async (draft) => {
+            const currentRoute = routeLifetime.current;
+            await onSave(project.id, request.id, mode, draft);
+            if (!currentRoute?.signal.aborted) navigate(href(teamPath(id)), { replace: true });
+          }}
+        />
+      </div>
     );
   }
 
   const cardData = {
-    projectName: exampleProjects.find(({ id }) => id === team.projectId)?.name,
-    meetingDay: weekdayNames[team.callDay] ?? "",
+    projectName: data.projects.find(({ id }) => String(id) === String(team.projectId))?.name,
+    meetingDay: getDayLabel(team.callDay),
     meetingTime: team.callTime,
-    artifacts: team.members.find(({ contact }) => contact)?.contact ?? "",
-    members: team.members.map((member) => ({
+    artifacts: team.artifacts ?? "",
+    members: preview ? team.members.map((member) => ({
       ...member,
-      role: { "Тим-лид": "Тимлидер", Бэкенд: "Разработчик" }[member.role] ?? member.role,
-    })),
-    curators: [],
-    grades: {},
-    comment: "",
+      role: roleLabels[member.role] ?? member.role,
+    })) : team.members,
+    curators: team.curators ?? [],
+    grades: team.grades ?? {},
+    comment: team.comment ?? "",
   };
 
   return (
-    <div className="team-page">
+    <div className="team-page telegram-team" style={{ "--telegram-member-rows": cardData.members.length + 1 }}>
       <article className="team-card team-card--details">
         <h1>{team.name}</h1>
-        <TeamDetails cardData={cardData} onEdit={() => navigate(`${teamPath(id)}/edit`)} />
+        <TeamDetails cardData={cardData} onEdit={() => navigate(href(`${teamPath(id)}/edit`))} />
       </article>
     </div>
   );
 }
 
-function TelegramBotWorkspace({ declineExample }) {
-  const [cases, setCases] = useState(() => createExampleCases(declineExample));
-  const [expandedId, setExpandedId] = useState("assistant");
+function TelegramBotWorkspace({ source, preview, declineExample }) {
+  const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [expandedId, setExpandedId] = useState(null);
   const [decline, setDecline] = useState(() =>
-    declineExample ? { id: "decline-example", focusOnOpen: false } : null,
+    declineExample ? { id: declineExampleId, focusOnOpen: false } : null,
   );
   const pageHeading = useRef(null);
   const demoDescription = useId();
 
-  function updateRequest(id, patch) {
-    setCases((current) => current.map((project) => ({
-      ...project,
-      requests: project.requests.map((request) => request.id === id ? { ...request, ...patch } : request),
-    })));
-    if (id === decline?.id) setDecline(null);
-    if (patch.status === "declined") pageHeading.current?.focus();
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function load() {
+      try {
+        const result = await source.load({ signal: controller.signal });
+        if (controller.signal.aborted) return;
+        setData(result);
+        const firstCaseWithRequests = result.cases.find(({ requests }) => requests.some(({ status }) => status !== "declined"));
+        setExpandedId(firstCaseWithRequests?.id ?? result.cases[0]?.id ?? null);
+      } catch {
+        if (!controller.signal.aborted) setLoadError(true);
+      }
+    }
+
+    load();
+    return () => controller.abort();
+  }, [source, loadAttempt]);
+
+  const href = (path) => declineExample ? `${path}?preview=decline` : path;
+
+  function updateCase(caseId, update) {
+    setData((current) => ({
+      ...current,
+      cases: current.cases.map((project) => project.id === caseId ? update(project) : project),
+    }));
   }
+
+  async function saveRequest(caseId, operation) {
+    const updated = await operation;
+    updateCase(caseId, (project) => ({
+      ...project,
+      requests: project.requests.map((request) => request.id === updated.id ? updated : request),
+    }));
+    setDecline((current) => current?.id === updated.id ? null : current);
+  }
+
+  if (!data) {
+    return (
+      <section className="telegram-page">
+        <h1>Управление Telegram-ботом</h1>
+        <div className="telegram-page__panel">
+          {loadError ? (
+            <>
+              <p className="telegram-error" role="alert">Не удалось загрузить кейсы и заявки.</p>
+              <button className="telegram-button telegram-button--red" type="button" onClick={() => {
+                setLoadError(false);
+                setLoadAttempt((attempt) => attempt + 1);
+              }}>Повторить</button>
+            </>
+          ) : <p role="status">Загрузка кейсов и заявок…</p>}
+        </div>
+      </section>
+    );
+  }
+
+  function saveTeam(caseId, requestId, mode, draft) {
+    return saveRequest(caseId, mode === "edit"
+      ? source.updateTeam(caseId, requestId, draft)
+      : source.scheduleTeam(caseId, requestId, draft));
+  }
+
+  const teamProps = { data, href, preview, onSave: saveTeam };
 
   return (
     <Routes>
       <Route index element={
-        <section className="telegram-page" aria-describedby={demoDescription}>
+        <section className="telegram-page" aria-describedby={preview ? demoDescription : undefined}>
           <h1 ref={pageHeading} tabIndex={-1}>Управление Telegram-ботом</h1>
-          <p className="telegram-sr-only" id={demoDescription}>
+          {preview && <p className="telegram-sr-only" id={demoDescription}>
             Демонстрационные данные. Действия не отправляются в Telegram и не сохраняются на сервере.
-          </p>
+          </p>}
           <div className="telegram-page__panel">
             <h2>Записанные команды</h2>
             <h2>Кейсы</h2>
             <div className="telegram-page__cases">
-              {cases.map((project) => (
+              {data.cases.length === 0 && <p>Кейсов пока нет.</p>}
+              {data.cases.map((project) => (
                 <CaseRequests key={project.id} project={project} expanded={expandedId === project.id}
-                  decline={decline}
-                  onDecline={(id) => setDecline(id ? { id, focusOnOpen: true } : null)}
-                  onUpdate={updateRequest}
+                  decline={decline} href={href}
+                  onOpenDecline={(id) => setDecline(id !== null ? { id, focusOnOpen: true } : null)}
+                  onAccept={(id) => saveRequest(project.id, source.acceptRequest(project.id, id))}
+                  onDecline={async (id, reason, row) => {
+                    await saveRequest(project.id, source.declineRequest(project.id, id, reason));
+                    if (row?.contains(document.activeElement) || document.activeElement === document.body) {
+                      pageHeading.current?.focus({ preventScroll: true });
+                    }
+                  }}
                   onToggle={() => {
                     setExpandedId((current) => current === project.id ? null : project.id);
                     setDecline(null);
                   }}
-                  onRecruiting={(recruiting) => setCases((current) => current.map((item) =>
-                    item.id === project.id ? { ...item, recruiting } : item
-                  ))}
+                  onRecruiting={async (recruiting) => {
+                    const saved = await source.setRecruiting(project.id, recruiting);
+                    updateCase(project.id, (item) => ({ ...item, recruiting: saved }));
+                  }}
                 />
               ))}
             </div>
           </div>
         </section>
       } />
-      <Route path="team/:id" element={<ExampleTeam cases={cases} mode="details" onUpdate={updateRequest} />} />
-      <Route path="team/:id/schedule" element={<ExampleTeam cases={cases} mode="schedule" onUpdate={updateRequest} />} />
-      <Route path="team/:id/edit" element={<ExampleTeam cases={cases} mode="edit" onUpdate={updateRequest} />} />
-      <Route path="*" element={<Navigate to={rootPath} replace />} />
+      <Route path="team/:id" element={<TelegramTeam {...teamProps} mode="details" />} />
+      <Route path="team/:id/schedule" element={<TelegramTeam {...teamProps} mode="schedule" />} />
+      <Route path="team/:id/edit" element={<TelegramTeam {...teamProps} mode="edit" />} />
+      <Route path="*" element={<Navigate to={href(rootPath)} replace />} />
     </Routes>
   );
 }
 
-export default function TelegramBotPage() {
+/**
+ * dataSource adapts the API to this screen. load({ signal }) resolves to { cases, projects }.
+ * A case has { id, name, recruiting, requests }, a project option has { id, name }.
+ * Requests have a unique id, an ISO date, team data and a pending/accepted/declined/scheduled status.
+ * The team contains the CreateTeamForm draft plus optional artifacts, curators, grades and comment.
+ * setRecruiting(caseId, recruiting) resolves to the stored boolean. Request mutations take
+ * (caseId, requestId) and resolve to the updated request. declineRequest also takes the reason;
+ * scheduleTeam and updateTeam also take the team draft.
+ */
+export default function TelegramBotPage({ dataSource }) {
   const [params] = useSearchParams();
-  const [declineExample] = useState(() => params.get("preview") === "decline");
-  return <TelegramBotWorkspace declineExample={declineExample} />;
+  const declineExample = !dataSource && params.get("preview") === "decline";
+  const source = useMemo(() => dataSource ?? createTelegramBotPreview(declineExample), [dataSource, declineExample]);
+  return <TelegramBotWorkspace key={declineExample ? "decline" : "default"}
+    source={source} preview={!dataSource} declineExample={declineExample} />;
 }

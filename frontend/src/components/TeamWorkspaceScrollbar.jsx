@@ -29,8 +29,12 @@ export default function TeamWorkspaceScrollbar({ scrollContainer, pathname }) {
       if (target.firstElementChild) resize?.observe(target.firstElementChild);
       update();
     };
-    const children = new MutationObserver(observeContent);
-    children.observe(target, { childList: true });
+    const children = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.target === target)) observeContent();
+      else update();
+    });
+    // The Telegram decline form can change scrollHeight without resizing its parent.
+    children.observe(target, { childList: true, subtree: /^\/telegram-bot\/?$/.test(pathname) });
     observeContent();
     return () => {
       target.removeEventListener("scroll", update);
