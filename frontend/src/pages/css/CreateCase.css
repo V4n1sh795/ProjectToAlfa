@@ -1,5 +1,3 @@
-@import url('../../assets/ai/fonts/fonts.css');
-
 .create-project-container {
   position: relative;
   width: 100%;
@@ -10,54 +8,8 @@
   font-family: 'Alexandria', 'Inter', sans-serif;
 }
 
-/* Keep the supplied screen's shell local to project creation. */
 .app-container:has(.create-project-container)::before {
   background-color: #fff;
-}
-
-.app-container:has(.create-project-container) .top-bar {
-  padding-left: 50px;
-}
-
-.app-container:has(.create-project-container) .top-bar-title {
-  font-family: 'Alexandria', 'Inter', sans-serif;
-  line-height: 39px;
-}
-
-@media (min-width: 769px) {
-  .app-container:has(.create-project-container) .sidebar {
-    width: 75px;
-    border: 0;
-    background: #f2f3f5;
-  }
-
-  .app-container:has(.create-project-container) .sidebar-nav {
-    gap: 0;
-    padding-top: 72px;
-    padding-left: 3px;
-    box-sizing: border-box;
-  }
-
-  .app-container:has(.create-project-container) .nav-item:nth-child(2) { margin-top: 29px; }
-  .app-container:has(.create-project-container) .nav-item:nth-child(3) { margin-top: 26px; }
-  .app-container:has(.create-project-container) .nav-item:nth-child(4) { margin-top: 24px; }
-  .app-container:has(.create-project-container) .nav-item:nth-child(5) { margin-top: 39px; }
-  .app-container:has(.create-project-container) .nav-item:nth-child(6) { margin-top: 34px; }
-
-  .app-container:has(.create-project-container) .nav-item.active {
-    border-radius: 3px;
-  }
-
-  .app-container:has(.create-project-container) .nav-item.active::before {
-    top: -5px;
-    left: -14.5px;
-    border-radius: 0 3px 3px 0;
-  }
-
-  .app-container:has(.create-project-container) .logout-button {
-    margin-bottom: 40px;
-    margin-left: 3px;
-  }
 }
 
 .create-project-container h2 {

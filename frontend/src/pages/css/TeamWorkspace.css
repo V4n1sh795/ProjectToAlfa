@@ -9,17 +9,14 @@
   --team-end-gutter: clamp(24px, 5.21vw, 100px);
   --team-background: url("../../assets/telegram-bot/management-background.svg");
   background: #fff;
-  font-family: var(--team-font);
 }
 
 .team-workspace--create {
   --team-background: url("../../assets/telegram-bot/team-create-background.svg");
-  --team-below-background: #a6b2c3;
 }
 
 .team-workspace--details {
   --team-background: url("../../assets/telegram-bot/team-details-background.svg");
-  --team-below-background: #d8d8d8;
 }
 
 .team-workspace.app-container::before {
@@ -30,12 +27,8 @@
 .team-workspace .main-content {
   left: 75px;
   right: 18px;
+  font-family: var(--team-font);
   scrollbar-width: none;
-  background: linear-gradient(
-    to bottom,
-    transparent calc(100dvh - 70px),
-    var(--team-below-background, transparent) calc(100dvh - 70px)
-  ) local;
 }
 
 .team-workspace .main-content::-webkit-scrollbar {
@@ -76,56 +69,6 @@
 
 .team-scrollbar--scrollable:active span {
   cursor: grabbing;
-}
-
-.team-workspace .top-bar {
-  padding-inline: 50px;
-}
-
-.team-workspace .top-bar-title {
-  line-height: 39px;
-}
-
-.team-workspace .sidebar {
-  background: var(--team-panel);
-  border: 0;
-}
-
-.team-workspace .sidebar-nav {
-  display: grid;
-  grid-template-rows: 78px 74px 74px 88px 83px 75px 49px;
-  place-items: start center;
-  gap: 0;
-  padding-top: 71px;
-}
-
-.team-workspace .nav-item--active-art {
-  background: transparent;
-}
-
-.team-workspace .nav-item--active-art::before {
-  content: none;
-}
-
-.team-workspace .nav-item--active-art .nav-icon {
-  position: absolute;
-  top: -5px;
-  left: -13px;
-  width: 63px;
-  height: 59px;
-}
-
-.team-workspace .nav-item:not(.nav-item--active-art) .nav-icon,
-.team-workspace .logout-button .nav-icon {
-  transform: translateX(2px);
-}
-
-.team-workspace .nav-item:last-child .nav-icon {
-  translate: 0 1px;
-}
-
-.team-workspace .logout-button {
-  margin-bottom: 40px;
 }
 
 .team-workspace .create-team-page {
@@ -335,13 +278,6 @@
   }
 }
 
-@media (max-height: 810px) {
-  .team-workspace .sidebar-nav {
-    grid-template-rows: repeat(7, minmax(49px, 8vh));
-    padding-top: 24px;
-  }
-}
-
 @media (max-width: 900px) {
   .team-workspace .create-team-page,
   .team-workspace .team-page {
@@ -380,21 +316,11 @@
     left: 0;
   }
 
-  .team-workspace .top-bar {
-    padding-inline: 56px 20px;
-  }
-
   .team-scrollbar {
     display: none;
   }
 
   .team-workspace .main-content {
     right: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .team-workspace .sidebar {
-    transition: none;
   }
 }

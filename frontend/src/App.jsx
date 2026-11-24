@@ -34,25 +34,15 @@ import createTeamIcon from "./assets/icons/create_team.svg";
 import statisticsIcon from "./assets/icons/statistics.svg";
 import logoutIcon from "./assets/icons/logout.svg";
 import botIcon from "./assets/telegram-bot/bot.svg";
-import workspaceCalendarIcon from "./assets/telegram-bot/calendar.svg";
-import workspaceDataIcon from "./assets/telegram-bot/data.svg";
-import workspaceMessagesIcon from "./assets/telegram-bot/messages.svg";
-import workspaceCreateIcon from "./assets/telegram-bot/create.svg";
-import workspaceAddTeamIcon from "./assets/telegram-bot/add-team.svg";
-import workspaceStatisticsIcon from "./assets/telegram-bot/statistics.svg";
-import workspaceLogoutIcon from "./assets/telegram-bot/logout.svg";
-import activeBotIcon from "./assets/telegram-bot/active-bot.svg";
-import activeAddTeamIcon from "./assets/telegram-bot/active-add-team.svg";
-import activeDataIcon from "./assets/telegram-bot/active-data.svg";
 
 const menuItems = [
-  { path: "/calender", label: "Календарь", icon: calendarIcon, workspaceIcon: workspaceCalendarIcon },
-  { path: "/finder", label: "Данные", icon: searchIcon, workspaceIcon: workspaceDataIcon, activeIcon: activeDataIcon },
-  { path: "/messenger", label: "Сообщения", icon: chatsIcon, workspaceIcon: workspaceMessagesIcon },
-  { path: "/createcase", label: "Создать проект", icon: createCaseIcon, workspaceIcon: workspaceCreateIcon },
-  { path: "/createteam", label: "Создать команду", icon: createTeamIcon, workspaceIcon: workspaceAddTeamIcon, activeIcon: activeAddTeamIcon },
-  { path: "/statistics", label: "Статистика", icon: statisticsIcon, workspaceIcon: workspaceStatisticsIcon },
-  { path: "/telegram-bot", label: "Управление Telegram-ботом", icon: botIcon, workspaceIcon: botIcon, activeIcon: activeBotIcon },
+  { path: "/calender", label: "Календарь", icon: calendarIcon },
+  { path: "/finder", label: "Данные", icon: searchIcon },
+  { path: "/messenger", label: "Сообщения", icon: chatsIcon },
+  { path: "/createcase", label: "Создать проект", icon: createCaseIcon },
+  { path: "/createteam", label: "Создать команду", icon: createTeamIcon },
+  { path: "/statistics", label: "Статистика", icon: statisticsIcon },
+  { path: "/telegram-bot", label: "Управление Telegram-ботом", icon: botIcon },
 ];
 
 function getTeamWorkspace(pathname) {
@@ -97,39 +87,30 @@ const RootRedirect = ({ isAuthenticated, loading }) => {
 };
 
 // Компонент бокового меню
-const Sidebar = ({ isAuthenticated, onLogout, isOpen, workspace }) => {
-  const location = useLocation();
-
+const Sidebar = ({ isAuthenticated, onLogout, isOpen, activePath }) => {
   if (!isAuthenticated) return null;
 
   return (
     <aside id="sidebar" className={`sidebar${isOpen ? " open" : ""}`}>
       <nav className="sidebar-nav" aria-label="Разделы">
         {menuItems.map((item) => {
-          const active = workspace
-            ? workspace.activePath === item.path
-            : location.pathname.startsWith(item.path);
-          const activeIcon = workspace && active ? item.activeIcon : undefined;
+          const active = activePath === item.path || activePath.startsWith(`${item.path}/`);
           return (
             <Link
               key={item.path}
               to={item.path}
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
-              className={`nav-item${active ? " active" : ""}${activeIcon ? " nav-item--active-art" : ""}`}
+              className={`nav-item${active ? " active" : ""}`}
             >
-              <img
-                src={activeIcon || (workspace ? item.workspaceIcon : item.icon)}
-                alt=""
-                className="nav-icon"
-              />
+              <img src={item.icon} alt="" className="nav-icon" />
             </Link>
           );
         })}
       </nav>
 
       <button type="button" onClick={onLogout} className="logout-button" aria-label="Выйти">
-        <img src={workspace ? workspaceLogoutIcon : logoutIcon} alt="" className="nav-icon" />
+        <img src={logoutIcon} alt="" className="nav-icon" />
       </button>
     </aside>
   );
@@ -193,7 +174,7 @@ function AppContent() {
           isAuthenticated={isAuthenticated}
           onLogout={handleLogout}
           isOpen={mobileMenuOpen}
-          workspace={workspace}
+          activePath={workspace?.activePath ?? pathname}
         />
 
         <main

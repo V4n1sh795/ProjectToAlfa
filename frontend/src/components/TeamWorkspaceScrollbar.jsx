@@ -11,13 +11,14 @@ export default function TeamWorkspaceScrollbar({ scrollContainer, pathname }) {
   useEffect(() => {
     const target = scrollContainer.current;
     const rail = track.current;
-    if (!target || !rail) return;
+    const indicator = thumb.current;
+    if (!target || !rail || !indicator) return;
 
     const update = () => {
       const range = target.scrollHeight - target.clientHeight;
       const travel = Math.max(0, rail.clientHeight - thumbHeight - startInset);
       const offset = range > 0 ? (target.scrollTop / range) * travel : 0;
-      thumb.current.style.transform = `translateY(${startInset + offset}px)`;
+      indicator.style.transform = `translateY(${startInset + offset}px)`;
       rail.classList.toggle("team-scrollbar--scrollable", range > 0);
     };
     target.addEventListener("scroll", update, { passive: true });
