@@ -124,14 +124,14 @@
   line-height: 20px;
 }
 
-.telegram-requests:has(.telegram-decline) {
-  padding-bottom: 2px;
-}
-
 .telegram-requests ul {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.telegram-requests ul > li {
+  position: relative;
 }
 
 .telegram-requests__head,
@@ -232,13 +232,14 @@
 }
 
 .telegram-decline {
-  position: relative;
+  position: absolute;
+  z-index: 2;
+  top: 100%;
+  right: clamp(0px, calc(25vw - 345px), 135px);
   display: grid;
   gap: 15px;
   box-sizing: border-box;
   width: min(575px, 100%);
-  margin-left: auto;
-  margin-right: clamp(0px, calc(25vw - 345px), 135px);
   padding: 30px;
   border: 0;
   border-radius: var(--team-radius);
