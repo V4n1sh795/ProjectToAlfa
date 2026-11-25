@@ -27,8 +27,6 @@ import { authAPI } from "./pages/js/LogIn";
 import "./App.css";
 import "./pages/css/TeamWorkspace.css";
 
-const telegramBotApi = createTelegramBotApi();
-
 import calendarIcon from "./assets/icons/calendar.svg";
 import searchIcon from "./assets/icons/finder.svg";
 import chatsIcon from "./assets/icons/chats.svg";
@@ -37,6 +35,8 @@ import createTeamIcon from "./assets/icons/create_team.svg";
 import statisticsIcon from "./assets/icons/statistics.svg";
 import logoutIcon from "./assets/icons/logout.svg";
 import botIcon from "./assets/telegram-bot/bot.svg";
+
+const telegramBotApi = createTelegramBotApi();
 
 const menuItems = [
   { path: "/calender", label: "Календарь", icon: calendarIcon },
