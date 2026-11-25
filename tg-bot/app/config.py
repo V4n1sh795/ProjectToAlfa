@@ -21,7 +21,7 @@ class Settings:
             api_base_url=(getenv("API_BASE_URL") or "").strip().rstrip("/"),
             jwt_secret=getenv("JWT_SECRET") or "",
             jwt_algorithm=algorithm,
-            auth_validate_path=(getenv("AUTH_VALIDATE_PATH") or "/api/auth/validate").strip(),
+            auth_validate_path=(getenv("AUTH_VALIDATE_PATH") or "/api/auth/verify").strip(),
         )
         missing = [
             name

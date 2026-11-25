@@ -118,6 +118,12 @@ app.MapPost("/auth/register",Service.Auth.Registration);
 
 app.MapGet("/auth/verify", [Authorize] () => Results.Ok("Token is valid"));
 
+app.MapGet("/projects", [Authorize] (AppDbContext db) => Service.Interviews.Projects(db));
+
+app.MapGet("/projects/{id:int}/available-slots", [Authorize] (AppDbContext db, int id) => Service.Interviews.AvailableSlots(db, id));
+
+app.MapPost("/interviews/book", [Authorize] (AppDbContext db, IConfiguration config, Service.Interviews.BookRequest req) => Service.Interviews.Book(db, config, req));
+
 app.MapGet("/curators", Service.Curator.GCurators);
 
 app.MapPost("/project", Service.Project.Create);
