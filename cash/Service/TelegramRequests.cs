@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using DBContext;
 using cash.Models;
@@ -34,6 +35,27 @@ static class TelegramRequests
         day = day.Trim();
         if (RuToEn.TryGetValue(day, out var en)) return en;
         return Enum.TryParse<DayOfWeek>(day, true, out var d) ? d.ToString() : null;
+    }
+
+    /// <summary>
+    /// Календарь показывает куратору только встречи его команд, поэтому команда заявки должна получить кураторов:
+    /// того, кто с ней работает (id из токена; для старых токенов без id — по имени), и кураторов проекта.
+    /// </summary>
+    static async System.Threading.Tasks.Task AssignCurators(AppDbContext db, cash.Models.Team team, ClaimsPrincipal user)
+    {
+        var ids = new HashSet<int>(team.Curators);
+        if (int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+        {
+            if (await db.Curators.AnyAsync(c => c.Id == id)) ids.Add(id);
+        }
+        else if (user.FindFirstValue(ClaimTypes.Name) is { } name)
+        {
+            var found = await db.Curators.Where(c => c.Name == name).Select(c => c.Id).ToListAsync();
+            if (found.Count == 1) ids.Add(found[0]);
+        }
+        var project = await db.Projects.FindAsync(team.ProjectId);
+        if (project != null) ids.UnionWith(project.CuratorIds);
+        team.Curators = ids.OrderBy(x => x).ToList();
     }
 
     static string FullName(cash.Models.Member m) => string.Join(' ', new[] { m.Surname, m.Name, m.SecondName }.Where(x => !string.IsNullOrWhiteSpace(x)));
@@ -86,12 +108,13 @@ static class TelegramRequests
         return Results.Ok(teams.Select(View));
     }
 
-    public static async Task<IResult> Accept(AppDbContext db, int id)
+    public static async Task<IResult> Accept(AppDbContext db, int id, ClaimsPrincipal user)
     {
         var team = await Find(db, id);
         if (team == null) return Results.NotFound("Request not found");
         if (team.RequestStatus != Pending) return Results.Conflict("Request is not pending");
         team.RequestStatus = Accepted;
+        await AssignCurators(db, team, user);
         await db.SaveChangesAsync();
         return Results.Ok(View(team));
     }
@@ -158,7 +181,7 @@ static class TelegramRequests
         ? Results.Conflict("Такая дата и время уже заняты")
         : error == "Project not found" ? Results.NotFound(error) : Results.BadRequest(error);
 
-    public static async Task<IResult> Schedule(AppDbContext db, int id, TeamDraft draft)
+    public static async Task<IResult> Schedule(AppDbContext db, int id, TeamDraft draft, ClaimsPrincipal user)
     {
         var team = await Find(db, id);
         if (team == null) return Results.NotFound("Request not found");
@@ -166,6 +189,7 @@ static class TelegramRequests
         var error = await ApplyDraft(db, team, draft, requireSchedule: true);
         if (error != null) return Fail(error);
         team.RequestStatus = Scheduled;
+        await AssignCurators(db, team, user);
         await db.SaveChangesAsync();
 
         var project = await db.Projects.FindAsync(team.ProjectId);
@@ -174,13 +198,14 @@ static class TelegramRequests
         return Results.Ok(View(team));
     }
 
-    public static async Task<IResult> Update(AppDbContext db, int id, TeamDraft draft)
+    public static async Task<IResult> Update(AppDbContext db, int id, TeamDraft draft, ClaimsPrincipal user)
     {
         var team = await Find(db, id);
         if (team == null) return Results.NotFound("Request not found");
         if (team.RequestStatus == Declined) return Results.Conflict("Request is declined");
         var error = await ApplyDraft(db, team, draft, requireSchedule: team.RequestStatus == Scheduled);
         if (error != null) return Fail(error);
+        if (team.RequestStatus is Accepted or Scheduled) await AssignCurators(db, team, user);
         await db.SaveChangesAsync();
         return Results.Ok(View(team));
     }

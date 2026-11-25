@@ -132,13 +132,13 @@ app.MapPut("/projects/{id:int}/recruitment", [Authorize(Policy = "Curator")] (Ap
 
 app.MapGet("/telegram/requests", [Authorize(Policy = "Curator")] (AppDbContext db) => Service.TelegramRequests.List(db));
 
-app.MapPost("/telegram/requests/{id:int}/accept", [Authorize(Policy = "Curator")] (AppDbContext db, int id) => Service.TelegramRequests.Accept(db, id));
+app.MapPost("/telegram/requests/{id:int}/accept", [Authorize(Policy = "Curator")] (AppDbContext db, int id, System.Security.Claims.ClaimsPrincipal user) => Service.TelegramRequests.Accept(db, id, user));
 
 app.MapPost("/telegram/requests/{id:int}/decline", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.DeclineDto dto) => Service.TelegramRequests.Decline(db, id, dto));
 
-app.MapPost("/telegram/requests/{id:int}/schedule", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Schedule(db, id, draft));
+app.MapPost("/telegram/requests/{id:int}/schedule", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft, System.Security.Claims.ClaimsPrincipal user) => Service.TelegramRequests.Schedule(db, id, draft, user));
 
-app.MapPut("/telegram/requests/{id:int}", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Update(db, id, draft));
+app.MapPut("/telegram/requests/{id:int}", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft, System.Security.Claims.ClaimsPrincipal user) => Service.TelegramRequests.Update(db, id, draft, user));
 
 app.MapPost("/interviews/book", [Authorize] (AppDbContext db, IConfiguration config, Service.Interviews.BookRequest req) => Service.Interviews.Book(db, config, req));
 

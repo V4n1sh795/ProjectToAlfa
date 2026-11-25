@@ -42,7 +42,7 @@ static class Auth
             cash.Models.Curator c = new cash.Models.Curator(reg.name, reg.email, hashedPassword);
             await db.Curators.AddAsync(c);
             await db.SaveChangesAsync();
-            var claims = new List<Claim> {new Claim(ClaimTypes.Name, c.Name) };
+            var claims = new List<Claim> {new Claim(ClaimTypes.Name, c.Name), new Claim(ClaimTypes.NameIdentifier, c.Id.ToString()) };
             var jwt = new JwtSecurityToken(
                 issuer: AuthOptions.ISSUER,
                 audience: AuthOptions.AUDIENCE,
@@ -114,7 +114,7 @@ static class Auth
         
         if (verificationResult == PasswordVerificationResult.Success)
         {
-            var claims = new List<Claim> {new Claim(ClaimTypes.Name, person.Name) };
+            var claims = new List<Claim> {new Claim(ClaimTypes.Name, person.Name), new Claim(ClaimTypes.NameIdentifier, person.Id.ToString()) };
             var jwt = new JwtSecurityToken(
                 issuer: AuthOptions.ISSUER,
                 audience: AuthOptions.AUDIENCE,
