@@ -1,0 +1,16 @@
+services:
+  bot:
+    build: ./app
+    container_name: interview-tg-bot
+    restart: unless-stopped
+    env_file: ./app/.env
+    # Бот работает через long polling — входящие порты не нужны.
+    # API на хосте: API_BASE_URL=http://host.docker.internal:8080 (на Linux нужна строка ниже)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # API в другом compose-проекте — подключите общую сеть:
+    # networks: [platform]
+# networks:
+#   platform:
+#     external: true
+#     name: <имя сети бэкенда>
