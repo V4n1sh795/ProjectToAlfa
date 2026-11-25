@@ -18,6 +18,7 @@ import Messenger from "./pages/Messenger";
 import CreateCase from "./pages/CreateCase";
 import CreateTeam from "./pages/CreateTeam";
 import TelegramBotPage from "./pages/TelegramBotPage";
+import { createTelegramBotApi } from "./api/telegramBotApi";
 import TeamWorkspaceScrollbar from "./components/TeamWorkspaceScrollbar";
 import StatisticsPage from "./pages/StatisticsPage";
 import LogOut from "./pages/LogOut";
@@ -25,6 +26,8 @@ import LogIn from "./pages/LogIn";
 import { authAPI } from "./pages/js/LogIn";
 import "./App.css";
 import "./pages/css/TeamWorkspace.css";
+
+const telegramBotApi = createTelegramBotApi();
 
 import calendarIcon from "./assets/icons/calendar.svg";
 import searchIcon from "./assets/icons/finder.svg";
@@ -312,7 +315,7 @@ function AppContent() {
               path="/telegram-bot/*"
               element={
                 <ProtectedRoute isAuthenticated={isAuthenticated} loading={loading}>
-                  <TelegramBotPage />
+                  <TelegramBotPage dataSource={telegramBotApi} />
                 </ProtectedRoute>
               }
             />
