@@ -7,14 +7,16 @@ class TokenRejected(Exception):
         super().__init__(message)
 
 
-def decode_token(token: str, secret: str, algorithm: str) -> dict:
+def decode_token(token: str, secret: str, algorithm: str, audience: str | None = None, issuer: str | None = None) -> dict:
     """Проверяет подпись и срок действия. Токен без exp не принимается."""
     try:
         payload = jwt.decode(
             token,
             secret,
             algorithms=[algorithm],
-            options={"require": ["exp"]},
+            options={"require": ["exp"], "verify_aud": bool(audience)},
+            audience=audience or None,
+            issuer=issuer or None,
             leeway=30,
         )
     except jwt.ExpiredSignatureError as error:

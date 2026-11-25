@@ -9,6 +9,8 @@ class Settings:
     jwt_secret: str
     jwt_algorithm: str
     auth_validate_path: str
+    jwt_audience: str = ""
+    jwt_issuer: str = ""
 
     @classmethod
     def load(cls) -> "Settings":

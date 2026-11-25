@@ -8,9 +8,10 @@ services:
     # API на хосте: API_BASE_URL=http://host.docker.internal:8080 (на Linux нужна строка ниже)
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    # API в другом compose-проекте — подключите общую сеть:
-    # networks: [platform]
-# networks:
-#   platform:
-#     external: true
-#     name: <имя сети бэкенда>
+    # API в другом compose-проекте: бот подключается к сети основного compose
+    # и ходит на nginx (он убирает префикс /api): API_BASE_URL=http://nginx_react:88
+    networks: [platform]
+networks:
+  platform:
+    external: true
+    name: projecttoalfa_front

@@ -246,7 +246,9 @@ async def start(message: Message, command: CommandObject, state: FSMContext, api
     token = (command.args or "").strip().strip("'\"")
     if token:
         try:
-            payload = decode_token(token, settings.jwt_secret, settings.jwt_algorithm)
+            payload = decode_token(
+                token, settings.jwt_secret, settings.jwt_algorithm, settings.jwt_audience, settings.jwt_issuer
+            )
             await api.validate_token(token)
         except TokenRejected as error:
             await state.clear()
