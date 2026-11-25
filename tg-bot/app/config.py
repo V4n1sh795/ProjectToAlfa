@@ -8,6 +8,7 @@ class Settings:
     api_base_url: str
     api_key: str
     auth_path: str
+    telegram_proxy: str = ""
 
     @classmethod
     def load(cls) -> "Settings":
@@ -16,6 +17,7 @@ class Settings:
             api_base_url=(getenv("API_BASE_URL") or "").strip().rstrip("/"),
             api_key=(getenv("BOT_API_KEY") or "").strip(),
             auth_path=(getenv("AUTH_PATH") or "/api/auth/bot").strip(),
+            telegram_proxy=(getenv("TELEGRAM_PROXY") or "").strip(),
         )
         missing = [
             name

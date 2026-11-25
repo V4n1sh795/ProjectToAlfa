@@ -4,6 +4,7 @@ import logging
 import aiohttp
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
@@ -24,7 +25,13 @@ async def main():
     timeout = aiohttp.ClientTimeout(total=15)
     async with aiohttp.ClientSession(timeout=timeout) as session:
         api = PlatformApi(settings.api_base_url, session, settings.auth_path, settings.api_key)
-        bot = Bot(token=settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+        # Прокси нужен только для Telegram (если он недоступен напрямую); запросы к API идут без него.
+        telegram_session = AiohttpSession(proxy=settings.telegram_proxy or None)
+        bot = Bot(
+            token=settings.bot_token,
+            session=telegram_session,
+            default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+        )
         # Анкета студента живёт только в MemoryStorage этого процесса, токен бота — в PlatformApi.
         await dp.start_polling(bot, api=api, settings=settings)
 

@@ -5,13 +5,7 @@ services:
     restart: unless-stopped
     env_file: ./app/.env
     # Бот работает через long polling — входящие порты не нужны.
-    # API на хосте: API_BASE_URL=http://host.docker.internal:8080 (на Linux нужна строка ниже)
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    # API в другом compose-проекте: бот подключается к сети основного compose
-    # и ходит на nginx (он убирает префикс /api): API_BASE_URL=http://nginx_react:88
-    networks: [platform]
-networks:
-  platform:
-    external: true
-    name: projecttoalfa_front
+    # network_mode: host — бот видит localhost хоста: API через опубликованный nginx
+    # (API_BASE_URL=http://localhost:88) и локальный прокси для Telegram (TELEGRAM_PROXY),
+    # если Telegram напрямую недоступен. Работает на Linux.
+    network_mode: host
