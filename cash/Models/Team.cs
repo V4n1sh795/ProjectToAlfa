@@ -42,6 +42,16 @@ public record Team
 
     public List<int> Tasks {get; set; } = new List<int>();
 
+    /// <summary>Статус заявки из телеграм-бота: pending/accepted/declined/scheduled. null — команда создана не ботом.</summary>
+    [Column("request_status")]
+    public string? RequestStatus { get; set; }
+
+    [Column("request_date")]
+    public DateTime? RequestDate { get; set; }
+
+    [Column("decline_reason")]
+    public string DeclineReason { get; set; } = string.Empty;
+
     [Column("artifacts")]
     public string artifacts {get; set; } = string.Empty;
     [Column("grades")]

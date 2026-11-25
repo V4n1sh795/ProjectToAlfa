@@ -124,6 +124,16 @@ app.MapGet("/projects/{id:int}/available-slots", [Authorize] (AppDbContext db, i
 
 app.MapPut("/projects/{id:int}/recruitment", [Authorize] (AppDbContext db, int id, Service.Interviews.RecruitmentRequest req) => Service.Interviews.SetRecruitment(db, id, req));
 
+app.MapGet("/telegram/requests", [Authorize] (AppDbContext db) => Service.TelegramRequests.List(db));
+
+app.MapPost("/telegram/requests/{id:int}/accept", [Authorize] (AppDbContext db, int id) => Service.TelegramRequests.Accept(db, id));
+
+app.MapPost("/telegram/requests/{id:int}/decline", [Authorize] (AppDbContext db, int id, Service.TelegramRequests.DeclineDto dto) => Service.TelegramRequests.Decline(db, id, dto));
+
+app.MapPost("/telegram/requests/{id:int}/schedule", [Authorize] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Schedule(db, id, draft));
+
+app.MapPut("/telegram/requests/{id:int}", [Authorize] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Update(db, id, draft));
+
 app.MapPost("/interviews/book", [Authorize] (AppDbContext db, IConfiguration config, Service.Interviews.BookRequest req) => Service.Interviews.Book(db, config, req));
 
 app.MapGet("/curators", Service.Curator.GCurators);

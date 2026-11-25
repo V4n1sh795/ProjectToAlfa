@@ -371,6 +371,11 @@ namespace cash.Migrations
                         .HasColumnType("integer[]")
                         .HasColumnName("curators");
 
+                    b.Property<string>("DeclineReason")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("decline_reason");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -380,6 +385,14 @@ namespace cash.Migrations
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer")
                         .HasColumnName("project_id");
+
+                    b.Property<DateTime?>("RequestDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("request_date");
+
+                    b.Property<string>("RequestStatus")
+                        .HasColumnType("text")
+                        .HasColumnName("request_status");
 
                     b.PrimitiveCollection<List<int>>("Tasks")
                         .IsRequired()

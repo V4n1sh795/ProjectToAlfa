@@ -112,8 +112,8 @@ static class Interviews
         {
             Name = req.teamName.Trim(),
             ProjectId = project.Id,
-            CallDay = day.DayOfWeek.ToString(),
-            CallTime = Hm(start),
+            RequestStatus = "pending",
+            RequestDate = dayUtc,
             Comments = new List<string> { $"Telegram: {req.telegramUsername ?? "-"} (chat {req.telegramChatId})" }
         };
         foreach (var m in req.members)
@@ -123,6 +123,8 @@ static class Interviews
                 parts.Length > 1 ? parts[1] : "",
                 parts.Length > 0 ? parts[0] : "",
                 parts.Length > 2 ? string.Join(' ', parts.Skip(2)) : "");
+            if (team.Members.Count == 0 && !string.IsNullOrWhiteSpace(req.telegramUsername))
+                member.conntacts = req.telegramUsername;
             member.Profiles.Add(new cash.Models.Profile
             {
                 Role = m.role,
