@@ -61,6 +61,40 @@ static class Auth
             return Results.BadRequest("Error");
         }
     }
+    public const string BotRole = "bot";
+    public const int BotTokenMinutes = 15;
+    public record IBotAuth
+    {
+        public string apiKey { get; set; } = string.Empty;
+    }
+    /// <summary>
+    /// Выдаёт короткоживущий токен сервисному клиенту (телеграм-боту) по общему ключу Bot:ApiKey.
+    /// Токен имеет роль bot и не пускает на кураторские эндпоинты.
+    /// </summary>
+    public static IResult BotLogin(IConfiguration config, IBotAuth auth)
+    {
+        var key = config["Bot:ApiKey"];
+        if (string.IsNullOrEmpty(key)) return Results.NotFound();
+        var given = System.Text.Encoding.UTF8.GetBytes(auth.apiKey ?? string.Empty);
+        var expected = System.Text.Encoding.UTF8.GetBytes(key);
+        if (!System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+                System.Security.Cryptography.SHA256.HashData(given),
+                System.Security.Cryptography.SHA256.HashData(expected)))
+            return Results.Unauthorized();
+
+        var expires = DateTime.UtcNow.AddMinutes(BotTokenMinutes);
+        var jwt = new JwtSecurityToken(
+            issuer: AuthOptions.ISSUER,
+            audience: AuthOptions.AUDIENCE,
+            claims: new List<Claim> { new Claim(ClaimTypes.Name, "telegram-bot"), new Claim(ClaimTypes.Role, BotRole) },
+            expires: expires,
+            signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+        return Results.Ok(new
+        {
+            token = new JwtSecurityTokenHandler().WriteToken(jwt),
+            expiresIn = BotTokenMinutes * 60
+        });
+    }
     public static async Task<IResult> Login(AppDbContext db, IAuth auth)
     {
         if (string.IsNullOrEmpty(auth.email) || string.IsNullOrEmpty(auth.password))

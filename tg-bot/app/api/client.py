@@ -2,9 +2,13 @@
 
 Бот не хранит проекты, слоты и заявки. Контракт, который ждёт этот клиент:
 
-GET {AUTH_VALIDATE_PATH}
-    Authorization: Bearer <jwt студента>
-    2xx — токен принят сервером, любой другой ответ — нет.
+POST {AUTH_PATH}   (по умолчанию /api/auth/bot)
+    Тело: {"apiKey": "<BOT_API_KEY>"}
+    Ответ: {"token": "<jwt>", "expiresIn": <секунды>}
+    Токен живёт недолго: клиент сам получает его при первом запросе,
+    обновляет за минуту до конца срока и один раз повторяет запрос, если сервер ответил 401.
+
+Дальше все запросы идут с Authorization: Bearer <токен бота>.
 
 GET /api/projects
     Ответ: список или {"projects": [...]} / {"items": [...]}.
@@ -26,8 +30,10 @@ POST /api/interviews/book
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import time
 from dataclasses import dataclass
 from datetime import date, datetime
 
@@ -73,21 +79,39 @@ class BookingConfirmation:
     meeting_link: str
 
 
+REFRESH_MARGIN = 60  # секунд до конца срока, когда токен уже считается устаревшим
+
+
 class PlatformApi:
-    def __init__(self, base_url: str, session: aiohttp.ClientSession, validate_path: str):
+    def __init__(self, base_url: str, session: aiohttp.ClientSession, auth_path: str, api_key: str):
         self.base_url = base_url.rstrip("/")
         self.session = session
-        self.validate_path = validate_path
+        self.auth_path = auth_path
+        self.api_key = api_key
+        self._token: str | None = None
+        self._expires_at = 0.0
+        self._lock = asyncio.Lock()
 
-    async def validate_token(self, token: str) -> None:
-        await self._request("GET", self.validate_path, token)
+    async def _access_token(self, force: bool = False) -> str:
+        """Токен бота: берём из кэша, пока он живой, иначе запрашиваем новый."""
+        async with self._lock:
+            if force or not self._token or time.monotonic() >= self._expires_at - REFRESH_MARGIN:
+                body = await self._send("POST", self.auth_path, None, {"apiKey": self.api_key})
+                token = body.get("token") if isinstance(body, dict) else None
+                if not token:
+                    raise ApiError(502, "В ответе авторизации нет token")
+                lifetime = body.get("expiresIn") if isinstance(body.get("expiresIn"), (int, float)) else 600
+                self._token = token
+                self._expires_at = time.monotonic() + float(lifetime)
+                logger.info("Токен бота обновлён, действует %s с", int(lifetime))
+            return self._token
 
-    async def get_projects(self, token: str) -> list[Project]:
-        payload = await self._request("GET", "/api/projects", token)
+    async def get_projects(self) -> list[Project]:
+        payload = await self._request("GET", "/api/projects")
         return [_project(item) for item in _as_list(payload)]
 
-    async def get_slots(self, token: str, project_id: str) -> list[DaySlots]:
-        payload = await self._request("GET", f"/api/projects/{project_id}/available-slots", token)
+    async def get_slots(self, project_id: str) -> list[DaySlots]:
+        payload = await self._request("GET", f"/api/projects/{project_id}/available-slots")
         source = payload.get("dates") if isinstance(payload, dict) else payload
         days = []
         for item in source or []:
@@ -100,8 +124,8 @@ class PlatformApi:
         days.sort(key=lambda item: item.day)
         return days[:5]
 
-    async def book(self, token: str, payload: dict) -> BookingConfirmation:
-        body = await self._request("POST", "/api/interviews/book", token, payload)
+    async def book(self, payload: dict) -> BookingConfirmation:
+        body = await self._request("POST", "/api/interviews/book", payload)
         if not isinstance(body, dict):
             raise ApiError(502, "Пустой ответ на запись")
         starts_at = _datetime(body.get("startsAt") or body.get("starts_at"))
@@ -111,9 +135,20 @@ class PlatformApi:
             raise ApiError(502, "В ответе нет startsAt или meetingLink")
         return BookingConfirmation(project_name=name, starts_at=starts_at, meeting_link=link)
 
-    async def _request(self, method: str, path: str, token: str, payload: dict | None = None):
+    async def _request(self, method: str, path: str, payload: dict | None = None):
+        try:
+            return await self._send(method, path, await self._access_token(), payload)
+        except ApiError as error:
+            if error.status != 401:
+                raise
+        # Токен мог истечь или быть отозван раньше срока — получаем новый и повторяем один раз.
+        return await self._send(method, path, await self._access_token(force=True), payload)
+
+    async def _send(self, method: str, path: str, token: str | None, payload: dict | None = None):
         url = f"{self.base_url}{path}"
-        headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+        headers = {"Accept": "application/json"}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         try:
             async with self.session.request(method, url, headers=headers, json=payload) as response:
                 raw = await response.text()

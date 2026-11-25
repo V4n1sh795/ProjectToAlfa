@@ -32,6 +32,12 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: ConnectionStrings__DefaultConnection
+            - name: Bot__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: Bot__ApiKey
+                  optional: true
           # ASP.NET health check (если у вас есть HealthChecks endpoint)
           readinessProbe:
             tcpSocket:

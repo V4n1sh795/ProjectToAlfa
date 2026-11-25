@@ -42,6 +42,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=postgres_containerv3;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Bot__ApiKey=${BOT_API_KEY:-}
     # depends_on:
     #   postgres:
     #     condition: service_healthy

@@ -3,14 +3,12 @@ from datetime import date, datetime
 from html import escape
 
 from aiogram import F, Router
-from aiogram.filters import CommandObject, CommandStart
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from api.client import ApiError, PlatformApi
-from auth import TokenRejected, decode_token
-from config import Settings
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -33,24 +31,8 @@ class Booking(StatesGroup):
     picking_slot = State()
 
 
-def _session_fields(data: dict) -> dict:
-    return {
-        key: data[key]
-        for key in ("access_token", "token_exp")
-        if key in data
-    }
-
-
-async def reset_form(state: FSMContext) -> dict:
-    data = await state.get_data()
-    kept = _session_fields(data)
+async def reset_form(state: FSMContext) -> None:
     await state.clear()
-    await state.update_data(**kept)
-    return kept
-
-
-def _token(data: dict) -> str:
-    return data["access_token"]
 
 
 def _button_title(name: str, closed: bool) -> str:
@@ -214,16 +196,14 @@ def _days_payload(days) -> list[dict]:
 
 async def tell_api_error(target: Message, error: ApiError, state: FSMContext):
     if error.status in {401, 403}:
-        await state.clear()
-        await target.answer("Сессия недействительна. Отправьте /start и токен ещё раз.")
-        return
+        # Студент тут ни при чём: ключ бота не принят сервером.
+        logger.error("Сервер не принял токен бота (%s). Проверьте BOT_API_KEY и Bot__ApiKey на бэкенде.", error.status)
     await target.answer(API_DOWN)
 
 
 async def show_projects(message: Message, state: FSMContext, api: PlatformApi):
-    data = await state.get_data()
     try:
-        projects = await api.get_projects(_token(data))
+        projects = await api.get_projects()
     except ApiError as error:
         await tell_api_error(message, error, state)
         return
@@ -242,38 +222,8 @@ async def show_projects(message: Message, state: FSMContext, api: PlatformApi):
 
 
 @router.message(CommandStart())
-async def start(message: Message, command: CommandObject, state: FSMContext, api: PlatformApi, settings: Settings):
-    token = (command.args or "").strip().strip("'\"")
-    if token:
-        try:
-            payload = decode_token(
-                token, settings.jwt_secret, settings.jwt_algorithm, settings.jwt_audience, settings.jwt_issuer
-            )
-            await api.validate_token(token)
-        except TokenRejected as error:
-            await state.clear()
-            await message.answer(error.message)
-            return
-        except ApiError as error:
-            await state.clear()
-            if error.status in {401, 403}:
-                await message.answer("Токен не принят сервером. Попросите новый.")
-            else:
-                await message.answer(API_DOWN)
-            return
-
-        await state.clear()
-        await state.update_data(access_token=token, token_exp=int(payload["exp"]))
-        try:
-            await message.delete()
-        except Exception:
-            logger.info("Не удалось удалить сообщение с токеном, chat_id=%s", message.chat.id)
-    elif not (await state.get_data()).get("access_token"):
-        await message.answer("Чтобы начать, отправьте токен командой:\n/start <токен>")
-        return
-    else:
-        await reset_form(state)
-
+async def start(message: Message, state: FSMContext, api: PlatformApi):
+    await reset_form(state)
     await show_projects(message, state, api)
 
 
@@ -291,11 +241,9 @@ async def choose_project(callback: CallbackQuery, state: FSMContext):
         await callback.answer(CLOSED_CASE, show_alert=True)
         return
 
-    kept = _session_fields(data)
     await state.clear()
     await state.set_state(Booking.team_name)
     await state.update_data(
-        **kept,
         project_id=project["id"],
         project_name=project["name"],
     )
@@ -372,7 +320,7 @@ async def confirm_form(callback: CallbackQuery, state: FSMContext):
 
 async def load_days(state: FSMContext, api: PlatformApi) -> list[dict] | None:
     data = await state.get_data()
-    days = _days_payload(await api.get_slots(_token(data), data["project_id"]))
+    days = _days_payload(await api.get_slots(data["project_id"]))
     await state.update_data(days=days)
     return days
 
@@ -477,7 +425,7 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, api: Platf
     }
     await callback.answer()
     try:
-        confirmation = await api.book(_token(data), payload)
+        confirmation = await api.book(payload)
     except ApiError as error:
         if error.status == 409:
             await callback.message.answer(SLOT_TAKEN)

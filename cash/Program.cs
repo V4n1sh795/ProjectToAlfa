@@ -31,7 +31,11 @@ TokenValidationParameters tvp =  new TokenValidationParameters
             IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
             ValidateIssuerSigningKey = true
          };
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    // Кураторский токен: любой валидный токен, кроме сервисного токена бота.
+    options.AddPolicy("Curator", policy => policy.RequireAuthenticatedUser().RequireAssertion(ctx => !ctx.User.IsInRole(Service.Auth.BotRole)));
+});
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -114,6 +118,8 @@ app.MapPost("/team", Service.Team.CreateTeam);
 
 app.MapPost("/auth/login", Service.Auth.Login);
 
+app.MapPost("/auth/bot", Service.Auth.BotLogin);
+
 app.MapPost("/auth/register",Service.Auth.Registration);
 
 app.MapGet("/auth/verify", [Authorize] () => Results.Ok("Token is valid"));
@@ -122,17 +128,17 @@ app.MapGet("/projects", [Authorize] (AppDbContext db) => Service.Interviews.Proj
 
 app.MapGet("/projects/{id:int}/available-slots", [Authorize] (AppDbContext db, int id) => Service.Interviews.AvailableSlots(db, id));
 
-app.MapPut("/projects/{id:int}/recruitment", [Authorize] (AppDbContext db, int id, Service.Interviews.RecruitmentRequest req) => Service.Interviews.SetRecruitment(db, id, req));
+app.MapPut("/projects/{id:int}/recruitment", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.Interviews.RecruitmentRequest req) => Service.Interviews.SetRecruitment(db, id, req));
 
-app.MapGet("/telegram/requests", [Authorize] (AppDbContext db) => Service.TelegramRequests.List(db));
+app.MapGet("/telegram/requests", [Authorize(Policy = "Curator")] (AppDbContext db) => Service.TelegramRequests.List(db));
 
-app.MapPost("/telegram/requests/{id:int}/accept", [Authorize] (AppDbContext db, int id) => Service.TelegramRequests.Accept(db, id));
+app.MapPost("/telegram/requests/{id:int}/accept", [Authorize(Policy = "Curator")] (AppDbContext db, int id) => Service.TelegramRequests.Accept(db, id));
 
-app.MapPost("/telegram/requests/{id:int}/decline", [Authorize] (AppDbContext db, int id, Service.TelegramRequests.DeclineDto dto) => Service.TelegramRequests.Decline(db, id, dto));
+app.MapPost("/telegram/requests/{id:int}/decline", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.DeclineDto dto) => Service.TelegramRequests.Decline(db, id, dto));
 
-app.MapPost("/telegram/requests/{id:int}/schedule", [Authorize] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Schedule(db, id, draft));
+app.MapPost("/telegram/requests/{id:int}/schedule", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Schedule(db, id, draft));
 
-app.MapPut("/telegram/requests/{id:int}", [Authorize] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Update(db, id, draft));
+app.MapPut("/telegram/requests/{id:int}", [Authorize(Policy = "Curator")] (AppDbContext db, int id, Service.TelegramRequests.TeamDraft draft) => Service.TelegramRequests.Update(db, id, draft));
 
 app.MapPost("/interviews/book", [Authorize] (AppDbContext db, IConfiguration config, Service.Interviews.BookRequest req) => Service.Interviews.Book(db, config, req));
 
