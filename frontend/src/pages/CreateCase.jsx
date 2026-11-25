@@ -3,37 +3,14 @@ import React, { useState, useEffect } from 'react';
 import closeAlertIcon from "../assets/icons/close_alert.svg";
 import AiProjectFill from '../components/ai/AiProjectFill';
 import ProjectCaseFields from '../components/ai/ProjectCaseFields';
+import { getDefaultSemester, getSemesterDates } from './semester';
 import './css/CreateCase.css';
 
 const CreateCase = () => {
-  // Функция для получения начальных значений на основе текущего времени
+  // Начальные значения: текущий или ближайший будущий семестр (см. semester.js)
   const getInitialSemesterAndDates = () => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // getMonth() возвращает 0-11
-    
-    // Определяем текущий семестр
-    let initialSemester = 'spring';
-    let initialStartDate = '';
-    let initialEndDate = '';
-    
-    if (currentMonth >= 9 && currentMonth <= 12) {
-      // Сентябрь-Декабрь - осенний семестр
-      initialSemester = 'autumn';
-      initialStartDate = `01.09.${currentYear}`;
-      initialEndDate = `31.12.${currentYear}`;
-    } else {
-      // Январь-Август - весенний семестр
-      initialSemester = 'spring';
-      initialStartDate = `01.02.${currentYear}`;
-      initialEndDate = `30.06.${currentYear}`;
-    }
-    
-    return {
-      semester: initialSemester,
-      startDate: initialStartDate,
-      endDate: initialEndDate
-    };
+    const semester = getDefaultSemester();
+    return { semester, ...getSemesterDates(semester) };
   };
 
   const initialData = getInitialSemesterAndDates();
@@ -79,17 +56,9 @@ const CreateCase = () => {
 
   // Эффект для автоматической смены дат при изменении семестра
   useEffect(() => {
-    const currentYear = new Date().getFullYear();
-    
-    if (semester === 'autumn') {
-      // Осенний семестр: 01.09.currentYear - 31.12.currentYear
-      setStartDate(`01.09.${currentYear}`);
-      setEndDate(`31.12.${currentYear}`);
-    } else {
-      // Весенний семестр: 01.02.currentYear - 30.06.currentYear
-      setStartDate(`01.02.${currentYear}`);
-      setEndDate(`30.06.${currentYear}`);
-    }
+    const dates = getSemesterDates(semester);
+    setStartDate(dates.startDate);
+    setEndDate(dates.endDate);
   }, [semester]);
 
   const handleSubmit = async (e) => {
