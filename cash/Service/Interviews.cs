@@ -30,7 +30,18 @@ static class Interviews
         public List<BotMember> members { get; set; } = new();
     }
 
-    static bool IsOpen(cash.Models.Project p) => !string.Equals(p.status, "archive", StringComparison.OrdinalIgnoreCase);
+    static bool IsOpen(cash.Models.Project p) => p.IsRecruitmentOpen && !string.Equals(p.status, "archive", StringComparison.OrdinalIgnoreCase);
+
+    public record RecruitmentRequest(bool isRecruitmentOpen);
+
+    public static async Task<IResult> SetRecruitment(AppDbContext db, int id, RecruitmentRequest req)
+    {
+        var project = await db.Projects.FindAsync(id);
+        if (project == null) return Results.NotFound("Project not found");
+        project.IsRecruitmentOpen = req.isRecruitmentOpen;
+        await db.SaveChangesAsync();
+        return Results.Ok(new { id = project.Id, isRecruitmentOpen = project.IsRecruitmentOpen });
+    }
 
     static IEnumerable<(TimeOnly start, TimeOnly end)> DaySlots()
     {

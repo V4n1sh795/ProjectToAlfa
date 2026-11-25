@@ -122,6 +122,8 @@ app.MapGet("/projects", [Authorize] (AppDbContext db) => Service.Interviews.Proj
 
 app.MapGet("/projects/{id:int}/available-slots", [Authorize] (AppDbContext db, int id) => Service.Interviews.AvailableSlots(db, id));
 
+app.MapPut("/projects/{id:int}/recruitment", [Authorize] (AppDbContext db, int id, Service.Interviews.RecruitmentRequest req) => Service.Interviews.SetRecruitment(db, id, req));
+
 app.MapPost("/interviews/book", [Authorize] (AppDbContext db, IConfiguration config, Service.Interviews.BookRequest req) => Service.Interviews.Book(db, config, req));
 
 app.MapGet("/curators", Service.Curator.GCurators);

@@ -36,6 +36,7 @@ static class Project
         public string Semester { get; init; } = string.Empty;
         public string Status { get; init; } = string.Empty;
         public string archiveReason { get; init; } = string.Empty;
+        public bool IsRecruitmentOpen { get; init; } = true;
     }
     public static async Task<IResult> Create(AppDbContext db, IProject p)
     {
@@ -90,7 +91,8 @@ static class Project
                 EndDate = project.EndDate,
                 Semester = project.Semester,
                 Status = project.status,
-                archiveReason = project.archiveReason
+                archiveReason = project.archiveReason,
+                IsRecruitmentOpen = project.IsRecruitmentOpen
             };
             return Results.Ok(response);
         }

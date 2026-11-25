@@ -248,6 +248,10 @@ namespace cash.Migrations
                         .HasColumnType("text")
                         .HasColumnName("endDate");
 
+                    b.Property<bool>("IsRecruitmentOpen")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isRecruitmentOpen");
+
                     b.Property<string>("Main_Goal")
                         .IsRequired()
                         .HasColumnType("text")

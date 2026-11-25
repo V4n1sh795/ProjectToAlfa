@@ -58,6 +58,9 @@ public record Project
 
     [Column("archiveReason")]
     public string archiveReason {get; set; } = string.Empty;
+    /// <summary>Открыт ли набор команд на проект (для телеграм-бота).</summary>
+    [Column("isRecruitmentOpen")]
+    public bool IsRecruitmentOpen { get; set; } = true;
     // [Required]
     // [Column("Status")]
     // public bool Status { get; set; } = true;
